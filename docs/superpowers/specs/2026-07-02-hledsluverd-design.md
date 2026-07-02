@@ -107,7 +107,7 @@ Layout decision (from mockup review): **rate card + station list** homepage.
 **Homepage `/`** — server-rendered, works without JavaScript:
 - Top: rate-card strip — one card per network with its current DC and AC prices, sorted cheapest-first, cheapest highlighted.
 - Below: full station table — columns: station, network, price/kWh, connectors (type × count chips), free chargers. Default sort: price under the selected mode. Mode toggle DC (default) / AC. Filters: connector type, network, "near me" (geolocation, optional).
-- Every price shows compactly when it was last verified.
+- Every price shows compactly when it was last verified. Where a network charges a per-minute fee, it is shown next to the kWh price (sorting is always by kWh price).
 - Mobile-first: the table collapses to stacked rows on narrow screens.
 
 **Station page `/stod/[slug]`** — name, network, address, mini-map, connectors with power, current price(s), availability ("3/4 free, as of 2 min ago") when known, the network's price-trend graph, directions link (hands off to Google Maps).
@@ -130,7 +130,7 @@ Layout decision (from mockup review): **rate card + station list** homepage.
 | Situation | Behavior |
 |---|---|
 | Price unverified > 30 days | Price still shown, with an amber "last verified" warning |
-| Scraper failing | Site serves last known price; admin shows red badge with days-since-success; notification (ntfy or email) after 3 consecutive failures |
+| Scraper failing | Site serves last known price; admin shows red badge with days-since-success; ntfy push notification after 3 consecutive failures |
 | No availability data for a station | Show "—", never "0" (0 would mean "all busy") |
 | Availability present | Always shown with its age ("as of 2 min ago") |
 | TomTom down / budget spent | Serve cached values with age label; no errors surfaced |
