@@ -1,0 +1,2112 @@
+# Hleðsluverð Phase 1: Foundation & Homepage — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** A locally-running SvelteKit site whose server-rendered homepage shows Iceland's charging networks' current prices (rate card) and all stations sorted by cheapest, with real seeded data, IS/EN language toggle, and tests.
+
+**Architecture:** One SvelteKit app (TypeScript, Svelte 5) + PostgreSQL/PostGIS via Drizzle ORM. Seven-table schema with an append-only `prices` table. Seed scripts import stations from Open Charge Map (fixture-tested parser) and initial prices from a human-verified JSON. Homepage is fully SSR — sorting, mode toggle (DC/AC), and filters are plain links with query params, so the page works without JavaScript.
+
+**Tech Stack:** SvelteKit (Svelte 5 runes), TypeScript, Drizzle ORM + drizzle-kit, postgres.js, PostgreSQL 16 + PostGIS, Paraglide JS 2.x (i18n), Vitest, Playwright, tsx (scripts).
+
+**Spec:** Obsidian vault — `/home/kjb/Skoli/Obsidian/skoli-vault/notes/Hleðsluverð.md` and linked notes (Arkitektúr, Gagnalíkan, Gagnasöfnun, Síður og UX, Prófanir og rekstur).
+
+**Out of scope for Phase 1** (later plans): scrapers & scrape_runs usage, trends page, admin page, map/PMTiles, station detail pages, car finder, TomTom availability, deployment. The schema for ALL of it is created now (one migration story); the `availability`, `cars`, `scrape_runs` tables simply stay empty until their phase.
+
+**Conventions for the executor:**
+- Node ≥ 20. Run everything from the repo root `/home/kjb/Projects/hledsluverd`.
+- CLI tools (`sv`, `paraglide-js`) evolve; if a flag is rejected or a prompt differs, pick the option matching the step's intent and note the deviation in the commit message.
+- Icelandic characters in strings and filenames are intentional — preserve them exactly.
+
+---
+
+## File structure (end state of Phase 1)
+
+```
+.env / .env.example          # DATABASE_URL, DATABASE_URL_TEST, OCM_API_KEY
+drizzle.config.ts
+drizzle/                     # generated SQL migrations
+messages/is.json             # Paraglide messages (Icelandic, base)
+messages/en.json
+project.inlang/settings.json
+seeds/networks.json          # the 6 networks + OCM operator matchers
+seeds/prices-initial.json    # human-verified launch prices
+scripts/seed-networks.ts
+scripts/seed-ocm.ts
+scripts/seed-prices.ts
+src/lib/types.ts             # ConnectorType, TariffKey (shared client/server)
+src/lib/format.ts            # formatIsk, formatDate
+src/lib/server/db/schema.ts  # all 7 tables
+src/lib/server/db/client.ts  # createDb(url) factory
+src/lib/server/db/index.ts   # app-facing db instance ($env)
+src/lib/server/db/prices.ts  # insertPriceIfChanged (reused by Phase 2 scrapers)
+src/lib/server/db/queries.ts # currentPrices, stationList, rateCard
+src/lib/server/matching.ts   # deriveTariffKey (+ car matching in Phase 3)
+src/lib/server/slug.ts       # slugify with Icelandic transliteration
+src/lib/server/ocm.ts        # OCM JSON → station/connector drafts
+src/lib/components/RateCard.svelte
+src/lib/components/StationTable.svelte
+src/routes/+layout.svelte
+src/routes/+page.server.ts
+src/routes/+page.svelte
+src/routes/lang/+server.ts   # no-JS language toggle (sets cookie, redirects)
+tests/fixtures/ocm-sample.json
+tests/helpers/db.ts          # test-DB migrate/truncate helpers
+e2e/homepage.test.ts
+README.md
+```
+
+Unit tests are colocated: `src/lib/server/slug.test.ts`, `matching.test.ts`, `ocm.test.ts`, `db/prices.test.ts`, `db/queries.test.ts`.
+
+---
+
+### Task 1: Scaffold SvelteKit project with test tooling
+
+**Files:**
+- Create: entire SvelteKit skeleton (via CLI), `vitest` + `playwright` + `prettier` add-ons
+- Modify: `.gitignore` (already exists — CLI may append)
+
+- [ ] **Step 1: Scaffold into the existing repo**
+
+Run:
+```bash
+cd /home/kjb/Projects/hledsluverd
+npx sv@latest create . --template minimal --types ts --no-add-ons --install npm
+```
+Expected: files created (`package.json`, `svelte.config.js`, `vite.config.ts`, `src/routes/+page.svelte`, …). If prompted about the non-empty directory, choose to continue.
+
+- [ ] **Step 2: Add test/format tooling**
+
+Run:
+```bash
+npx sv add vitest playwright prettier --install npm
+```
+Expected: `vitest` config merged into `vite.config.ts`, `playwright.config.ts` created (with an `e2e/` test dir or similar — if it creates `e2e/demo.test.ts`, keep the folder, delete the demo test), prettier config added.
+
+- [ ] **Step 3: Verify dev server boots**
+
+Run: `npm run dev -- --open=false & sleep 5 && curl -sf http://localhost:5173 | head -c 200; kill %1`
+Expected: HTML output containing `<!doctype html>` (any content). No errors.
+
+- [ ] **Step 4: Verify test runners work**
+
+Run: `npm run test:unit -- --run 2>&1 | tail -5` (or `npx vitest run`)
+Expected: passes (or "no test files found" exit 0 — acceptable at this point).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add -A
+git commit -m "chore: scaffold SvelteKit app with vitest, playwright, prettier"
+```
+
+---
+
+### Task 2: Postgres databases, Drizzle config, connection factory
+
+**Files:**
+- Create: `.env`, `.env.example`, `drizzle.config.ts`, `src/lib/server/db/client.ts`, `src/lib/server/db/index.ts`
+
+- [ ] **Step 1: Install dependencies**
+
+```bash
+npm i drizzle-orm postgres
+npm i -D drizzle-kit tsx dotenv
+```
+
+- [ ] **Step 2: Create dev and test databases with PostGIS**
+
+Postgres must be running locally (Arch: `sudo pacman -S postgresql postgis`, `sudo systemctl enable --now postgresql`, and an initialized cluster; if `psql -U kjb postgres` fails, create the role: `sudo -u postgres createuser -s kjb`).
+
+```bash
+createdb hledsluverd
+createdb hledsluverd_test
+psql -d hledsluverd -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql -d hledsluverd_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+```
+Expected: `CREATE EXTENSION` twice.
+
+- [ ] **Step 3: Write `.env` and `.env.example`**
+
+`.env` (gitignored already) and `.env.example` (committed), same content:
+```bash
+DATABASE_URL=postgres://localhost:5432/hledsluverd
+DATABASE_URL_TEST=postgres://localhost:5432/hledsluverd_test
+OCM_API_KEY=
+```
+
+- [ ] **Step 4: Write `drizzle.config.ts`**
+
+```ts
+import 'dotenv/config';
+import { defineConfig } from 'drizzle-kit';
+
+export default defineConfig({
+	schema: './src/lib/server/db/schema.ts',
+	out: './drizzle',
+	dialect: 'postgresql',
+	dbCredentials: { url: process.env.DATABASE_URL! },
+	// PostGIS bookkeeping tables must not be dropped/managed by drizzle
+	extensionsFilters: ['postgis'],
+	tablesFilter: ['!spatial_ref_sys']
+});
+```
+
+- [ ] **Step 5: Write connection factory and app instance**
+
+`src/lib/server/db/client.ts`:
+```ts
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema';
+
+export function createDb(url: string) {
+	const client = postgres(url);
+	return drizzle(client, { schema });
+}
+export type Db = ReturnType<typeof createDb>;
+```
+
+`src/lib/server/db/index.ts` (app-facing; SvelteKit loads `.env` itself):
+```ts
+import { env } from '$env/dynamic/private';
+import { createDb } from './client';
+
+export const db = createDb(env.DATABASE_URL);
+```
+
+(`schema.ts` doesn't exist yet — create it as an empty file `export {};` so imports resolve; Task 3 fills it.)
+
+- [ ] **Step 6: Smoke-test the connection**
+
+Run: `npx tsx -e "import 'dotenv/config'; import postgres from 'postgres'; const s = postgres(process.env.DATABASE_URL); const r = await s\`select postgis_version()\`; console.log(r[0]); await s.end();"`
+Expected: prints a PostGIS version object.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add -A
+git commit -m "feat: add Postgres + Drizzle setup with dev/test databases"
+```
+
+---
+
+### Task 3: Full database schema + first migration
+
+**Files:**
+- Create: `src/lib/types.ts`
+- Modify: `src/lib/server/db/schema.ts`
+- Create: `drizzle/0000_*.sql` (generated)
+
+- [ ] **Step 1: Write shared types**
+
+`src/lib/types.ts`:
+```ts
+export const CONNECTOR_TYPES = ['CCS2', 'CHAdeMO', 'Type2'] as const;
+export type ConnectorType = (typeof CONNECTOR_TYPES)[number];
+
+export const TARIFF_KEYS = ['AC', 'DC', 'DC_150'] as const;
+export type TariffKey = (typeof TARIFF_KEYS)[number];
+```
+
+- [ ] **Step 2: Write the schema (all 7 tables — spec: Gagnalíkan note)**
+
+`src/lib/server/db/schema.ts`:
+```ts
+import {
+	pgTable, pgEnum, serial, text, integer, boolean, doublePrecision,
+	timestamp, jsonb, geometry, index, uniqueIndex
+} from 'drizzle-orm/pg-core';
+import { CONNECTOR_TYPES, TARIFF_KEYS } from '$lib/types';
+
+export const connectorTypeEnum = pgEnum('connector_type', CONNECTOR_TYPES);
+
+export const networks = pgTable('networks', {
+	id: serial('id').primaryKey(),
+	name: text('name').notNull(),
+	slug: text('slug').notNull().unique(),
+	websiteUrl: text('website_url'),
+	scraperId: text('scraper_id')
+});
+
+export const stations = pgTable(
+	'stations',
+	{
+		id: serial('id').primaryKey(),
+		networkId: integer('network_id').notNull().references(() => networks.id),
+		slug: text('slug').notNull().unique(),
+		name: text('name').notNull(),
+		address: text('address'),
+		location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
+		externalIds: jsonb('external_ids').$type<{ ocm?: number; tomtom?: string }>().notNull().default({}),
+		isActive: boolean('is_active').notNull().default(true),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+	},
+	(t) => [index('stations_location_idx').using('gist', t.location)]
+);
+
+export const connectors = pgTable('connectors', {
+	id: serial('id').primaryKey(),
+	stationId: integer('station_id').notNull().references(() => stations.id, { onDelete: 'cascade' }),
+	type: connectorTypeEnum('type').notNull(),
+	powerKw: doublePrecision('power_kw').notNull(),
+	count: integer('count').notNull().default(1)
+});
+
+export const prices = pgTable(
+	'prices',
+	{
+		id: serial('id').primaryKey(),
+		networkId: integer('network_id').notNull().references(() => networks.id),
+		stationId: integer('station_id').references(() => stations.id), // NULL = network-wide
+		tariffKey: text('tariff_key', { enum: TARIFF_KEYS }).notNull(),
+		priceIskPerKwh: doublePrecision('price_isk_per_kwh').notNull(),
+		minuteFeeIsk: doublePrecision('minute_fee_isk'),
+		validFrom: timestamp('valid_from', { withTimezone: true }).notNull().defaultNow(),
+		source: text('source', { enum: ['scraper', 'manual'] }).notNull(),
+		verifiedAt: timestamp('verified_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+	},
+	(t) => [index('prices_current_idx').on(t.networkId, t.tariffKey, t.validFrom)]
+);
+
+export const availability = pgTable('availability', {
+	stationId: integer('station_id').primaryKey().references(() => stations.id, { onDelete: 'cascade' }),
+	freeCount: integer('free_count'),
+	totalCount: integer('total_count'),
+	perType: jsonb('per_type').$type<Partial<Record<string, { free: number; total: number }>>>(),
+	fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
+	source: text('source').notNull()
+});
+
+export const cars = pgTable(
+	'cars',
+	{
+		id: serial('id').primaryKey(),
+		make: text('make').notNull(),
+		model: text('model').notNull(),
+		variant: text('variant'),
+		slug: text('slug').notNull().unique(),
+		acConnector: connectorTypeEnum('ac_connector'),
+		maxAcKw: doublePrecision('max_ac_kw'),
+		dcConnector: connectorTypeEnum('dc_connector'),
+		maxDcKw: doublePrecision('max_dc_kw')
+	},
+	(t) => [uniqueIndex('cars_make_model_variant_idx').on(t.make, t.model, t.variant)]
+);
+
+export const scrapeRuns = pgTable('scrape_runs', {
+	id: serial('id').primaryKey(),
+	networkId: integer('network_id').notNull().references(() => networks.id),
+	startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+	status: text('status', { enum: ['ok', 'changed', 'failed'] }).notNull(),
+	message: text('message')
+});
+```
+
+- [ ] **Step 3: Generate the migration**
+
+Run: `npx drizzle-kit generate`
+Expected: one SQL file in `drizzle/` creating all 7 tables + enum. Open it and verify `location` is `geometry(point, 4326)` and the gist index exists.
+
+- [ ] **Step 4: Apply the migration to both databases**
+
+```bash
+npx drizzle-kit migrate
+DATABASE_URL=postgres://localhost:5432/hledsluverd_test npx drizzle-kit migrate
+```
+Expected: no errors. Verify: `psql -d hledsluverd -c '\dt'` lists the 7 tables.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add -A
+git commit -m "feat: add full database schema (7 tables) and initial migration"
+```
+
+---
+
+### Task 4: Test-DB helper
+
+**Files:**
+- Create: `tests/helpers/db.ts`
+
+DB-touching tests run against `DATABASE_URL_TEST` and are skipped when it's unset. Vitest loads `.env` only if told to — the helper uses `dotenv`.
+
+- [ ] **Step 1: Write the helper**
+
+`tests/helpers/db.ts`:
+```ts
+import 'dotenv/config';
+import { sql } from 'drizzle-orm';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { createDb, type Db } from '../../src/lib/server/db/client';
+
+export const TEST_DB_URL = process.env.DATABASE_URL_TEST;
+
+export async function setupTestDb(): Promise<Db> {
+	const db = createDb(TEST_DB_URL!);
+	await migrate(db, { migrationsFolder: './drizzle' });
+	return db;
+}
+
+export async function truncateAll(db: Db) {
+	await db.execute(sql`
+		TRUNCATE scrape_runs, availability, prices, connectors, stations, cars, networks
+		RESTART IDENTITY CASCADE
+	`);
+}
+```
+
+Note: `$lib` aliases don't resolve from `tests/` by default — the helper deliberately uses a relative import. `src/lib/server/db/schema.ts` imports `$lib/types`; vitest resolves `$lib` inside `src/` via the SvelteKit vite plugin, which is already active in `vite.config.ts`. If the relative import of `client.ts` fails on the `$lib/types` alias when run from `tests/`, change `schema.ts` to import from `'../../types'` instead — both are acceptable.
+
+- [ ] **Step 2: Verify it compiles and connects**
+
+Run: `npx tsx -e "import { setupTestDb, truncateAll } from './tests/helpers/db'; const db = await setupTestDb(); await truncateAll(db); console.log('ok'); process.exit(0);"`
+Expected: `ok`
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add tests/helpers/db.ts
+git commit -m "test: add test-database helper (migrate + truncate)"
+```
+
+---
+
+### Task 5: Slug utility (TDD)
+
+**Files:**
+- Create: `src/lib/server/slug.ts`, `src/lib/server/slug.test.ts`
+
+- [ ] **Step 1: Write the failing test**
+
+`src/lib/server/slug.test.ts`:
+```ts
+import { describe, expect, it } from 'vitest';
+import { slugify } from './slug';
+
+describe('slugify', () => {
+	it('transliterates Icelandic characters', () => {
+		expect(slugify('Hellisheiði')).toBe('hellisheidi');
+		expect(slugify('Þórshöfn')).toBe('thorshofn');
+		expect(slugify('Ártúnshöfði')).toBe('artunshofdi');
+		expect(slugify('Æsuvellir')).toBe('aesuvellir');
+	});
+	it('collapses non-alphanumerics into single dashes and trims them', () => {
+		expect(slugify('Olís – Norðlingaholt (v/Austurveg)')).toBe('olis-nordlingaholt-v-austurveg');
+	});
+	it('handles uppercase Icelandic letters', () => {
+		expect(slugify('ÐÆÖÁ')).toBe('daeoa');
+	});
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/server/slug.test.ts`
+Expected: FAIL — cannot find module `./slug`.
+
+- [ ] **Step 3: Write the implementation**
+
+`src/lib/server/slug.ts`:
+```ts
+const MAP: Record<string, string> = {
+	á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ý: 'y',
+	ð: 'd', þ: 'th', æ: 'ae', ö: 'o'
+};
+
+export function slugify(input: string): string {
+	return input
+		.toLowerCase()
+		.split('')
+		.map((c) => MAP[c] ?? c)
+		.join('')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/server/slug.test.ts`
+Expected: PASS (3 tests).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/lib/server/slug.ts src/lib/server/slug.test.ts
+git commit -m "feat: add slugify with Icelandic transliteration"
+```
+
+---
+
+### Task 6: Tariff derivation (TDD)
+
+**Files:**
+- Create: `src/lib/server/matching.ts`, `src/lib/server/matching.test.ts`
+
+Spec rule (Gagnalíkan note): Type2 → `AC`; CCS2/CHAdeMO → `DC_150` when `power_kw ≥ 150` **and** the network defines that tier, otherwise `DC`.
+
+- [ ] **Step 1: Write the failing test**
+
+`src/lib/server/matching.test.ts`:
+```ts
+import { describe, expect, it } from 'vitest';
+import { deriveTariffKey } from './matching';
+import type { TariffKey } from '$lib/types';
+
+const withTier = new Set<TariffKey>(['AC', 'DC', 'DC_150']);
+const withoutTier = new Set<TariffKey>(['AC', 'DC']);
+
+describe('deriveTariffKey', () => {
+	it('maps Type2 to AC regardless of power', () => {
+		expect(deriveTariffKey('Type2', 22, withTier)).toBe('AC');
+	});
+	it('maps DC connectors to DC below 150 kW', () => {
+		expect(deriveTariffKey('CCS2', 60, withTier)).toBe('DC');
+		expect(deriveTariffKey('CHAdeMO', 50, withTier)).toBe('DC');
+	});
+	it('maps ≥150 kW to DC_150 when the network defines the tier', () => {
+		expect(deriveTariffKey('CCS2', 150, withTier)).toBe('DC_150');
+		expect(deriveTariffKey('CCS2', 250, withTier)).toBe('DC_150');
+	});
+	it('falls back to DC at ≥150 kW when the network has no tier', () => {
+		expect(deriveTariffKey('CCS2', 250, withoutTier)).toBe('DC');
+	});
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/server/matching.test.ts`
+Expected: FAIL — cannot find module `./matching`.
+
+- [ ] **Step 3: Write the implementation**
+
+`src/lib/server/matching.ts`:
+```ts
+import type { ConnectorType, TariffKey } from '$lib/types';
+
+export function deriveTariffKey(
+	type: ConnectorType,
+	powerKw: number,
+	networkTariffs: ReadonlySet<TariffKey>
+): TariffKey {
+	if (type === 'Type2') return 'AC';
+	if (powerKw >= 150 && networkTariffs.has('DC_150')) return 'DC_150';
+	return 'DC';
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/server/matching.test.ts`
+Expected: PASS (4 tests).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/lib/server/matching.ts src/lib/server/matching.test.ts
+git commit -m "feat: add tariff derivation rule"
+```
+
+---
+
+### Task 7: Networks seed data + script
+
+**Files:**
+- Create: `seeds/networks.json`, `scripts/seed-networks.ts`
+- Modify: `package.json` (scripts)
+
+- [ ] **Step 1: Write the seed data**
+
+`seeds/networks.json` — `ocmMatchers` are lowercase substrings matched against OCM's operator title (used by Task 8):
+```json
+[
+	{ "name": "ON", "slug": "on", "websiteUrl": "https://www.on.is", "ocmMatchers": ["orka náttúrunnar", "on power", "on -"] },
+	{ "name": "Ísorka", "slug": "isorka", "websiteUrl": "https://www.isorka.is", "ocmMatchers": ["ísorka", "isorka"] },
+	{ "name": "N1", "slug": "n1", "websiteUrl": "https://www.n1.is", "ocmMatchers": ["n1"] },
+	{ "name": "e1", "slug": "e1", "websiteUrl": "https://www.e1.is", "ocmMatchers": ["e1", "eone"] },
+	{ "name": "Orkan", "slug": "orkan", "websiteUrl": "https://www.orkan.is", "ocmMatchers": ["orkan"] },
+	{ "name": "Tesla", "slug": "tesla", "websiteUrl": "https://www.tesla.com/findus", "ocmMatchers": ["tesla"] }
+]
+```
+
+- [ ] **Step 2: Write the seed script (idempotent upsert by slug)**
+
+`scripts/seed-networks.ts`:
+```ts
+import 'dotenv/config';
+import { readFileSync } from 'node:fs';
+import { createDb } from '../src/lib/server/db/client';
+import { networks } from '../src/lib/server/db/schema';
+
+const data: { name: string; slug: string; websiteUrl: string }[] = JSON.parse(
+	readFileSync('seeds/networks.json', 'utf8')
+);
+
+const db = createDb(process.env.DATABASE_URL!);
+for (const n of data) {
+	await db
+		.insert(networks)
+		.values({ name: n.name, slug: n.slug, websiteUrl: n.websiteUrl })
+		.onConflictDoUpdate({
+			target: networks.slug,
+			set: { name: n.name, websiteUrl: n.websiteUrl }
+		});
+}
+console.log(`Seeded ${data.length} networks.`);
+process.exit(0);
+```
+
+- [ ] **Step 3: Add npm scripts**
+
+In `package.json` `"scripts"`, add:
+```json
+"db:migrate": "drizzle-kit migrate",
+"seed:networks": "tsx scripts/seed-networks.ts",
+"seed:ocm": "tsx scripts/seed-ocm.ts",
+"seed:prices": "tsx scripts/seed-prices.ts"
+```
+(`seed:ocm` / `seed:prices` targets are created in Tasks 8–9.)
+
+- [ ] **Step 4: Run it twice (idempotency check)**
+
+Run: `npm run seed:networks && npm run seed:networks && psql -d hledsluverd -c "SELECT slug FROM networks ORDER BY slug;"`
+Expected: 6 rows (`e1, isorka, n1, on, orkan, tesla`) — not 12.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add seeds/networks.json scripts/seed-networks.ts package.json
+git commit -m "feat: seed the six charging networks"
+```
+
+---
+
+### Task 8: OCM parser (fixture TDD) + station seed script
+
+**Files:**
+- Create: `tests/fixtures/ocm-sample.json`, `src/lib/server/ocm.ts`, `src/lib/server/ocm.test.ts`, `scripts/seed-ocm.ts`
+
+- [ ] **Step 1: Write the fixture**
+
+`tests/fixtures/ocm-sample.json` — trimmed to the fields we read; 3 POIs: an ON fast-charge site (CCS2 ×2 + CHAdeMO, mixed), an Ísorka AC site (Type2 socket ×4), and one with an unknown operator (must be skipped):
+```json
+[
+	{
+		"ID": 111001,
+		"OperatorInfo": { "ID": 3372, "Title": "Orka náttúrunnar (ON)" },
+		"AddressInfo": {
+			"Title": "Hellisheiði",
+			"AddressLine1": "Hellisheiðarvirkjun",
+			"Town": "Ölfus",
+			"Latitude": 64.0374,
+			"Longitude": -21.4009
+		},
+		"Connections": [
+			{ "ConnectionTypeID": 33, "PowerKW": 150, "Quantity": 2 },
+			{ "ConnectionTypeID": 2, "PowerKW": 50, "Quantity": 1 },
+			{ "ConnectionTypeID": 25, "PowerKW": 22, "Quantity": null }
+		]
+	},
+	{
+		"ID": 111002,
+		"OperatorInfo": { "ID": 3400, "Title": "Ísorka" },
+		"AddressInfo": {
+			"Title": "Olís Norðlingaholt",
+			"AddressLine1": "Norðlingabraut 2",
+			"Town": "Reykjavík",
+			"Latitude": 64.1101,
+			"Longitude": -21.7702
+		},
+		"Connections": [
+			{ "ConnectionTypeID": 25, "PowerKW": 22, "Quantity": 2 },
+			{ "ConnectionTypeID": 1036, "PowerKW": 22, "Quantity": 2 }
+		]
+	},
+	{
+		"ID": 111003,
+		"OperatorInfo": { "ID": 1, "Title": "Some Hotel Chain" },
+		"AddressInfo": {
+			"Title": "Hótel X",
+			"AddressLine1": "Gata 1",
+			"Town": "Akureyri",
+			"Latitude": 65.6835,
+			"Longitude": -18.1002
+		},
+		"Connections": [{ "ConnectionTypeID": 25, "PowerKW": 11, "Quantity": 1 }]
+	}
+]
+```
+
+- [ ] **Step 2: Write the failing test**
+
+`src/lib/server/ocm.test.ts`:
+```ts
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { parseOcm, type NetworkMatcher } from './ocm';
+
+const pois = JSON.parse(readFileSync('tests/fixtures/ocm-sample.json', 'utf8'));
+const matchers: NetworkMatcher[] = [
+	{ slug: 'on', ocmMatchers: ['orka náttúrunnar', 'on power', 'on -'] },
+	{ slug: 'isorka', ocmMatchers: ['ísorka', 'isorka'] }
+];
+
+describe('parseOcm', () => {
+	it('maps matched operators to network slugs and extracts location', () => {
+		const { drafts } = parseOcm(pois, matchers);
+		expect(drafts).toHaveLength(2);
+		const on = drafts.find((d) => d.networkSlug === 'on')!;
+		expect(on.name).toBe('Hellisheiði');
+		expect(on.address).toBe('Hellisheiðarvirkjun, Ölfus');
+		expect(on.lat).toBeCloseTo(64.0374);
+		expect(on.lng).toBeCloseTo(-21.4009);
+		expect(on.ocmId).toBe(111001);
+	});
+
+	it('aggregates connections by (type, power), defaulting quantity to 1', () => {
+		const { drafts } = parseOcm(pois, matchers);
+		const on = drafts.find((d) => d.networkSlug === 'on')!;
+		expect(on.connectors).toEqual(
+			expect.arrayContaining([
+				{ type: 'CCS2', powerKw: 150, count: 2 },
+				{ type: 'CHAdeMO', powerKw: 50, count: 1 },
+				{ type: 'Type2', powerKw: 22, count: 1 }
+			])
+		);
+		const isorka = drafts.find((d) => d.networkSlug === 'isorka')!;
+		// two Type2 entries (socket 25 + tethered 1036) at same power merge: 2 + 2 = 4
+		expect(isorka.connectors).toEqual([{ type: 'Type2', powerKw: 22, count: 4 }]);
+	});
+
+	it('skips unmatched operators and reports them', () => {
+		const { skipped } = parseOcm(pois, matchers);
+		expect(skipped).toEqual([{ operator: 'Some Hotel Chain', count: 1 }]);
+	});
+});
+```
+
+- [ ] **Step 3: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/server/ocm.test.ts`
+Expected: FAIL — cannot find module `./ocm`.
+
+- [ ] **Step 4: Write the implementation**
+
+`src/lib/server/ocm.ts`:
+```ts
+import type { ConnectorType } from '$lib/types';
+
+// Open Charge Map connection-type ids → our connector types.
+// 33 = CCS (Type 2 combo), 2 = CHAdeMO, 25 = Type 2 socket, 1036 = Type 2 tethered.
+// Unknown ids are ignored (OCM has many exotic types irrelevant in Iceland).
+const CONNECTION_TYPE_MAP: Record<number, ConnectorType> = {
+	33: 'CCS2',
+	2: 'CHAdeMO',
+	25: 'Type2',
+	1036: 'Type2'
+};
+
+export interface NetworkMatcher {
+	slug: string;
+	ocmMatchers: string[];
+}
+
+export interface StationDraft {
+	ocmId: number;
+	networkSlug: string;
+	name: string;
+	address: string | null;
+	lat: number;
+	lng: number;
+	connectors: { type: ConnectorType; powerKw: number; count: number }[];
+}
+
+interface OcmPoi {
+	ID: number;
+	OperatorInfo?: { Title?: string } | null;
+	AddressInfo?: {
+		Title?: string;
+		AddressLine1?: string | null;
+		Town?: string | null;
+		Latitude?: number;
+		Longitude?: number;
+	} | null;
+	Connections?: { ConnectionTypeID?: number; PowerKW?: number | null; Quantity?: number | null }[] | null;
+}
+
+export function parseOcm(
+	pois: OcmPoi[],
+	matchers: NetworkMatcher[]
+): { drafts: StationDraft[]; skipped: { operator: string; count: number }[] } {
+	const drafts: StationDraft[] = [];
+	const skippedCounts = new Map<string, number>();
+
+	for (const poi of pois) {
+		const operator = poi.OperatorInfo?.Title ?? '(no operator)';
+		const network = matchers.find((m) =>
+			m.ocmMatchers.some((s) => operator.toLowerCase().includes(s))
+		);
+		const a = poi.AddressInfo;
+		if (!network || !a?.Title || a.Latitude == null || a.Longitude == null) {
+			skippedCounts.set(operator, (skippedCounts.get(operator) ?? 0) + 1);
+			continue;
+		}
+
+		const byKey = new Map<string, { type: ConnectorType; powerKw: number; count: number }>();
+		for (const c of poi.Connections ?? []) {
+			const type = c.ConnectionTypeID != null ? CONNECTION_TYPE_MAP[c.ConnectionTypeID] : undefined;
+			if (!type || c.PowerKW == null) continue;
+			const key = `${type}:${c.PowerKW}`;
+			const entry = byKey.get(key) ?? { type, powerKw: c.PowerKW, count: 0 };
+			entry.count += c.Quantity ?? 1;
+			byKey.set(key, entry);
+		}
+
+		drafts.push({
+			ocmId: poi.ID,
+			networkSlug: network.slug,
+			name: a.Title,
+			address: [a.AddressLine1, a.Town].filter(Boolean).join(', ') || null,
+			lat: a.Latitude,
+			lng: a.Longitude,
+			connectors: [...byKey.values()]
+		});
+	}
+
+	return {
+		drafts,
+		skipped: [...skippedCounts.entries()].map(([operator, count]) => ({ operator, count }))
+	};
+}
+```
+
+- [ ] **Step 5: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/server/ocm.test.ts`
+Expected: PASS (3 tests).
+
+- [ ] **Step 6: Write the seed script**
+
+`scripts/seed-ocm.ts` — fetches Iceland POIs, parses, upserts by `external_ids->>'ocm'`, replaces connectors on update, ensures slug uniqueness:
+```ts
+import 'dotenv/config';
+import { readFileSync } from 'node:fs';
+import { eq, sql } from 'drizzle-orm';
+import { createDb } from '../src/lib/server/db/client';
+import { connectors, networks, stations } from '../src/lib/server/db/schema';
+import { parseOcm, type NetworkMatcher } from '../src/lib/server/ocm';
+import { slugify } from '../src/lib/server/slug';
+
+const key = process.env.OCM_API_KEY;
+if (!key) throw new Error('OCM_API_KEY missing — register free at openchargemap.org');
+
+const res = await fetch(
+	`https://api.openchargemap.io/v3/poi?countrycode=IS&maxresults=2000&compact=true&verbose=false&key=${key}`
+);
+if (!res.ok) throw new Error(`OCM request failed: ${res.status}`);
+const pois = await res.json();
+
+const seedNetworks: (NetworkMatcher & { name: string })[] = JSON.parse(
+	readFileSync('seeds/networks.json', 'utf8')
+);
+const { drafts, skipped } = parseOcm(pois, seedNetworks);
+
+const db = createDb(process.env.DATABASE_URL!);
+const dbNetworks = await db.select().from(networks);
+const idBySlug = new Map(dbNetworks.map((n) => [n.slug, n.id]));
+
+let inserted = 0, updated = 0;
+for (const d of drafts) {
+	const networkId = idBySlug.get(d.networkSlug);
+	if (!networkId) throw new Error(`Network not seeded: ${d.networkSlug} (run seed:networks first)`);
+
+	const existing = await db
+		.select({ id: stations.id })
+		.from(stations)
+		.where(sql`${stations.externalIds}->>'ocm' = ${String(d.ocmId)}`);
+
+	let stationId: number;
+	if (existing.length > 0) {
+		stationId = existing[0].id;
+		await db
+			.update(stations)
+			.set({ name: d.name, address: d.address, location: { x: d.lng, y: d.lat }, updatedAt: new Date() })
+			.where(eq(stations.id, stationId));
+		updated++;
+	} else {
+		let slug = slugify(`${d.name}-${d.networkSlug}`);
+		const clash = await db.select({ id: stations.id }).from(stations).where(eq(stations.slug, slug));
+		if (clash.length > 0) slug = `${slug}-${d.ocmId}`;
+		const [row] = await db
+			.insert(stations)
+			.values({
+				networkId,
+				slug,
+				name: d.name,
+				address: d.address,
+				location: { x: d.lng, y: d.lat },
+				externalIds: { ocm: d.ocmId }
+			})
+			.returning({ id: stations.id });
+		stationId = row.id;
+		inserted++;
+	}
+
+	await db.delete(connectors).where(eq(connectors.stationId, stationId));
+	if (d.connectors.length > 0) {
+		await db.insert(connectors).values(d.connectors.map((c) => ({ stationId, ...c })));
+	}
+}
+
+console.log(`OCM seed: ${inserted} inserted, ${updated} updated, ${drafts.length} total.`);
+console.log('Skipped operators (review — add matchers to seeds/networks.json if any belong to our networks):');
+for (const s of skipped.sort((a, b) => b.count - a.count)) console.log(`  ${s.count}× ${s.operator}`);
+process.exit(0);
+```
+
+- [ ] **Step 7: Run against the real API**
+
+Register a free API key at https://openchargemap.org (My Profile → API keys), put it in `.env` as `OCM_API_KEY`, then:
+
+Run: `npm run seed:ocm && psql -d hledsluverd -c "SELECT n.slug, count(*) FROM stations s JOIN networks n ON n.id = s.network_id GROUP BY 1 ORDER BY 2 DESC;"`
+Expected: a few hundred stations spread across the networks; a skipped-operators report. **Read the skipped list**: if an operator clearly belongs to one of our six networks under a different OCM name, add a matcher string to `seeds/networks.json` and re-run (idempotent). Run it twice to confirm `updated` equals the previous `inserted`.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add tests/fixtures/ocm-sample.json src/lib/server/ocm.ts src/lib/server/ocm.test.ts scripts/seed-ocm.ts seeds/networks.json
+git commit -m "feat: import stations and connectors from Open Charge Map"
+```
+
+---
+
+### Task 9: Price writing (TDD) + initial price seed
+
+**Files:**
+- Create: `src/lib/server/db/prices.ts`, `src/lib/server/db/prices.test.ts`, `seeds/prices-initial.json`, `scripts/seed-prices.ts`
+
+`insertPriceIfChanged` is THE price-write path — Phase 2 scrapers will call this exact function. Rules (spec: Gagnasöfnun note): plausibility guard 10–200 ISK/kWh; changed value → new row; unchanged → bump `verified_at` only.
+
+- [ ] **Step 1: Write the failing test**
+
+`src/lib/server/db/prices.test.ts`:
+```ts
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { desc } from 'drizzle-orm';
+import { TEST_DB_URL, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
+import type { Db } from './client';
+import { networks, prices } from './schema';
+import { insertPriceIfChanged } from './prices';
+
+describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
+	let db: Db;
+	let networkId: number;
+
+	beforeAll(async () => {
+		db = await setupTestDb();
+	});
+	beforeEach(async () => {
+		await truncateAll(db);
+		const [n] = await db.insert(networks).values({ name: 'ON', slug: 'on' }).returning();
+		networkId = n.id;
+	});
+
+	it('inserts a first price row', async () => {
+		const r = await insertPriceIfChanged(db, {
+			networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual'
+		});
+		expect(r).toBe('inserted');
+		expect(await db.select().from(prices)).toHaveLength(1);
+	});
+
+	it('bumps verified_at without a new row when unchanged', async () => {
+		await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
+		const [before] = await db.select().from(prices);
+		await new Promise((r) => setTimeout(r, 20));
+		const r = await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'scraper' });
+		expect(r).toBe('verified');
+		const rows = await db.select().from(prices);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].verifiedAt.getTime()).toBeGreaterThan(before.verifiedAt.getTime());
+	});
+
+	it('appends a new row when the price changes, keeping history', async () => {
+		await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
+		const r = await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 55, source: 'scraper' });
+		expect(r).toBe('inserted');
+		const rows = await db.select().from(prices).orderBy(desc(prices.validFrom), desc(prices.id));
+		expect(rows).toHaveLength(2);
+		expect(rows[0].priceIskPerKwh).toBe(55);
+	});
+
+	it('treats separate tariff keys independently', async () => {
+		await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
+		const r = await insertPriceIfChanged(db, { networkId, tariffKey: 'AC', priceIskPerKwh: 39, source: 'manual' });
+		expect(r).toBe('inserted');
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
+
+	it('rejects implausible prices', async () => {
+		await expect(
+			insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 4900, source: 'scraper' })
+		).rejects.toThrow(/implausible/i);
+		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/server/db/prices.test.ts`
+Expected: FAIL — cannot find module `./prices`.
+
+- [ ] **Step 3: Write the implementation**
+
+`src/lib/server/db/prices.ts`:
+```ts
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import type { TariffKey } from '$lib/types';
+import type { Db } from './client';
+import { prices } from './schema';
+
+export interface PriceReading {
+	networkId: number;
+	stationId?: number | null;
+	tariffKey: TariffKey;
+	priceIskPerKwh: number;
+	minuteFeeIsk?: number | null;
+	source: 'scraper' | 'manual';
+}
+
+const MIN_PLAUSIBLE = 10;
+const MAX_PLAUSIBLE = 200;
+
+export async function insertPriceIfChanged(
+	db: Db,
+	reading: PriceReading
+): Promise<'inserted' | 'verified'> {
+	if (reading.priceIskPerKwh < MIN_PLAUSIBLE || reading.priceIskPerKwh > MAX_PLAUSIBLE) {
+		throw new Error(
+			`Implausible price ${reading.priceIskPerKwh} ISK/kWh for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
+		);
+	}
+
+	const stationCond =
+		reading.stationId == null ? isNull(prices.stationId) : eq(prices.stationId, reading.stationId);
+
+	const [current] = await db
+		.select()
+		.from(prices)
+		.where(and(eq(prices.networkId, reading.networkId), eq(prices.tariffKey, reading.tariffKey), stationCond))
+		.orderBy(desc(prices.validFrom), desc(prices.id))
+		.limit(1);
+
+	if (
+		current &&
+		current.priceIskPerKwh === reading.priceIskPerKwh &&
+		(current.minuteFeeIsk ?? null) === (reading.minuteFeeIsk ?? null)
+	) {
+		await db.update(prices).set({ verifiedAt: sql`now()` }).where(eq(prices.id, current.id));
+		return 'verified';
+	}
+
+	await db.insert(prices).values({
+		networkId: reading.networkId,
+		stationId: reading.stationId ?? null,
+		tariffKey: reading.tariffKey,
+		priceIskPerKwh: reading.priceIskPerKwh,
+		minuteFeeIsk: reading.minuteFeeIsk ?? null,
+		source: reading.source
+	});
+	return 'inserted';
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/server/db/prices.test.ts`
+Expected: PASS (5 tests).
+
+- [ ] **Step 5: Write the initial price data — THEN VERIFY IT BY HAND**
+
+`seeds/prices-initial.json` (values below came from research articles and are probably stale — the verification step is mandatory):
+```json
+[
+	{ "network": "on", "tariffKey": "AC", "priceIskPerKwh": 39.9 },
+	{ "network": "on", "tariffKey": "DC", "priceIskPerKwh": 49.9 },
+	{ "network": "on", "tariffKey": "DC_150", "priceIskPerKwh": 54.9 },
+	{ "network": "isorka", "tariffKey": "AC", "priceIskPerKwh": 39.0 },
+	{ "network": "isorka", "tariffKey": "DC", "priceIskPerKwh": 70.0 },
+	{ "network": "n1", "tariffKey": "DC", "priceIskPerKwh": 70.0 },
+	{ "network": "e1", "tariffKey": "DC", "priceIskPerKwh": 50.0 },
+	{ "network": "orkan", "tariffKey": "DC", "priceIskPerKwh": 65.0 }
+]
+```
+
+**Verification (do not skip):** open each operator's price page — https://www.on.is , https://www.isorka.is , https://www.n1.is , https://www.e1.is , https://www.orkan.is — and correct every value, add missing tariffs (AC rates, per-minute fees as `"minuteFeeIsk"`), delete tariffs an operator doesn't offer. Tesla is intentionally absent (in-app pricing; its stations show "verð óþekkt" until Phase 2 resolves it). Record what you verified in the commit message.
+
+- [ ] **Step 6: Write the seed script**
+
+`scripts/seed-prices.ts`:
+```ts
+import 'dotenv/config';
+import { readFileSync } from 'node:fs';
+import { createDb } from '../src/lib/server/db/client';
+import { networks } from '../src/lib/server/db/schema';
+import { insertPriceIfChanged, type PriceReading } from '../src/lib/server/db/prices';
+import type { TariffKey } from '../src/lib/types';
+
+const rows: { network: string; tariffKey: TariffKey; priceIskPerKwh: number; minuteFeeIsk?: number }[] =
+	JSON.parse(readFileSync('seeds/prices-initial.json', 'utf8'));
+
+const db = createDb(process.env.DATABASE_URL!);
+const nets = await db.select().from(networks);
+const idBySlug = new Map(nets.map((n) => [n.slug, n.id]));
+
+for (const r of rows) {
+	const networkId = idBySlug.get(r.network);
+	if (!networkId) throw new Error(`Unknown network slug: ${r.network}`);
+	const reading: PriceReading = {
+		networkId,
+		tariffKey: r.tariffKey,
+		priceIskPerKwh: r.priceIskPerKwh,
+		minuteFeeIsk: r.minuteFeeIsk ?? null,
+		source: 'manual'
+	};
+	console.log(`${r.network}/${r.tariffKey}: ${await insertPriceIfChanged(db, reading)}`);
+}
+process.exit(0);
+```
+
+- [ ] **Step 7: Run it twice**
+
+Run: `npm run seed:prices && npm run seed:prices`
+Expected: first run all `inserted`, second run all `verified` (idempotent — this also proves the changed/unchanged logic against the dev DB).
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add src/lib/server/db/prices.ts src/lib/server/db/prices.test.ts seeds/prices-initial.json scripts/seed-prices.ts
+git commit -m "feat: add price write path with plausibility guard, seed verified launch prices"
+```
+
+---
+
+### Task 10: Read queries — current prices, rate card, station list (TDD)
+
+**Files:**
+- Create: `src/lib/server/db/queries.ts`, `src/lib/server/db/queries.test.ts`
+
+- [ ] **Step 1: Write the failing test**
+
+`src/lib/server/db/queries.test.ts`:
+```ts
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { TEST_DB_URL, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
+import type { Db } from './client';
+import { connectors, networks, stations } from './schema';
+import { insertPriceIfChanged } from './prices';
+import { currentPrices, rateCard, stationList } from './queries';
+
+describe.skipIf(!TEST_DB_URL)('read queries', () => {
+	let db: Db;
+	let on: number, n1: number;
+
+	beforeAll(async () => {
+		db = await setupTestDb();
+	});
+
+	beforeEach(async () => {
+		await truncateAll(db);
+		const rows = await db
+			.insert(networks)
+			.values([
+				{ name: 'ON', slug: 'on' },
+				{ name: 'N1', slug: 'n1' }
+			])
+			.returning();
+		on = rows[0].id;
+		n1 = rows[1].id;
+
+		// ON: cheap DC + a 150 kW tier + AC. N1: expensive DC only.
+		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'AC', priceIskPerKwh: 39, source: 'manual' });
+		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
+		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'DC_150', priceIskPerKwh: 55, source: 'manual' });
+		await insertPriceIfChanged(db, { networkId: n1, tariffKey: 'DC', priceIskPerKwh: 70, source: 'manual' });
+		// price change: DC 49 → 44 (current must be 44)
+		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'DC', priceIskPerKwh: 44, source: 'manual' });
+
+		const st = await db
+			.insert(stations)
+			.values([
+				{ networkId: on, slug: 'hellisheidi-on', name: 'Hellisheiði', location: { x: -21.4, y: 64.03 } },
+				{ networkId: on, slug: 'laugardalur-on', name: 'Laugardalur', location: { x: -21.87, y: 64.14 } },
+				{ networkId: n1, slug: 'stadarskali-n1', name: 'Staðarskáli', location: { x: -21.08, y: 65.13 } },
+				{ networkId: n1, slug: 'gamla-n1', name: 'Gömul stöð', isActive: false, location: { x: -21, y: 64 } }
+			])
+			.returning();
+		await db.insert(connectors).values([
+			{ stationId: st[0].id, type: 'CCS2', powerKw: 200, count: 2 }, // → DC_150 (55)
+			{ stationId: st[0].id, type: 'CHAdeMO', powerKw: 50, count: 1 },
+			{ stationId: st[1].id, type: 'Type2', powerKw: 22, count: 4 }, // AC only
+			{ stationId: st[2].id, type: 'CCS2', powerKw: 60, count: 2 } // → DC (70)
+		]);
+	});
+
+	it('currentPrices returns the newest row per network+tariff', async () => {
+		const cp = await currentPrices(db);
+		const onDc = cp.find((p) => p.networkId === on && p.tariffKey === 'DC')!;
+		expect(onDc.priceIskPerKwh).toBe(44);
+		expect(cp).toHaveLength(4); // ON AC, DC, DC_150 + N1 DC
+	});
+
+	it('rateCard groups by network sorted by DC price', async () => {
+		const cards = await rateCard(db);
+		expect(cards.map((c) => c.networkSlug)).toEqual(['on', 'n1']);
+		expect(cards[0]).toMatchObject({ networkSlug: 'on', dc: 44, ac: 39 });
+		expect(cards[1]).toMatchObject({ networkSlug: 'n1', dc: 70, ac: null });
+	});
+
+	it('stationList DC: only stations with DC connectors, tier-derived price, sorted cheapest first', async () => {
+		const list = await stationList(db, 'DC');
+		expect(list.map((s) => s.slug)).toEqual(['hellisheidi-on', 'stadarskali-n1']);
+		expect(list[0].price).toBe(55); // max-power connector is 200 kW → DC_150 tier
+		expect(list[0].connectors).toHaveLength(2);
+		expect(list[1].price).toBe(70);
+	});
+
+	it('stationList AC: only stations with Type2', async () => {
+		const list = await stationList(db, 'AC');
+		expect(list.map((s) => s.slug)).toEqual(['laugardalur-on']);
+		expect(list[0].price).toBe(39);
+	});
+
+	it('excludes inactive stations', async () => {
+		const all = [...(await stationList(db, 'DC')), ...(await stationList(db, 'AC'))];
+		expect(all.find((s) => s.slug === 'gamla-n1')).toBeUndefined();
+	});
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/server/db/queries.test.ts`
+Expected: FAIL — cannot find module `./queries`.
+
+- [ ] **Step 3: Write the implementation**
+
+`src/lib/server/db/queries.ts` (current-price resolution is done in TS rather than SQL `DISTINCT ON` — the prices table stays tiny, a few rows per network per year, and the TS version is unambiguous about tie-breaking):
+
+```ts
+import { asc, eq } from 'drizzle-orm';
+import type { ConnectorType, TariffKey } from '$lib/types';
+import { deriveTariffKey } from '../matching';
+import type { Db } from './client';
+import { connectors, networks, prices, stations } from './schema';
+
+export interface CurrentPrice {
+	networkId: number;
+	tariffKey: TariffKey;
+	priceIskPerKwh: number;
+	minuteFeeIsk: number | null;
+	verifiedAt: Date;
+	validFrom: Date;
+}
+
+/**
+ * Newest network-wide price per (network, tariff), computed in TS —
+ * the prices table stays small (a few rows per network per year).
+ * Station-specific overrides (stationId != null) are ignored until a later phase needs them.
+ */
+export async function currentPrices(db: Db): Promise<CurrentPrice[]> {
+	const all = await db.select().from(prices);
+	const best = new Map<string, (typeof all)[number]>();
+	for (const p of all) {
+		if (p.stationId != null) continue;
+		const key = `${p.networkId}:${p.tariffKey}`;
+		const cur = best.get(key);
+		if (!cur || p.validFrom > cur.validFrom || (p.validFrom.getTime() === cur.validFrom.getTime() && p.id > cur.id)) {
+			best.set(key, p);
+		}
+	}
+	return [...best.values()].map((p) => ({
+		networkId: p.networkId,
+		tariffKey: p.tariffKey as TariffKey,
+		priceIskPerKwh: p.priceIskPerKwh,
+		minuteFeeIsk: p.minuteFeeIsk,
+		verifiedAt: p.verifiedAt,
+		validFrom: p.validFrom
+	}));
+}
+
+export interface RateCardEntry {
+	networkSlug: string;
+	networkName: string;
+	dc: number | null;
+	dcVerifiedAt: Date | null;
+	ac: number | null;
+	acVerifiedAt: Date | null;
+}
+
+/** One entry per network that has any price; sorted by DC price asc (nulls last), then AC. */
+export async function rateCard(db: Db): Promise<RateCardEntry[]> {
+	const [nets, cp] = await Promise.all([db.select().from(networks), currentPrices(db)]);
+	const entries: RateCardEntry[] = [];
+	for (const n of nets) {
+		const dc = cp.find((p) => p.networkId === n.id && p.tariffKey === 'DC');
+		const ac = cp.find((p) => p.networkId === n.id && p.tariffKey === 'AC');
+		if (!dc && !ac) continue;
+		entries.push({
+			networkSlug: n.slug,
+			networkName: n.name,
+			dc: dc?.priceIskPerKwh ?? null,
+			dcVerifiedAt: dc?.verifiedAt ?? null,
+			ac: ac?.priceIskPerKwh ?? null,
+			acVerifiedAt: ac?.verifiedAt ?? null
+		});
+	}
+	return entries.sort(
+		(a, b) => (a.dc ?? Infinity) - (b.dc ?? Infinity) || (a.ac ?? Infinity) - (b.ac ?? Infinity)
+	);
+}
+
+export interface StationRow {
+	slug: string;
+	name: string;
+	networkSlug: string;
+	networkName: string;
+	price: number | null;
+	minuteFeeIsk: number | null;
+	verifiedAt: Date | null;
+	connectors: { type: ConnectorType; powerKw: number; count: number }[];
+}
+
+/**
+ * Active stations that have a connector for the mode (AC → Type2; DC → CCS2/CHAdeMO),
+ * priced via the tariff of their highest-power connector of that mode,
+ * sorted by price asc (unknown price last), then name.
+ */
+export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow[]> {
+	const [sts, cons, nets, cp] = await Promise.all([
+		db.select().from(stations).where(eq(stations.isActive, true)).orderBy(asc(stations.name)),
+		db.select().from(connectors),
+		db.select().from(networks),
+		currentPrices(db)
+	]);
+	const netById = new Map(nets.map((n) => [n.id, n]));
+	const consByStation = new Map<number, (typeof cons)[number][]>();
+	for (const c of cons) {
+		(consByStation.get(c.stationId) ?? consByStation.set(c.stationId, []).get(c.stationId)!).push(c);
+	}
+	const tariffsByNetwork = new Map<number, Set<TariffKey>>();
+	for (const p of cp) {
+		(tariffsByNetwork.get(p.networkId) ?? tariffsByNetwork.set(p.networkId, new Set()).get(p.networkId)!).add(p.tariffKey);
+	}
+
+	const rows: StationRow[] = [];
+	for (const s of sts) {
+		const all = consByStation.get(s.id) ?? [];
+		const ofMode = all.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
+		if (ofMode.length === 0) continue;
+
+		const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
+		const tariffs = tariffsByNetwork.get(s.networkId) ?? new Set<TariffKey>();
+		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
+		const price = cp.find((p) => p.networkId === s.networkId && p.tariffKey === key) ?? null;
+		const net = netById.get(s.networkId)!;
+
+		rows.push({
+			slug: s.slug,
+			name: s.name,
+			networkSlug: net.slug,
+			networkName: net.name,
+			price: price?.priceIskPerKwh ?? null,
+			minuteFeeIsk: price?.minuteFeeIsk ?? null,
+			verifiedAt: price?.verifiedAt ?? null,
+			connectors: all.map((c) => ({ type: c.type as ConnectorType, powerKw: c.powerKw, count: c.count }))
+		});
+	}
+	return rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name, 'is'));
+}
+```
+
+(The first snippet in this step shows a dead-end `selectDistinctOn` draft for context; implement only the second, final version.)
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/server/db/queries.test.ts`
+Expected: PASS (5 tests).
+
+- [ ] **Step 5: Run the whole unit suite**
+
+Run: `npx vitest run`
+Expected: all tests green (slug, matching, ocm, prices, queries).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/lib/server/db/queries.ts src/lib/server/db/queries.test.ts
+git commit -m "feat: add rate-card and station-list read queries"
+```
+
+---
+
+### Task 11: i18n with Paraglide (IS base, EN toggle)
+
+**Files:**
+- Create: `project.inlang/settings.json`, `messages/is.json`, `messages/en.json`, `src/routes/lang/+server.ts`, `src/hooks.server.ts`
+- Modify: `vite.config.ts`
+
+- [ ] **Step 1: Install and configure Paraglide**
+
+```bash
+npm i -D @inlang/paraglide-js
+mkdir -p project.inlang messages
+```
+
+`project.inlang/settings.json`:
+```json
+{
+	"$schema": "https://inlang.com/schema/project-settings",
+	"baseLocale": "is",
+	"locales": ["is", "en"],
+	"modules": ["https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@latest/dist/index.js"],
+	"plugin.inlang.messageFormat": { "pathPattern": "./messages/{locale}.json" }
+}
+```
+
+In `vite.config.ts`, add to the plugins array (before `sveltekit()`):
+```ts
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
+// inside plugins: [...]
+paraglideVitePlugin({
+	project: './project.inlang',
+	outdir: './src/lib/paraglide',
+	strategy: ['cookie', 'baseLocale']
+})
+```
+Add `src/lib/paraglide/` to `.gitignore` (generated code).
+
+- [ ] **Step 2: Write the messages**
+
+`messages/is.json`:
+```json
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"site_title": "Hleðsluverð",
+	"site_tagline": "Verð á hleðslu rafbíla á Íslandi — á einum stað",
+	"mode_dc": "Hraðhleðsla (DC)",
+	"mode_ac": "Hæg hleðsla (AC)",
+	"th_station": "Stöð",
+	"th_network": "Fyrirtæki",
+	"th_price": "Verð/kWh",
+	"th_connectors": "Tengi",
+	"th_free": "Laust",
+	"filter_all_connectors": "Öll tengi",
+	"filter_all_networks": "Öll fyrirtæki",
+	"price_unknown": "verð óþekkt",
+	"cheapest": "ódýrast",
+	"verified_on": "staðfest {date}",
+	"minute_fee": "+ {fee} kr/mín",
+	"rate_card_title": "Verðskrá fyrirtækja",
+	"stations_title": "Allar hleðslustöðvar",
+	"lang_switch": "English"
+}
+```
+
+`messages/en.json`:
+```json
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"site_title": "Hleðsluverð",
+	"site_tagline": "EV charging prices in Iceland — in one place",
+	"mode_dc": "Fast charging (DC)",
+	"mode_ac": "Slow charging (AC)",
+	"th_station": "Station",
+	"th_network": "Network",
+	"th_price": "Price/kWh",
+	"th_connectors": "Connectors",
+	"th_free": "Free",
+	"filter_all_connectors": "All connectors",
+	"filter_all_networks": "All networks",
+	"price_unknown": "price unknown",
+	"cheapest": "cheapest",
+	"verified_on": "verified {date}",
+	"minute_fee": "+ {fee} ISK/min",
+	"rate_card_title": "Network price list",
+	"stations_title": "All charging stations",
+	"lang_switch": "Íslenska"
+}
+```
+
+- [ ] **Step 3: Wire the server hook**
+
+`src/hooks.server.ts`:
+```ts
+import type { Handle } from '@sveltejs/kit';
+import { paraglideMiddleware } from '$lib/paraglide/server';
+
+export const handle: Handle = ({ event, resolve }) =>
+	paraglideMiddleware(event.request, ({ request, locale }) => {
+		event.request = request;
+		return resolve(event, {
+			transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
+		});
+	});
+```
+In `src/app.html`, change `<html lang="en">` to `<html lang="%paraglide.lang%">`.
+
+- [ ] **Step 4: No-JS language toggle route**
+
+`src/routes/lang/+server.ts`:
+```ts
+import { redirect } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+
+export const GET: RequestHandler = ({ url, cookies }) => {
+	const to = url.searchParams.get('to') === 'en' ? 'en' : 'is';
+	cookies.set('PARAGLIDE_LOCALE', to, { path: '/', maxAge: 60 * 60 * 24 * 365 });
+	redirect(303, url.searchParams.get('redirect') ?? '/');
+};
+```
+
+- [ ] **Step 5: Verify build compiles messages**
+
+Run: `npm run dev -- --open=false & sleep 5 && ls src/lib/paraglide/messages 2>/dev/null | head -3; kill %1`
+Expected: generated message modules exist; dev server starts without errors.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -A
+git commit -m "feat: add Paraglide i18n (is base, en) with no-JS cookie toggle"
+```
+
+---
+
+### Task 12: Formatting utilities (TDD)
+
+**Files:**
+- Create: `src/lib/format.ts`, `src/lib/format.test.ts`
+
+- [ ] **Step 1: Write the failing test**
+
+`src/lib/format.test.ts`:
+```ts
+import { describe, expect, it } from 'vitest';
+import { formatIsk, formatDate } from './format';
+
+describe('formatIsk', () => {
+	it('shows whole ISK without decimals', () => {
+		expect(formatIsk(70)).toBe('70 kr');
+	});
+	it('shows one decimal with Icelandic comma when fractional', () => {
+		expect(formatIsk(49.9)).toBe('49,9 kr');
+	});
+});
+
+describe('formatDate', () => {
+	it('formats as D.M.YYYY', () => {
+		expect(formatDate(new Date('2026-07-02T12:00:00Z'))).toBe('2.7.2026');
+	});
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/lib/format.test.ts`
+Expected: FAIL — cannot find module `./format`.
+
+- [ ] **Step 3: Write the implementation**
+
+`src/lib/format.ts`:
+```ts
+export function formatIsk(value: number): string {
+	const s = Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
+	return `${s} kr`;
+}
+
+export function formatDate(d: Date): string {
+	return `${d.getUTCDate()}.${d.getUTCMonth() + 1}.${d.getUTCFullYear()}`;
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/lib/format.test.ts`
+Expected: PASS (3 tests).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/lib/format.ts src/lib/format.test.ts
+git commit -m "feat: add ISK and date formatting"
+```
+
+---
+
+### Task 13: Homepage — load function, rate card, station table
+
+**Files:**
+- Create: `src/routes/+page.server.ts`, `src/lib/components/RateCard.svelte`, `src/lib/components/StationTable.svelte`
+- Modify: `src/routes/+page.svelte`, `src/routes/+layout.svelte`
+
+Everything is links + query params — zero client JS required. URL contract: `?afl=AC|DC` (mode, default DC), `?tengi=CCS2|CHAdeMO|Type2` (connector filter), `?fyrirtaeki=<slug>` (network filter).
+
+- [ ] **Step 1: Write the load function**
+
+`src/routes/+page.server.ts`:
+```ts
+import { db } from '$lib/server/db';
+import { rateCard, stationList } from '$lib/server/db/queries';
+import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ url }) => {
+	const mode = url.searchParams.get('afl') === 'AC' ? ('AC' as const) : ('DC' as const);
+	const tengi = url.searchParams.get('tengi');
+	const connector = (CONNECTOR_TYPES as readonly string[]).includes(tengi ?? '')
+		? (tengi as ConnectorType)
+		: null;
+	const network = url.searchParams.get('fyrirtaeki');
+
+	const [cards, allStations] = await Promise.all([rateCard(db), stationList(db, mode)]);
+
+	const stations = allStations.filter(
+		(s) =>
+			(!connector || s.connectors.some((c) => c.type === connector)) &&
+			(!network || s.networkSlug === network)
+	);
+
+	return {
+		mode,
+		connector,
+		network,
+		cards,
+		stations,
+		networkOptions: cards.map((c) => ({ slug: c.networkSlug, name: c.networkName }))
+	};
+};
+```
+
+- [ ] **Step 2: Write the RateCard component**
+
+`src/lib/components/RateCard.svelte`:
+```svelte
+<script lang="ts">
+	import * as m from '$lib/paraglide/messages';
+	import { formatIsk } from '$lib/format';
+	import type { RateCardEntry } from '$lib/server/db/queries';
+
+	let { cards }: { cards: RateCardEntry[] } = $props();
+</script>
+
+<section aria-label={m.rate_card_title()}>
+	<h2>{m.rate_card_title()}</h2>
+	<ul class="cards">
+		{#each cards as card, i}
+			<li class="card" class:best={i === 0 && card.dc !== null} data-testid="rate-card">
+				<span class="network">{card.networkName}</span>
+				<span class="dc">
+					{#if card.dc !== null}<strong data-testid="rate-dc">{formatIsk(card.dc)}</strong> DC{/if}
+				</span>
+				<span class="ac">
+					{#if card.ac !== null}{formatIsk(card.ac)} AC{/if}
+				</span>
+				{#if i === 0 && card.dc !== null}<span class="badge">{m.cheapest()}</span>{/if}
+			</li>
+		{/each}
+	</ul>
+</section>
+
+<style>
+	.cards {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0;
+		list-style: none;
+		overflow-x: auto;
+	}
+	.card {
+		flex: 1 1 8rem;
+		min-width: 7rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		border: 1px solid var(--border, #ccc);
+		border-radius: 0.5rem;
+		padding: 0.6rem 0.8rem;
+	}
+	.card.best {
+		border-color: var(--accent, #2e7d32);
+	}
+	.network {
+		font-weight: 600;
+	}
+	.dc strong {
+		font-size: 1.25rem;
+	}
+	.ac {
+		opacity: 0.75;
+		font-size: 0.9rem;
+	}
+	.badge {
+		color: var(--accent, #2e7d32);
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+</style>
+```
+
+- [ ] **Step 3: Write the StationTable component**
+
+`src/lib/components/StationTable.svelte`:
+```svelte
+<script lang="ts">
+	import { page } from '$app/state';
+	import * as m from '$lib/paraglide/messages';
+	import { formatIsk, formatDate } from '$lib/format';
+	import { CONNECTOR_TYPES } from '$lib/types';
+	import type { StationRow } from '$lib/server/db/queries';
+
+	let {
+		stations,
+		mode,
+		connector,
+		network,
+		networkOptions
+	}: {
+		stations: StationRow[];
+		mode: 'AC' | 'DC';
+		connector: string | null;
+		network: string | null;
+		networkOptions: { slug: string; name: string }[];
+	} = $props();
+
+	function href(params: Record<string, string | null>): string {
+		const u = new URL(page.url);
+		for (const [k, v] of Object.entries(params)) {
+			if (v === null) u.searchParams.delete(k);
+			else u.searchParams.set(k, v);
+		}
+		return u.pathname + u.search;
+	}
+</script>
+
+<section aria-label={m.stations_title()}>
+	<h2>{m.stations_title()}</h2>
+
+	<nav class="filters">
+		<span class="group" role="group" aria-label="mode">
+			<a href={href({ afl: null })} class:active={mode === 'DC'}>{m.mode_dc()}</a>
+			<a href={href({ afl: 'AC' })} class:active={mode === 'AC'}>{m.mode_ac()}</a>
+		</span>
+		<span class="group" role="group" aria-label="connector">
+			<a href={href({ tengi: null })} class:active={!connector}>{m.filter_all_connectors()}</a>
+			{#each CONNECTOR_TYPES as t}
+				<a href={href({ tengi: t })} class:active={connector === t}>{t}</a>
+			{/each}
+		</span>
+		<span class="group" role="group" aria-label="network">
+			<a href={href({ fyrirtaeki: null })} class:active={!network}>{m.filter_all_networks()}</a>
+			{#each networkOptions as n}
+				<a href={href({ fyrirtaeki: n.slug })} class:active={network === n.slug}>{n.name}</a>
+			{/each}
+		</span>
+	</nav>
+
+	<table>
+		<thead>
+			<tr>
+				<th>{m.th_station()}</th>
+				<th>{m.th_network()}</th>
+				<th>{m.th_price()}</th>
+				<th>{m.th_connectors()}</th>
+				<th>{m.th_free()}</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each stations as s (s.slug)}
+				<tr data-testid="station-row">
+					<td data-label={m.th_station()}>{s.name}</td>
+					<td data-label={m.th_network()}>{s.networkName}</td>
+					<td data-label={m.th_price()}>
+						{#if s.price !== null}
+							<strong data-testid="price">{formatIsk(s.price)}</strong>
+							{#if s.minuteFeeIsk}<small>{m.minute_fee({ fee: String(s.minuteFeeIsk) })}</small>{/if}
+							{#if s.verifiedAt}<small class="verified">{m.verified_on({ date: formatDate(s.verifiedAt) })}</small>{/if}
+						{:else}
+							<em>{m.price_unknown()}</em>
+						{/if}
+					</td>
+					<td data-label={m.th_connectors()}>
+						{#each s.connectors as c}
+							<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
+						{/each}
+					</td>
+					<td data-label={m.th_free()}>—</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</section>
+
+<style>
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-bottom: 0.75rem;
+	}
+	.group {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+	.group a {
+		border: 1px solid var(--border, #ccc);
+		border-radius: 1rem;
+		padding: 0.15rem 0.7rem;
+		text-decoration: none;
+		color: inherit;
+		font-size: 0.9rem;
+	}
+	.group a.active {
+		background: var(--accent, #2e7d32);
+		border-color: var(--accent, #2e7d32);
+		color: #fff;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	th {
+		text-align: left;
+		font-size: 0.85rem;
+		opacity: 0.7;
+		border-bottom: 2px solid var(--border, #ccc);
+		padding: 0.4rem 0.5rem;
+	}
+	td {
+		padding: 0.5rem;
+		border-bottom: 1px solid var(--border, #e2e2e2);
+		vertical-align: top;
+	}
+	.chip {
+		display: inline-block;
+		border: 1px solid var(--border, #ccc);
+		border-radius: 1rem;
+		padding: 0 0.5rem;
+		margin: 0 0.2rem 0.2rem 0;
+		font-size: 0.8rem;
+		white-space: nowrap;
+	}
+	.verified {
+		display: block;
+		opacity: 0.6;
+		font-size: 0.75rem;
+	}
+	small {
+		display: block;
+	}
+
+	@media (max-width: 640px) {
+		thead {
+			display: none;
+		}
+		tr {
+			display: block;
+			border-bottom: 2px solid var(--border, #ccc);
+			padding: 0.4rem 0;
+		}
+		td {
+			display: flex;
+			gap: 0.5rem;
+			border: none;
+			padding: 0.15rem 0.25rem;
+		}
+		td::before {
+			content: attr(data-label);
+			flex: 0 0 6rem;
+			font-size: 0.8rem;
+			opacity: 0.6;
+		}
+	}
+</style>
+```
+
+- [ ] **Step 4: Write the page and layout**
+
+`src/routes/+page.svelte`:
+```svelte
+<script lang="ts">
+	import * as m from '$lib/paraglide/messages';
+	import RateCard from '$lib/components/RateCard.svelte';
+	import StationTable from '$lib/components/StationTable.svelte';
+
+	let { data } = $props();
+</script>
+
+<svelte:head>
+	<title>{m.site_title()} — {m.site_tagline()}</title>
+	<meta name="description" content={m.site_tagline()} />
+</svelte:head>
+
+<RateCard cards={data.cards} />
+<StationTable
+	stations={data.stations}
+	mode={data.mode}
+	connector={data.connector}
+	network={data.network}
+	networkOptions={data.networkOptions}
+/>
+```
+
+`src/routes/+layout.svelte`:
+```svelte
+<script lang="ts">
+	import { page } from '$app/state';
+	import * as m from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
+
+	let { children } = $props();
+	const other = () => (getLocale() === 'is' ? 'en' : 'is');
+</script>
+
+<header>
+	<a href="/" class="logo">{m.site_title()}</a>
+	<p class="tagline">{m.site_tagline()}</p>
+	<a class="lang" data-testid="lang-toggle" href="/lang?to={other()}&redirect={encodeURIComponent(page.url.pathname + page.url.search)}">
+		{m.lang_switch()}
+	</a>
+</header>
+
+<main>
+	{@render children()}
+</main>
+
+<style>
+	:global(body) {
+		font-family: system-ui, sans-serif;
+		margin: 0;
+		color: #1b1b1b;
+	}
+	header {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		flex-wrap: wrap;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid #e2e2e2;
+	}
+	.logo {
+		font-size: 1.3rem;
+		font-weight: 700;
+		text-decoration: none;
+		color: inherit;
+	}
+	.tagline {
+		margin: 0;
+		opacity: 0.7;
+		font-size: 0.9rem;
+	}
+	.lang {
+		margin-left: auto;
+		font-size: 0.9rem;
+	}
+	main {
+		max-width: 68rem;
+		margin: 0 auto;
+		padding: 1rem;
+	}
+</style>
+```
+
+- [ ] **Step 5: Manual verification**
+
+Run: `npm run dev -- --open=false` and check in a browser (or with curl):
+```bash
+curl -s "http://localhost:5173/" | grep -o 'data-testid="station-row"' | wc -l   # > 0 rows
+curl -s "http://localhost:5173/?afl=AC" | grep -c 'Hæg'                          # AC mode active
+curl -s "http://localhost:5173/?tengi=CHAdeMO" | grep -o 'data-testid="station-row"' | wc -l  # fewer rows
+```
+Expected: station rows render server-side; filters change the row set; prices display with "staðfest" dates. Kill the dev server after.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/routes src/lib/components
+git commit -m "feat: server-rendered homepage with rate card, station table, link-based filters"
+```
+
+---
+
+### Task 14: End-to-end tests (Playwright)
+
+**Files:**
+- Create: `e2e/homepage.test.ts`
+- Modify: `playwright.config.ts` (only if the webServer block is missing)
+
+E2E runs against the dev DB — Tasks 7–9 seeds must have been run. Tests assert structure (sortedness, filter behavior), not exact prices, so they survive price changes.
+
+- [ ] **Step 1: Ensure playwright config starts the app**
+
+`playwright.config.ts` must contain (adapt if `sv add playwright` already wrote an equivalent):
+```ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+	testDir: 'e2e',
+	webServer: {
+		command: 'npm run build && npm run preview',
+		port: 4173,
+		reuseExistingServer: true
+	},
+	use: { baseURL: 'http://localhost:4173' }
+});
+```
+
+- [ ] **Step 2: Write the failing tests**
+
+`e2e/homepage.test.ts`:
+```ts
+import { expect, test } from '@playwright/test';
+
+function parsePrice(text: string): number {
+	return parseFloat(text.replace(',', '.').replace(/[^\d.]/g, ''));
+}
+
+test('homepage renders the rate card and a station list sorted by price', async ({ page }) => {
+	await page.goto('/');
+	expect(await page.locator('[data-testid="rate-card"]').count()).toBeGreaterThan(0);
+
+	const prices = await page.locator('[data-testid="station-row"] [data-testid="price"]').allTextContents();
+	expect(prices.length).toBeGreaterThan(0);
+	const nums = prices.map(parsePrice);
+	expect(nums).toEqual([...nums].sort((a, b) => a - b));
+});
+
+test('rate card is sorted cheapest-first', async ({ page }) => {
+	await page.goto('/');
+	const dcs = await page.locator('[data-testid="rate-dc"]').allTextContents();
+	const nums = dcs.map(parsePrice);
+	expect(nums).toEqual([...nums].sort((a, b) => a - b));
+});
+
+test('connector filter reduces or keeps the row count and every row matches', async ({ page }) => {
+	await page.goto('/');
+	const all = await page.locator('[data-testid="station-row"]').count();
+	await page.goto('/?tengi=CHAdeMO');
+	const filtered = await page.locator('[data-testid="station-row"]').count();
+	expect(filtered).toBeLessThanOrEqual(all);
+	const rows = page.locator('[data-testid="station-row"]');
+	for (let i = 0; i < Math.min(filtered, 10); i++) {
+		await expect(rows.nth(i)).toContainText('CHAdeMO');
+	}
+});
+
+test('language toggle switches to English and back, without JavaScript', async ({ browser }) => {
+	const ctx = await browser.newContext({ javaScriptEnabled: false });
+	const page = await ctx.newPage();
+	await page.goto('/');
+	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await page.locator('[data-testid="lang-toggle"]').click();
+	await expect(page.locator('header .tagline')).toContainText('in one place');
+	await page.locator('[data-testid="lang-toggle"]').click();
+	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await ctx.close();
+});
+
+test('station list renders without JavaScript', async ({ browser }) => {
+	const ctx = await browser.newContext({ javaScriptEnabled: false });
+	const page = await ctx.newPage();
+	await page.goto('/');
+	expect(await page.locator('[data-testid="station-row"]').count()).toBeGreaterThan(0);
+	await ctx.close();
+});
+```
+
+- [ ] **Step 3: Run the E2E suite**
+
+Run: `npx playwright install chromium` (first time), then `npx playwright test`
+Expected: 5 tests PASS. If the sortedness test fails, debug the query — do not loosen the test.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add e2e/homepage.test.ts playwright.config.ts
+git commit -m "test: add homepage E2E suite (sorting, filters, no-JS, language toggle)"
+```
+
+---
+
+### Task 15: README + final green run
+
+**Files:**
+- Create: `README.md`
+
+- [ ] **Step 1: Write the README**
+
+`README.md`:
+```markdown
+# Hleðsluverð
+
+Verðsamanburður á hleðslu rafbíla á Íslandi — hledsluverd.is
+
+Full documentation lives in the owner's Obsidian vault (notes tagged #hledsluverd).
+
+## Development setup
+
+Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
+
+    createdb hledsluverd && createdb hledsluverd_test
+    psql -d hledsluverd -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+    psql -d hledsluverd_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+    cp .env.example .env       # fill in OCM_API_KEY (free: openchargemap.org)
+    npm install
+    npm run db:migrate
+    DATABASE_URL=postgres://localhost:5432/hledsluverd_test npm run db:migrate
+    npm run seed:networks && npm run seed:ocm && npm run seed:prices
+    npm run dev
+
+## Tests
+
+    npx vitest run        # unit + DB tests (DB tests skip if DATABASE_URL_TEST unset)
+    npx playwright test   # E2E against a production build (needs seeded dev DB)
+
+## Data notes
+
+- `prices` is append-only — it doubles as the price-history/trend dataset. All price
+  writes go through `insertPriceIfChanged` (plausibility guard, change detection).
+- Station data seeds from Open Charge Map; re-running `seed:ocm` is idempotent and
+  prints unmatched operators for review.
+- Initial prices in `seeds/prices-initial.json` were verified by hand against operator
+  websites on the date in git history. Scrapers arrive in Phase 2.
+```
+
+- [ ] **Step 2: Full verification run**
+
+```bash
+npx vitest run && npx playwright test && npm run build
+```
+Expected: everything green, build succeeds.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add README.md
+git commit -m "docs: add README with dev setup"
+```
+
+---
+
+## Self-review notes (already applied)
+
+- **Spec coverage (Phase 1 slice):** schema = Gagnalíkan note ✓; seeding = Gagnasöfnun §station-seeding + §car-data-deferred ✓ (cars table exists, seeding is Phase 3); homepage = Síður og UX §homepage ✓ (rate card, table columns incl. empty "Laust" column, mode toggle, filters, verified labels, minute fees, mobile collapse, no-JS); i18n ✓; price write rules = Gagnasöfnun §scrapers rules 2–3 ✓ (runner + per-network scrapers are Phase 2, but the write path they'll call is built and tested now); degraded states covered in Phase 1: "—" never "0" ✓, price_unknown for Tesla ✓, verified labels ✓.
+- **Deliberate deviations:** stations get a `slug` column (needed by `/stod/[slug]` in Phase 3; cheap now, painful later). `availability`, `cars`, `scrape_runs` created empty (single coherent migration).
+- **Type consistency check:** `ConnectorType`/`TariffKey` defined once in `src/lib/types.ts`; `Db` type from `client.ts` used in helpers/queries/prices; `StationRow`/`RateCardEntry` defined in `queries.ts` and imported by components; `insertPriceIfChanged(db, reading)` signature identical in Tasks 9 and 10 usage. ✓
+- **Placeholder scan:** the only "later" items are explicitly scoped to Phases 2–4; every code step contains complete code. ✓
