@@ -12,6 +12,8 @@
 
 **Out of scope for Phase 1** (later plans): scrapers & scrape_runs usage, trends page, admin page, map/PMTiles, station detail pages, car finder, TomTom availability, deployment. The schema for ALL of it is created now (one migration story); the `availability`, `cars`, `scrape_runs` tables simply stay empty until their phase.
 
+**Known limitation (for Phase 3):** drizzle-orm 0.45.2 ignores the `srid` option — `stations.location` is `geometry(Point)` without SRID enforcement at the column level. Our writes embed SRID 4326; Phase 3 nearest-station queries must pass SRID explicitly (e.g. `ST_SetSRID` / `ST_DistanceSphere`) rather than relying on a column constraint.
+
 **Conventions for the executor:**
 - Node ≥ 20. Run everything from the repo root `/home/kjb/Projects/hledsluverd`.
 - CLI tools (`sv`, `paraglide-js`) evolve; if a flag is rejected or a prompt differs, pick the option matching the step's intent and note the deviation in the commit message.
@@ -200,7 +202,7 @@ git commit -m "feat: add Postgres + Drizzle setup with dev/test databases"
 - Modify: `src/lib/server/db/schema.ts`
 - Create: `drizzle/0000_*.sql` (generated)
 
-- [ ] **Step 1: Write shared types**
+- [x] **Step 1: Write shared types**
 
 `src/lib/types.ts`:
 ```ts
@@ -211,15 +213,15 @@ export const TARIFF_KEYS = ['AC', 'DC', 'DC_150'] as const;
 export type TariffKey = (typeof TARIFF_KEYS)[number];
 ```
 
-- [ ] **Step 2: Write the schema (all 7 tables — spec: Gagnalíkan note)**
+- [x] **Step 2: Write the schema (all 7 tables — spec: Gagnalíkan note)**
 
 `src/lib/server/db/schema.ts`:
 ```ts
 import {
 	pgTable, pgEnum, serial, text, integer, boolean, doublePrecision,
-	timestamp, jsonb, geometry, index, uniqueIndex
+	timestamp, jsonb, geometry, index, unique
 } from 'drizzle-orm/pg-core';
-import { CONNECTOR_TYPES, TARIFF_KEYS } from '$lib/types';
+import { CONNECTOR_TYPES, TARIFF_KEYS, type ConnectorType } from '$lib/types';
 
 export const connectorTypeEnum = pgEnum('connector_type', CONNECTOR_TYPES);
 
@@ -243,7 +245,7 @@ export const stations = pgTable(
 		externalIds: jsonb('external_ids').$type<{ ocm?: number; tomtom?: string }>().notNull().default({}),
 		isActive: boolean('is_active').notNull().default(true),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date())
 	},
 	(t) => [index('stations_location_idx').using('gist', t.location)]
 );
@@ -261,7 +263,7 @@ export const prices = pgTable(
 	{
 		id: serial('id').primaryKey(),
 		networkId: integer('network_id').notNull().references(() => networks.id),
-		stationId: integer('station_id').references(() => stations.id), // NULL = network-wide
+		stationId: integer('station_id').references(() => stations.id, { onDelete: 'restrict' }), // NULL = network-wide; price history blocks hard deletes — use is_active
 		tariffKey: text('tariff_key', { enum: TARIFF_KEYS }).notNull(),
 		priceIskPerKwh: doublePrecision('price_isk_per_kwh').notNull(),
 		minuteFeeIsk: doublePrecision('minute_fee_isk'),
@@ -277,9 +279,9 @@ export const availability = pgTable('availability', {
 	stationId: integer('station_id').primaryKey().references(() => stations.id, { onDelete: 'cascade' }),
 	freeCount: integer('free_count'),
 	totalCount: integer('total_count'),
-	perType: jsonb('per_type').$type<Partial<Record<string, { free: number; total: number }>>>(),
+	perType: jsonb('per_type').$type<Partial<Record<ConnectorType, { free: number; total: number }>>>(),
 	fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
-	source: text('source').notNull()
+	source: text('source').notNull() // free text until Phase 3 pins the source set
 });
 
 export const cars = pgTable(
@@ -295,7 +297,7 @@ export const cars = pgTable(
 		dcConnector: connectorTypeEnum('dc_connector'),
 		maxDcKw: doublePrecision('max_dc_kw')
 	},
-	(t) => [uniqueIndex('cars_make_model_variant_idx').on(t.make, t.model, t.variant)]
+	(t) => [unique('cars_make_model_variant_idx').on(t.make, t.model, t.variant).nullsNotDistinct()]
 );
 
 export const scrapeRuns = pgTable('scrape_runs', {
@@ -307,12 +309,12 @@ export const scrapeRuns = pgTable('scrape_runs', {
 });
 ```
 
-- [ ] **Step 3: Generate the migration**
+- [x] **Step 3: Generate the migration**
 
 Run: `npx drizzle-kit generate`
 Expected: one SQL file in `drizzle/` creating all 7 tables + enum. Open it and verify `location` is `geometry(point, 4326)` and the gist index exists.
 
-- [ ] **Step 4: Apply the migration to both databases**
+- [x] **Step 4: Apply the migration to both databases**
 
 ```bash
 npx drizzle-kit migrate
@@ -320,7 +322,7 @@ DATABASE_URL=postgres://localhost:5432/hledsluverd_test npx drizzle-kit migrate
 ```
 Expected: no errors. Verify: `psql -d hledsluverd -c '\dt'` lists the 7 tables.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -1015,6 +1017,11 @@ export async function insertPriceIfChanged(
 		);
 	}
 
+	// normalize to 2 decimals — derived scraper prices (VAT math etc.) must not create
+	// spurious history rows via float noise
+	const priceIskPerKwh = Math.round(reading.priceIskPerKwh * 100) / 100;
+	const minuteFeeIsk = reading.minuteFeeIsk == null ? null : Math.round(reading.minuteFeeIsk * 100) / 100;
+
 	const stationCond =
 		reading.stationId == null ? isNull(prices.stationId) : eq(prices.stationId, reading.stationId);
 
@@ -1027,8 +1034,8 @@ export async function insertPriceIfChanged(
 
 	if (
 		current &&
-		current.priceIskPerKwh === reading.priceIskPerKwh &&
-		(current.minuteFeeIsk ?? null) === (reading.minuteFeeIsk ?? null)
+		current.priceIskPerKwh === priceIskPerKwh &&
+		(current.minuteFeeIsk ?? null) === minuteFeeIsk
 	) {
 		await db.update(prices).set({ verifiedAt: sql`now()` }).where(eq(prices.id, current.id));
 		return 'verified';
@@ -1038,8 +1045,8 @@ export async function insertPriceIfChanged(
 		networkId: reading.networkId,
 		stationId: reading.stationId ?? null,
 		tariffKey: reading.tariffKey,
-		priceIskPerKwh: reading.priceIskPerKwh,
-		minuteFeeIsk: reading.minuteFeeIsk ?? null,
+		priceIskPerKwh,
+		minuteFeeIsk,
 		source: reading.source
 	});
 	return 'inserted';
