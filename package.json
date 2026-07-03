@@ -21,6 +21,7 @@
 		"seed:prices": "tsx scripts/seed-prices.ts"
 	},
 	"devDependencies": {
+		"@inlang/paraglide-js": "^2.20.2",
 		"@playwright/test": "^1.60.0",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.63.0",

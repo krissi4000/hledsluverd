@@ -1,0 +1,21 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"site_title": "Hleðsluverð",
+	"site_tagline": "Verð á hleðslu rafbíla á Íslandi — á einum stað",
+	"mode_dc": "Hraðhleðsla (DC)",
+	"mode_ac": "Hæg hleðsla (AC)",
+	"th_station": "Stöð",
+	"th_network": "Fyrirtæki",
+	"th_price": "Verð/kWh",
+	"th_connectors": "Tengi",
+	"th_free": "Laust",
+	"filter_all_connectors": "Öll tengi",
+	"filter_all_networks": "Öll fyrirtæki",
+	"price_unknown": "verð óþekkt",
+	"cheapest": "ódýrast",
+	"verified_on": "staðfest {date}",
+	"minute_fee": "+ {fee} kr/mín",
+	"rate_card_title": "Verðskrá fyrirtækja",
+	"stations_title": "Allar hleðslustöðvar",
+	"lang_switch": "English"
+}

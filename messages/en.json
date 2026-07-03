@@ -1,0 +1,21 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"site_title": "Hleðsluverð",
+	"site_tagline": "EV charging prices in Iceland — in one place",
+	"mode_dc": "Fast charging (DC)",
+	"mode_ac": "Slow charging (AC)",
+	"th_station": "Station",
+	"th_network": "Network",
+	"th_price": "Price/kWh",
+	"th_connectors": "Connectors",
+	"th_free": "Free",
+	"filter_all_connectors": "All connectors",
+	"filter_all_networks": "All networks",
+	"price_unknown": "price unknown",
+	"cheapest": "cheapest",
+	"verified_on": "verified {date}",
+	"minute_fee": "+ {fee} ISK/min",
+	"rate_card_title": "Network price list",
+	"stations_title": "All charging stations",
+	"lang_switch": "Íslenska"
+}
