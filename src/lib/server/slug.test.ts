@@ -14,4 +14,8 @@ describe('slugify', () => {
 	it('handles uppercase Icelandic letters', () => {
 		expect(slugify('ÐÆÖÁ')).toBe('daeoa');
 	});
+	it('covers é and ý and pins the empty-output contract', () => {
+		expect(slugify('Ýmir Sérleyfi')).toBe('ymir-serleyfi');
+		expect(slugify('!!!')).toBe('');
+	});
 });
