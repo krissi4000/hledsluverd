@@ -338,28 +338,36 @@ git commit -m "feat: add full database schema (7 tables) and initial migration"
 
 DB-touching tests run against `DATABASE_URL_TEST` and are skipped when it's unset. Vitest loads `.env` only if told to — the helper uses `dotenv`.
 
-- [ ] **Step 1: Write the helper**
+- [x] **Step 1: Write the helper**
 
-`tests/helpers/db.ts`:
+`tests/helpers/db.ts` (TRUNCATE list is derived from the schema module so Phase 2+ tables can't be forgotten; the /test/ URL check keeps destructive helpers away from real databases):
 ```ts
 import 'dotenv/config';
-import { sql } from 'drizzle-orm';
+import { getTableName, sql } from 'drizzle-orm';
+import { PgTable } from 'drizzle-orm/pg-core';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import * as schema from '../../src/lib/server/db/schema';
 import { createDb, type Db } from '../../src/lib/server/db/client';
 
 export const TEST_DB_URL = process.env.DATABASE_URL_TEST;
 
 export async function setupTestDb(): Promise<Db> {
-	const db = createDb(TEST_DB_URL!);
+	if (!TEST_DB_URL) {
+		throw new Error('DATABASE_URL_TEST not set — guard suites with describe.skipIf(!TEST_DB_URL)');
+	}
+	if (!/test/i.test(TEST_DB_URL)) {
+		throw new Error(`Refusing destructive test helpers against non-test database: ${TEST_DB_URL}`);
+	}
+	const db = createDb(TEST_DB_URL);
 	await migrate(db, { migrationsFolder: './drizzle' });
 	return db;
 }
 
 export async function truncateAll(db: Db) {
-	await db.execute(sql`
-		TRUNCATE scrape_runs, availability, prices, connectors, stations, cars, networks
-		RESTART IDENTITY CASCADE
-	`);
+	const tables = Object.values(schema)
+		.filter((t): t is PgTable => t instanceof PgTable)
+		.map((t) => `"${getTableName(t)}"`);
+	await db.execute(sql.raw(`TRUNCATE ${tables.join(', ')} RESTART IDENTITY CASCADE`));
 }
 
 export async function closeTestDb(db: Db) {
@@ -369,7 +377,7 @@ export async function closeTestDb(db: Db) {
 
 Note: `$lib` aliases don't resolve from `tests/` by default — the helper deliberately uses a relative import. `src/lib/server/db/schema.ts` imports `$lib/types`; vitest resolves `$lib` inside `src/` via the SvelteKit vite plugin, which is already active in `vite.config.ts`. If the relative import of `client.ts` fails on the `$lib/types` alias when run from `tests/`, change `schema.ts` to import from `'../../types'` instead — both are acceptable.
 
-- [ ] **Step 2: Verify it compiles and connects**
+- [x] **Step 2: Verify it compiles and connects**
 
 `tsx -e` cannot use top-level await (cjs eval context — discovered in Task 2). Write a throwaway file `tmp-verify.ts` in the repo root:
 ```ts
@@ -382,7 +390,7 @@ console.log('ok');
 Run: `npx tsx tmp-verify.ts && rm tmp-verify.ts`
 Expected: `ok` (and the process exits on its own — proves the pool teardown works).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/helpers/db.ts
@@ -988,6 +996,8 @@ Expected: FAIL — cannot find module `./prices`.
 
 - [ ] **Step 3: Write the implementation**
 
+First, in `vite.config.ts`, add `fileParallelism: false` to the server project's `test` block: DB suites share one test database, and vitest's parallel workers would truncate each other mid-test once the second DB suite arrives in Task 10. (The drizzle migrator also takes no advisory lock, so concurrent `migrate()` races on a fresh DB.)
+
 `src/lib/server/db/prices.ts`:
 ```ts
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
@@ -1117,7 +1127,7 @@ Expected: first run all `inserted`, second run all `verified` (idempotent — th
 - [ ] **Step 8: Commit**
 
 ```bash
-git add src/lib/server/db/prices.ts src/lib/server/db/prices.test.ts seeds/prices-initial.json scripts/seed-prices.ts
+git add src/lib/server/db/prices.ts src/lib/server/db/prices.test.ts seeds/prices-initial.json scripts/seed-prices.ts vite.config.ts
 git commit -m "feat: add price write path with plausibility guard, seed verified launch prices"
 ```
 
