@@ -8,7 +8,7 @@
 	"th_network": "Network",
 	"th_price": "Price/kWh",
 	"th_connectors": "Connectors",
-	"th_free": "Free",
+	"th_free": "Available",
 	"filter_all_connectors": "All connectors",
 	"filter_all_networks": "All networks",
 	"price_unknown": "price unknown",
