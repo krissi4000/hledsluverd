@@ -2654,7 +2654,7 @@ git commit -m "feat: server-rendered homepage with rate card, station table, lin
 
 E2E runs against the dev DB — Tasks 7–9 seeds must have been run. Tests assert structure (sortedness, filter behavior), not exact prices, so they survive price changes.
 
-- [ ] **Step 1: Replace the playwright config**
+- [x] **Step 1: Replace the playwright config**
 
 The sv-generated config has `testMatch: '**/*.e2e.{ts,js}'` and no `testDir` — it will find ZERO tests in `e2e/homepage.test.ts` — and it lacks `reuseExistingServer`. Replace the whole file with:
 
@@ -2674,7 +2674,7 @@ export default defineConfig({
 
 Also change `package.json`'s `test:e2e` script from `playwright install && playwright test` to just `playwright test` — browser install is a one-time manual step, not something to run on every invocation.
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `e2e/homepage.test.ts`:
 
@@ -2694,12 +2694,21 @@ test('homepage renders the rate card and a station list sorted by price', async 
 		.allTextContents();
 	expect(prices.length).toBeGreaterThan(0);
 	const nums = prices.map(parsePrice);
+	// NaN === NaN under toEqual, so a formatter change must not slip past as NaN
+	for (const n of nums) expect(Number.isFinite(n)).toBe(true);
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
+
+	// unknown-price rows render no price cell and must sort last; some networks
+	// (Tesla) stay app-priced indefinitely, so such rows always exist
+	const rows = page.locator('[data-testid="station-row"]');
+	await expect(rows.first().locator('[data-testid="price"]')).toHaveCount(1);
+	await expect(rows.last().locator('[data-testid="price"]')).toHaveCount(0);
 });
 
 test('rate card is sorted cheapest-first', async ({ page }) => {
 	await page.goto('/');
 	const dcs = await page.locator('[data-testid="rate-dc"]').allTextContents();
+	expect(dcs.length).toBeGreaterThan(0);
 	const nums = dcs.map(parsePrice);
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
 });
@@ -2709,6 +2718,7 @@ test('connector filter reduces or keeps the row count and every row matches', as
 	const all = await page.locator('[data-testid="station-row"]').count();
 	await page.goto('/?tengi=CHAdeMO');
 	const filtered = await page.locator('[data-testid="station-row"]').count();
+	expect(filtered).toBeGreaterThan(0);
 	expect(filtered).toBeLessThanOrEqual(all);
 	const rows = page.locator('[data-testid="station-row"]');
 	for (let i = 0; i < Math.min(filtered, 10); i++) {
@@ -2737,15 +2747,15 @@ test('station list renders without JavaScript', async ({ browser }) => {
 });
 ```
 
-- [ ] **Step 3: Run the E2E suite**
+- [x] **Step 3: Run the E2E suite**
 
 Run: `npx playwright install chromium` (first time), then `npx playwright test`
 Expected: 5 tests PASS. If the sortedness test fails, debug the query — do not loosen the test.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
-git add e2e/homepage.test.ts playwright.config.ts
+git add e2e/homepage.test.ts playwright.config.ts package.json
 git commit -m "test: add homepage E2E suite (sorting, filters, no-JS, language toggle)"
 ```
 
