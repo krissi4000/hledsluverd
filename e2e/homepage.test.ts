@@ -57,6 +57,25 @@ test('language toggle switches to English and back, without JavaScript', async (
 	await ctx.close();
 });
 
+test('language redirect refuses to leave the site', async ({ request }) => {
+	// %09 = tab: browsers strip tab/CR/LF from Location, turning '/\t/evil.com'
+	// into protocol-relative '//evil.com' — the guard must parse like a browser
+	const attacks = [
+		'//evil.com',
+		'/\\evil.com',
+		'/%09/evil.com',
+		'/%0a/evil.com',
+		'https://evil.com'
+	];
+	for (const attack of attacks) {
+		const res = await request.get(`/lang?to=en&redirect=${attack}`, { maxRedirects: 0 });
+		expect(res.status()).toBe(303);
+		expect(res.headers()['location']).toBe('/');
+	}
+	const ok = await request.get('/lang?to=en&redirect=%2F%3Fafl%3DAC', { maxRedirects: 0 });
+	expect(ok.headers()['location']).toBe('/?afl=AC');
+});
+
 test('station list renders without JavaScript', async ({ browser }) => {
 	const ctx = await browser.newContext({ javaScriptEnabled: false });
 	const page = await ctx.newPage();
