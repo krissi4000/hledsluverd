@@ -708,19 +708,21 @@ git commit -m "feat: seed the six charging networks"
 
 **Matching strategy (amended after Task 7 quality review):** match POIs to networks by **OCM operator ID first** (exact, stable), with title matchers as a reviewable fallback for operators whose IDs we haven't recorded yet. Title matching uses case-insensitive Unicode word-boundary regexes, never `includes()` — bare substrings like `n1`/`on` false-positive inside unrelated operator names. The parser reports every matched operator → slug pair (not just skips) so false positives are visible.
 
-- [ ] **Step 0: Add operator IDs to the networks seed**
+**Live-data amendments (found in Step 7, 2026-07-03):** OCM Iceland is mostly unattributed — of our six networks only ON (operator id 102) and Tesla (23, 3534) carry an operator; N1/Ísorka/Orkan stations exist only as unattributed or generic-operator POIs with branded station titles ("Ísorka - Olís X", "Staðarskáli (N1)"), and e1 has no OCM presence at all. So the parser adds two guarded fallbacks: (a) for POIs with **no operator or a generic one** (ids 1, 44, 45 — never a real third-party operator), the same word-boundary matchers run against the **station title**, each match reported per station; (b) the dataset was bulk-imported several times, so **exact re-import duplicates** (same network, title and coordinates) are dropped, keeping the newest POI, with every dropped group reported. `compact=false` is required on the API call — compact mode strips `OperatorInfo`.
 
-In `seeds/networks.json`, add an `"ocmOperatorIds"` number array to every network: `[3372]` for ON (confirmed OCM operator id), `[]` for the others — Step 7 backfills real ids from the matched-pairs log of the first live run.
+- [x] **Step 0: Add operator IDs to the networks seed**
 
-- [ ] **Step 1: Write the fixture**
+In `seeds/networks.json`, add an `"ocmOperatorIds"` number array to every network: `[102]` for ON and `[23, 3534]` for Tesla (verified against the live API — Tesla has two operator entries), `[]` for the others (OCM has no operator attribution for them; their stations arrive via the station-title fallback).
 
-`tests/fixtures/ocm-sample.json` — trimmed to the fields we read; 3 POIs: an ON fast-charge site (CCS2 ×2 + CHAdeMO, mixed), an Ísorka AC site (Type2 socket ×4), and one with an unknown operator (must be skipped):
+- [x] **Step 1: Write the fixture**
+
+`tests/fixtures/ocm-sample.json` — trimmed to the fields we read; 5 POIs: an ON fast-charge site (CCS2 ×2 + CHAdeMO, mixed), an Ísorka AC site (Type2 socket ×4), one with an unknown operator (must be skipped), an unattributed N1 site (station-title fallback), and its exact bulk-import duplicate (must be dropped):
 
 ```json
 [
 	{
 		"ID": 111001,
-		"OperatorInfo": { "ID": 3372, "Title": "Orka náttúrunnar (ON)" },
+		"OperatorInfo": { "ID": 102, "Title": "Orka Náttúrunnar" },
 		"AddressInfo": {
 			"Title": "Hellisheiði",
 			"AddressLine1": "Hellisheiðarvirkjun",
@@ -760,11 +762,33 @@ In `seeds/networks.json`, add an `"ocmOperatorIds"` number array to every networ
 			"Longitude": -18.1002
 		},
 		"Connections": [{ "ConnectionTypeID": 25, "PowerKW": 11, "Quantity": 1 }]
+	},
+	{
+		"ID": 111004,
+		"AddressInfo": {
+			"Title": "Staðarskáli (N1)",
+			"AddressLine1": "Þjóðvegur 1",
+			"Town": "Hrútafjörður",
+			"Latitude": 65.1213,
+			"Longitude": -21.0805
+		},
+		"Connections": [{ "ConnectionTypeID": 33, "PowerKW": 150, "Quantity": 2 }]
+	},
+	{
+		"ID": 111000,
+		"AddressInfo": {
+			"Title": "Staðarskáli (N1)",
+			"AddressLine1": "Þjóðvegur 1",
+			"Town": "Hrútafjörður",
+			"Latitude": 65.1213,
+			"Longitude": -21.0805
+		},
+		"Connections": [{ "ConnectionTypeID": 33, "PowerKW": 150, "Quantity": 2 }]
 	}
 ]
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 `src/lib/server/ocm.test.ts`:
 
@@ -775,7 +799,7 @@ import { parseOcm, type NetworkMatcher } from './ocm';
 
 const pois = JSON.parse(readFileSync('tests/fixtures/ocm-sample.json', 'utf8'));
 const matchers: NetworkMatcher[] = [
-	{ slug: 'on', ocmOperatorIds: [3372], ocmMatchers: ['orka náttúrunnar', 'on power'] },
+	{ slug: 'on', ocmOperatorIds: [102], ocmMatchers: ['orka náttúrunnar', 'on power'] },
 	{ slug: 'isorka', ocmOperatorIds: [], ocmMatchers: ['ísorka', 'isorka'] }
 ];
 
@@ -792,8 +816,36 @@ describe('parseOcm', () => {
 	});
 
 	it('matches by operator ID even when no title matcher would hit', () => {
-		const { drafts } = parseOcm(pois, [{ slug: 'on', ocmOperatorIds: [3372], ocmMatchers: [] }]);
+		const { drafts } = parseOcm(pois, [{ slug: 'on', ocmOperatorIds: [102], ocmMatchers: [] }]);
 		expect(drafts.map((d) => d.networkSlug)).toEqual(['on']);
+	});
+
+	it('matches unattributed POIs by station title and reports them per station', () => {
+		const withN1 = [...matchers, { slug: 'n1', ocmOperatorIds: [], ocmMatchers: ['n1'] }];
+		const { drafts, titleMatched } = parseOcm(pois, withN1);
+		const n1 = drafts.find((d) => d.networkSlug === 'n1')!;
+		expect(n1.ocmId).toBe(111004);
+		expect(titleMatched).toEqual([{ station: 'Staðarskáli (N1)', ocmId: 111004, slug: 'n1' }]);
+	});
+
+	it('drops exact re-import duplicates, keeping the newest POI', () => {
+		// 111000 and 111004 share network, title and coordinates — OCM bulk-import copies
+		const withN1 = [...matchers, { slug: 'n1', ocmOperatorIds: [], ocmMatchers: ['n1'] }];
+		const { drafts, duplicates } = parseOcm(pois, withN1);
+		expect(drafts.filter((d) => d.networkSlug === 'n1')).toHaveLength(1);
+		expect(duplicates).toEqual([
+			{ station: 'Staðarskáli (N1)', slug: 'n1', keptOcmId: 111004, droppedOcmIds: [111000] }
+		]);
+	});
+
+	it('never station-title matches a POI attributed to a real third-party operator', () => {
+		const attributed = { ...pois[3], OperatorInfo: { ID: 3708, Title: 'Orkubú Vestfjarða' } };
+		const { drafts, skipped } = parseOcm(
+			[attributed],
+			[{ slug: 'n1', ocmOperatorIds: [], ocmMatchers: ['n1'] }]
+		);
+		expect(drafts).toHaveLength(0);
+		expect(skipped).toEqual([{ operator: 'Orkubú Vestfjarða', count: 1 }]);
 	});
 
 	it('falls back to title matching on Unicode word boundaries only', () => {
@@ -811,7 +863,7 @@ describe('parseOcm', () => {
 		const { matched } = parseOcm(pois, matchers);
 		expect(matched).toEqual(
 			expect.arrayContaining([
-				{ operator: 'Orka náttúrunnar (ON)', operatorId: 3372, slug: 'on', via: 'id' },
+				{ operator: 'Orka Náttúrunnar', operatorId: 102, slug: 'on', via: 'id' },
 				{ operator: 'Ísorka', operatorId: 3400, slug: 'isorka', via: 'title' }
 			])
 		);
@@ -833,18 +885,22 @@ describe('parseOcm', () => {
 	});
 
 	it('skips unmatched operators and reports them', () => {
+		// 111003: generic operator, unbranded title; 111004/111000: no operator, no N1 matcher here
 		const { skipped } = parseOcm(pois, matchers);
-		expect(skipped).toEqual([{ operator: 'Some Hotel Chain', count: 1 }]);
+		expect(skipped).toEqual([
+			{ operator: 'Some Hotel Chain', count: 1 },
+			{ operator: '(no operator)', count: 2 }
+		]);
 	});
 });
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/server/ocm.test.ts`
 Expected: FAIL — cannot find module `./ocm`.
 
-- [ ] **Step 4: Write the implementation**
+- [x] **Step 4: Write the implementation**
 
 `src/lib/server/ocm.ts`:
 
@@ -873,6 +929,23 @@ export interface MatchedOperator {
 	slug: string;
 	via: 'id' | 'title';
 }
+
+export interface StationTitleMatch {
+	station: string;
+	ocmId: number;
+	slug: string;
+}
+
+export interface DuplicateGroup {
+	station: string;
+	slug: string;
+	keptOcmId: number;
+	droppedOcmIds: number[];
+}
+
+// OCM catch-all operators that carry no network information:
+// 1 = (Unknown Operator), 44 = (Private Residence/Individual), 45 = (Business Owner at Location).
+const GENERIC_OPERATOR_IDS = new Set([1, 44, 45]);
 
 export interface StationDraft {
 	ocmId: number;
@@ -911,29 +984,43 @@ export function parseOcm(
 	drafts: StationDraft[];
 	skipped: { operator: string; count: number }[];
 	matched: MatchedOperator[];
+	titleMatched: StationTitleMatch[];
+	duplicates: DuplicateGroup[];
 } {
 	const compiled = matchers.map((m) => ({ ...m, regexes: m.ocmMatchers.map(wordRegex) }));
-	const drafts: StationDraft[] = [];
+	const candidates: { draft: StationDraft; viaStationTitle: boolean }[] = [];
 	const skippedCounts = new Map<string, number>();
 	const matchedByKey = new Map<string, MatchedOperator>();
 
 	for (const poi of pois) {
 		const operator = poi.OperatorInfo?.Title ?? '(no operator)';
 		const operatorId = poi.OperatorInfo?.ID ?? null;
+		const a = poi.AddressInfo;
+		const stationTitle = a?.Title;
 		const byId =
 			operatorId != null ? compiled.find((m) => m.ocmOperatorIds.includes(operatorId)) : undefined;
-		const network = byId ?? compiled.find((m) => m.regexes.some((r) => r.test(operator)));
-		const a = poi.AddressInfo;
-		if (!network || !a?.Title || a.Latitude == null || a.Longitude == null) {
+		let network = byId ?? compiled.find((m) => m.regexes.some((r) => r.test(operator)));
+		let viaStationTitle = false;
+		// Iceland's OCM data is mostly unattributed — of our networks only ON and Tesla
+		// carry an operator. Branded station titles ("Ísorka - Olís X", "Staðarskáli (N1)")
+		// are the only signal for the rest, so fall back to them, but never override a POI
+		// attributed to a real third-party operator.
+		if (!network && stationTitle && (operatorId == null || GENERIC_OPERATOR_IDS.has(operatorId))) {
+			network = compiled.find((m) => m.regexes.some((r) => r.test(stationTitle)));
+			viaStationTitle = network != null;
+		}
+		if (!network || !stationTitle || a?.Latitude == null || a?.Longitude == null) {
 			skippedCounts.set(operator, (skippedCounts.get(operator) ?? 0) + 1);
 			continue;
 		}
-		matchedByKey.set(`${operatorId}:${operator}`, {
-			operator,
-			operatorId,
-			slug: network.slug,
-			via: byId ? 'id' : 'title'
-		});
+		if (!viaStationTitle) {
+			matchedByKey.set(`${operatorId}:${operator}`, {
+				operator,
+				operatorId,
+				slug: network.slug,
+				via: byId ? 'id' : 'title'
+			});
+		}
 
 		const byKey = new Map<string, { type: ConnectorType; powerKw: number; count: number }>();
 		for (const c of poi.Connections ?? []) {
@@ -945,31 +1032,70 @@ export function parseOcm(
 			byKey.set(key, entry);
 		}
 
-		drafts.push({
-			ocmId: poi.ID,
-			networkSlug: network.slug,
-			name: a.Title,
-			address: [a.AddressLine1, a.Town].filter(Boolean).join(', ') || null,
-			lat: a.Latitude,
-			lng: a.Longitude,
-			connectors: [...byKey.values()]
+		candidates.push({
+			draft: {
+				ocmId: poi.ID,
+				networkSlug: network.slug,
+				name: stationTitle,
+				address: [a.AddressLine1, a.Town].filter(Boolean).join(', ') || null,
+				lat: a.Latitude,
+				lng: a.Longitude,
+				connectors: [...byKey.values()]
+			},
+			viaStationTitle
 		});
+	}
+
+	// OCM Iceland was bulk-imported several times, so the same station appears under
+	// multiple POI ids with identical name and coordinates. Keep the newest copy.
+	const byStation = new Map<string, { draft: StationDraft; viaStationTitle: boolean }[]>();
+	for (const c of candidates) {
+		const key = `${c.draft.networkSlug}|${c.draft.name}|${c.draft.lat}|${c.draft.lng}`;
+		byStation.set(key, [...(byStation.get(key) ?? []), c]);
+	}
+
+	const drafts: StationDraft[] = [];
+	const titleMatched: StationTitleMatch[] = [];
+	const duplicates: DuplicateGroup[] = [];
+	for (const group of byStation.values()) {
+		const kept = group.reduce((a, b) => (b.draft.ocmId > a.draft.ocmId ? b : a));
+		if (group.length > 1) {
+			duplicates.push({
+				station: kept.draft.name,
+				slug: kept.draft.networkSlug,
+				keptOcmId: kept.draft.ocmId,
+				droppedOcmIds: group
+					.filter((g) => g !== kept)
+					.map((g) => g.draft.ocmId)
+					.sort((x, y) => x - y)
+			});
+		}
+		drafts.push(kept.draft);
+		if (kept.viaStationTitle) {
+			titleMatched.push({
+				station: kept.draft.name,
+				ocmId: kept.draft.ocmId,
+				slug: kept.draft.networkSlug
+			});
+		}
 	}
 
 	return {
 		drafts,
 		skipped: [...skippedCounts.entries()].map(([operator, count]) => ({ operator, count })),
-		matched: [...matchedByKey.values()]
+		matched: [...matchedByKey.values()],
+		titleMatched,
+		duplicates
 	};
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/ocm.test.ts`
-Expected: PASS (6 tests).
+Expected: PASS (9 tests).
 
-- [ ] **Step 6: Write the seed script**
+- [x] **Step 6: Write the seed script**
 
 `scripts/seed-ocm.ts` — fetches Iceland POIs, parses, upserts by `external_ids->>'ocm'`, replaces connectors on update, ensures slug uniqueness:
 
@@ -985,8 +1111,10 @@ import { slugify } from '../src/lib/server/slug';
 const key = process.env.OCM_API_KEY;
 if (!key) throw new Error('OCM_API_KEY missing — register free at openchargemap.org');
 
+// compact=false: compact mode strips nested OperatorInfo (only a top-level OperatorID
+// remains), which breaks operator matching and the matched/skipped review reports.
 const res = await fetch(
-	`https://api.openchargemap.io/v3/poi?countrycode=IS&maxresults=2000&compact=true&verbose=false&key=${key}`
+	`https://api.openchargemap.io/v3/poi?countrycode=IS&maxresults=2000&compact=false&verbose=false&key=${key}`
 );
 if (!res.ok) throw new Error(`OCM request failed: ${res.status}`);
 const pois = await res.json();
@@ -994,7 +1122,7 @@ const pois = await res.json();
 const seedNetworks: (NetworkMatcher & { name: string })[] = JSON.parse(
 	readFileSync(new URL('../seeds/networks.json', import.meta.url), 'utf8')
 );
-const { drafts, skipped, matched } = parseOcm(pois, seedNetworks);
+const { drafts, skipped, matched, titleMatched, duplicates } = parseOcm(pois, seedNetworks);
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 const db = createDb(process.env.DATABASE_URL);
@@ -1058,6 +1186,13 @@ console.log('Matched operators (verify each mapping; backfill ids for ones match
 for (const m of matched)
 	console.log(`  ${m.operator} (OCM id ${m.operatorId}) → ${m.slug} [${m.via}]`);
 console.log(
+	'Station-title matches on unattributed POIs (verify each station belongs to its network):'
+);
+for (const t of titleMatched) console.log(`  ${t.station} (OCM ${t.ocmId}) → ${t.slug}`);
+console.log('Re-import duplicates dropped (same network, title and coordinates):');
+for (const d of duplicates)
+	console.log(`  ${d.station} → kept OCM ${d.keptOcmId}, dropped ${d.droppedOcmIds.join(', ')}`);
+console.log(
 	'Skipped operators (review — add ids/matchers to seeds/networks.json if any belong to our networks):'
 );
 for (const s of skipped.sort((a, b) => b.count - a.count))
@@ -1065,19 +1200,18 @@ for (const s of skipped.sort((a, b) => b.count - a.count))
 await db.$client.end();
 ```
 
-- [ ] **Step 7: Run against the real API**
+- [x] **Step 7: Run against the real API**
 
 Register a free API key at https://openchargemap.org (My Profile → API keys), put it in `.env` as `OCM_API_KEY`, then:
 
 Run: `npm run seed:ocm && psql -d hledsluverd -c "SELECT n.slug, count(*) FROM stations s JOIN networks n ON n.id = s.network_id GROUP BY 1 ORDER BY 2 DESC;"`
-Expected: a few hundred stations spread across the networks; a matched-operators report and a skipped-operators report. **Read both lists:**
+Expected (as of 2026-07-03): **94 stations** — on 33, isorka 27, tesla 15, n1 13, orkan 6, e1 0 (e1 does not exist in OCM; its stations must come from another source later). Four review reports print: matched operators (3 entries, all `[id]`), station-title matches (~63 stations), re-import duplicate groups dropped (~31), and skipped operators (dominated by 643× unattributed third-party POIs — hotels, municipalities, Orkubú Vestfjarða, VIRTA; leaving those out is correct). **Read all four lists** — anything matched `[title]` should have its operator id backfilled into `ocmOperatorIds`; anything skipped that clearly belongs to our six networks gets its id added too.
 
-- For every operator matched `[title]`, verify the mapping is right, then backfill its OCM id into that network's `ocmOperatorIds` in `seeds/networks.json` so future runs match by id.
-- If a skipped operator clearly belongs to one of our six networks, add its OCM id to `ocmOperatorIds` (preferred over a title matcher) and re-run (idempotent).
+Run it twice to confirm the second run reports `0 inserted, 94 updated`.
 
-Run it twice to confirm `updated` equals the previous `inserted`.
+Known data-quality leftovers (deliberately NOT handled — revisit in Phase 3 station pages): near-duplicates with different names/coords (e.g. "N1 Ísafirði" ~50 m from "Ísafjörður (N1)"), and stale OCM entries are never deleted by the seed (append/update only).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add tests/fixtures/ocm-sample.json src/lib/server/ocm.ts src/lib/server/ocm.test.ts scripts/seed-ocm.ts seeds/networks.json
