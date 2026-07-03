@@ -13,12 +13,21 @@ test('homepage renders the rate card and a station list sorted by price', async 
 		.allTextContents();
 	expect(prices.length).toBeGreaterThan(0);
 	const nums = prices.map(parsePrice);
+	// NaN === NaN under toEqual, so a formatter change must not slip past as NaN
+	for (const n of nums) expect(Number.isFinite(n)).toBe(true);
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
+
+	// unknown-price rows render no price cell and must sort last; some networks
+	// (Tesla) stay app-priced indefinitely, so such rows always exist
+	const rows = page.locator('[data-testid="station-row"]');
+	await expect(rows.first().locator('[data-testid="price"]')).toHaveCount(1);
+	await expect(rows.last().locator('[data-testid="price"]')).toHaveCount(0);
 });
 
 test('rate card is sorted cheapest-first', async ({ page }) => {
 	await page.goto('/');
 	const dcs = await page.locator('[data-testid="rate-dc"]').allTextContents();
+	expect(dcs.length).toBeGreaterThan(0);
 	const nums = dcs.map(parsePrice);
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
 });
@@ -28,6 +37,7 @@ test('connector filter reduces or keeps the row count and every row matches', as
 	const all = await page.locator('[data-testid="station-row"]').count();
 	await page.goto('/?tengi=CHAdeMO');
 	const filtered = await page.locator('[data-testid="station-row"]').count();
+	expect(filtered).toBeGreaterThan(0);
 	expect(filtered).toBeLessThanOrEqual(all);
 	const rows = page.locator('[data-testid="station-row"]');
 	for (let i = 0; i < Math.min(filtered, 10); i++) {
