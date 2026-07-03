@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk, formatDate } from '$lib/format';
+	import { formatIsk, formatDate, formatNumber } from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import type { StationRow } from '$lib/server/db/queries';
 
@@ -33,61 +33,90 @@
 	<h2>{m.stations_title()}</h2>
 
 	<nav class="filters">
-		<span class="group" role="group" aria-label="mode">
-			<a href={href({ afl: null })} class:active={mode === 'DC'}>{m.mode_dc()}</a>
-			<a href={href({ afl: 'AC' })} class:active={mode === 'AC'}>{m.mode_ac()}</a>
+		<span class="group" role="group" aria-label={m.filter_mode()}>
+			<a
+				href={href({ afl: null })}
+				class:active={mode === 'DC'}
+				aria-current={mode === 'DC' ? 'page' : undefined}>{m.mode_dc()}</a
+			>
+			<a
+				href={href({ afl: 'AC' })}
+				class:active={mode === 'AC'}
+				aria-current={mode === 'AC' ? 'page' : undefined}>{m.mode_ac()}</a
+			>
 		</span>
-		<span class="group" role="group" aria-label="connector">
-			<a href={href({ tengi: null })} class:active={!connector}>{m.filter_all_connectors()}</a>
+		<span class="group" role="group" aria-label={m.th_connectors()}>
+			<a
+				href={href({ tengi: null })}
+				class:active={!connector}
+				aria-current={!connector ? 'page' : undefined}>{m.filter_all_connectors()}</a
+			>
 			{#each CONNECTOR_TYPES as t}
-				<a href={href({ tengi: t })} class:active={connector === t}>{t}</a>
+				<a
+					href={href({ tengi: t })}
+					class:active={connector === t}
+					aria-current={connector === t ? 'page' : undefined}>{t}</a
+				>
 			{/each}
 		</span>
-		<span class="group" role="group" aria-label="network">
-			<a href={href({ fyrirtaeki: null })} class:active={!network}>{m.filter_all_networks()}</a>
+		<span class="group" role="group" aria-label={m.th_network()}>
+			<a
+				href={href({ fyrirtaeki: null })}
+				class:active={!network}
+				aria-current={!network ? 'page' : undefined}>{m.filter_all_networks()}</a
+			>
 			{#each networkOptions as n}
-				<a href={href({ fyrirtaeki: n.slug })} class:active={network === n.slug}>{n.name}</a>
+				<a
+					href={href({ fyrirtaeki: n.slug })}
+					class:active={network === n.slug}
+					aria-current={network === n.slug ? 'page' : undefined}>{n.name}</a
+				>
 			{/each}
 		</span>
 	</nav>
 
-	<table>
-		<thead>
-			<tr>
-				<th>{m.th_station()}</th>
-				<th>{m.th_network()}</th>
-				<th>{m.th_price()}</th>
-				<th>{m.th_connectors()}</th>
-				<th>{m.th_free()}</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each stations as s (s.slug)}
-				<tr data-testid="station-row">
-					<td data-label={m.th_station()}>{s.name}</td>
-					<td data-label={m.th_network()}>{s.networkName}</td>
-					<td data-label={m.th_price()}>
-						{#if s.price !== null}
-							<strong data-testid="price">{formatIsk(s.price)}</strong>
-							{#if s.minuteFeeIsk}<small>{m.minute_fee({ fee: String(s.minuteFeeIsk) })}</small
-								>{/if}
-							{#if s.verifiedAt}<small class="verified"
-									>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
-								>{/if}
-						{:else}
-							<em>{m.price_unknown()}</em>
-						{/if}
-					</td>
-					<td data-label={m.th_connectors()}>
-						{#each s.connectors as c}
-							<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
-						{/each}
-					</td>
-					<td data-label={m.th_free()}>—</td>
+	{#if stations.length === 0}
+		<p class="empty">{m.no_results()}</p>
+	{:else}
+		<table>
+			<thead>
+				<tr>
+					<th>{m.th_station()}</th>
+					<th>{m.th_network()}</th>
+					<th>{m.th_price()}</th>
+					<th>{m.th_connectors()}</th>
+					<th>{m.th_free()}</th>
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each stations as s (s.slug)}
+					<tr data-testid="station-row">
+						<td data-label={m.th_station()}>{s.name}</td>
+						<td data-label={m.th_network()}>{s.networkName}</td>
+						<td data-label={m.th_price()}>
+							{#if s.price !== null}
+								<strong data-testid="price">{formatIsk(s.price)}</strong>
+								{#if s.minuteFeeIsk}<small
+										>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
+									>{/if}
+								{#if s.verifiedAt}<small class="verified"
+										>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
+									>{/if}
+							{:else}
+								<em>{m.price_unknown()}</em>
+							{/if}
+						</td>
+						<td data-label={m.th_connectors()}>
+							{#each s.connectors as c}
+								<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
+							{/each}
+						</td>
+						<td data-label={m.th_free()}>—</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
 </section>
 
 <style>
@@ -114,6 +143,10 @@
 		background: var(--accent, #2e7d32);
 		border-color: var(--accent, #2e7d32);
 		color: #fff;
+	}
+	.empty {
+		opacity: 0.7;
+		padding: 1rem 0;
 	}
 	table {
 		width: 100%;

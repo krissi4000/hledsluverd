@@ -1,6 +1,9 @@
+export function formatNumber(value: number): string {
+	return Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
+}
+
 export function formatIsk(value: number): string {
-	const s = Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
-	return `${s} kr`;
+	return `${formatNumber(value)} kr`;
 }
 
 export function formatDate(d: Date): string {

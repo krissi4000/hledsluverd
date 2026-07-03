@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import favicon from '$lib/assets/favicon.svg';
 	import * as m from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 
@@ -7,8 +8,12 @@
 	const other = () => (getLocale() === 'is' ? 'en' : 'is');
 </script>
 
+<svelte:head>
+	<link rel="icon" href={favicon} />
+</svelte:head>
+
 <header>
-	<a href="/" class="logo">{m.site_title()}</a>
+	<h1 class="logo"><a href="/">{m.site_title()}</a></h1>
 	<p class="tagline">{m.site_tagline()}</p>
 	<a
 		class="lang"
@@ -40,6 +45,9 @@
 	.logo {
 		font-size: 1.3rem;
 		font-weight: 700;
+		margin: 0;
+	}
+	.logo a {
 		text-decoration: none;
 		color: inherit;
 	}

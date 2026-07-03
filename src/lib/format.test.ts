@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { formatIsk, formatDate } from './format';
+import { formatIsk, formatDate, formatNumber } from './format';
+
+describe('formatNumber', () => {
+	it('formats fractional values with an Icelandic comma', () => {
+		expect(formatNumber(0.5)).toBe('0,5');
+	});
+	it('formats whole numbers without decimals', () => {
+		expect(formatNumber(2)).toBe('2');
+	});
+});
 
 describe('formatIsk', () => {
 	it('shows whole ISK without decimals', () => {

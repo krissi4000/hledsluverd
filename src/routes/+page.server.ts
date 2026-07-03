@@ -9,9 +9,11 @@ export const load: PageServerLoad = async ({ url }) => {
 	const connector = (CONNECTOR_TYPES as readonly string[]).includes(tengi ?? '')
 		? (tengi as ConnectorType)
 		: null;
-	const network = url.searchParams.get('fyrirtaeki');
+	const rawNetwork = url.searchParams.get('fyrirtaeki');
 
 	const [cards, allStations] = await Promise.all([rateCard(db), stationList(db, mode)]);
+
+	const network = cards.some((c) => c.networkSlug === rawNetwork) ? rawNetwork : null;
 
 	const stations = allStations.filter(
 		(s) =>
