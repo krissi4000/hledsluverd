@@ -21,6 +21,7 @@
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@types/node": "^26.1.0",
 		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10",
 		"prettier": "^3.8.3",
