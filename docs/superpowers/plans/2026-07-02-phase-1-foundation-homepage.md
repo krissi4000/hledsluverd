@@ -2110,7 +2110,7 @@ git commit -m "feat: add Paraglide i18n (is base, en) with no-JS cookie toggle"
 
 - Create: `src/lib/format.ts`, `src/lib/format.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/format.test.ts`:
 
@@ -2134,12 +2134,12 @@ describe('formatDate', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/format.test.ts`
 Expected: FAIL — cannot find module `./format`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `src/lib/format.ts`:
 
@@ -2154,12 +2154,12 @@ export function formatDate(d: Date): string {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/format.test.ts`
 Expected: PASS (3 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/format.ts src/lib/format.test.ts
