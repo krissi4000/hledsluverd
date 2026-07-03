@@ -1,42 +1,33 @@
-# sv
+# Hleðsluverð
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Verðsamanburður á hleðslu rafbíla á Íslandi — hledsluverd.is
 
-## Creating a project
+Full documentation lives in the owner's Obsidian vault (notes tagged #hledsluverd).
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Development setup
 
-```sh
-# create a new project
-npx sv create my-app
-```
+Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 
-To recreate this project with the same configuration:
+    createdb hledsluverd && createdb hledsluverd_test
+    sudo -u postgres psql -d hledsluverd -c "CREATE EXTENSION postgis;"
+    sudo -u postgres psql -d hledsluverd_test -c "CREATE EXTENSION postgis;"
+    cp .env.example .env       # fill in OCM_API_KEY (free: openchargemap.org)
+    npm install
+    npm run db:migrate
+    DATABASE_URL=postgres://localhost:5432/hledsluverd_test npm run db:migrate
+    npm run seed:networks && npm run seed:ocm && npm run seed:prices
+    npm run dev
 
-```sh
-# recreate this project
-npx sv@0.16.1 create --template minimal --types ts --install npm .
-```
+## Tests
 
-## Developing
+    npx vitest run        # unit + DB tests (DB tests skip if DATABASE_URL_TEST unset)
+    npx playwright test   # E2E against a production build (needs seeded dev DB)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Data notes
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- `prices` is append-only — it doubles as the price-history/trend dataset. All price
+  writes go through `insertPriceIfChanged` (plausibility guard, change detection).
+- Station data seeds from Open Charge Map; re-running `seed:ocm` is idempotent and
+  prints unmatched operators for review.
+- Initial prices in `seeds/prices-initial.json` were verified by hand against operator
+  websites on the date in git history. Scrapers arrive in Phase 2.
