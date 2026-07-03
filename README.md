@@ -20,8 +20,9 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 
 ## Tests
 
-    npx vitest run        # unit + DB tests (DB tests skip if DATABASE_URL_TEST unset)
-    npx playwright test   # E2E against a production build (needs seeded dev DB)
+    npx vitest run                    # unit + DB tests (skip if DATABASE_URL_TEST unset)
+    npx playwright install chromium   # one-time browser download, before the first E2E run
+    npx playwright test               # E2E against a production build (needs seeded dev DB)
 
 ## Data notes
 
