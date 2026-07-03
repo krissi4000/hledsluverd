@@ -106,14 +106,14 @@ git commit -m "chore: scaffold SvelteKit app with vitest, playwright, prettier"
 **Files:**
 - Create: `.env`, `.env.example`, `drizzle.config.ts`, `src/lib/server/db/client.ts`, `src/lib/server/db/index.ts`
 
-- [ ] **Step 1: Install dependencies**
+- [x] **Step 1: Install dependencies**
 
 ```bash
 npm i drizzle-orm postgres
 npm i -D drizzle-kit tsx dotenv
 ```
 
-- [ ] **Step 2: Verify dev and test databases with PostGIS**
+- [x] **Step 2: Verify dev and test databases with PostGIS**
 
 **Already done during environment prep (2026-07-03):** both databases exist and PostGIS was enabled by the superuser (Arch's postgis package is not a "trusted" extension, so `CREATE EXTENSION postgis` requires `sudo -u postgres psql -d <db> -c 'CREATE EXTENSION postgis;'` — plain-role `psql` fails). `.env` also already exists with `OCM_API_KEY` filled in; do not overwrite it, only reconcile it with `.env.example`.
 
@@ -124,7 +124,7 @@ psql -d hledsluverd_test -tAc "select postgis_version()"
 ```
 Expected: a PostGIS version string from each.
 
-- [ ] **Step 3: Write `.env` and `.env.example`**
+- [x] **Step 3: Write `.env` and `.env.example`**
 
 `.env` (gitignored already) and `.env.example` (committed), same content:
 ```bash
@@ -133,11 +133,13 @@ DATABASE_URL_TEST=postgres://localhost:5432/hledsluverd_test
 OCM_API_KEY=
 ```
 
-- [ ] **Step 4: Write `drizzle.config.ts`**
+- [x] **Step 4: Write `drizzle.config.ts`**
 
 ```ts
 import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
+
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL missing — copy .env.example to .env');
 
 export default defineConfig({
 	schema: './src/lib/server/db/schema.ts',
@@ -150,7 +152,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 5: Write connection factory and app instance**
+- [x] **Step 5: Write connection factory and app instance**
 
 `src/lib/server/db/client.ts`:
 ```ts
@@ -159,7 +161,8 @@ import postgres from 'postgres';
 import * as schema from './schema';
 
 export function createDb(url: string) {
-	const client = postgres(url);
+	// idle_timeout releases idle pool connections (dev SSR reloads orphan pools otherwise)
+	const client = postgres(url, { idle_timeout: 20, max_lifetime: 60 * 30 });
 	return drizzle(client, { schema });
 }
 export type Db = ReturnType<typeof createDb>;
@@ -170,17 +173,18 @@ export type Db = ReturnType<typeof createDb>;
 import { env } from '$env/dynamic/private';
 import { createDb } from './client';
 
+if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 export const db = createDb(env.DATABASE_URL);
 ```
 
 (`schema.ts` doesn't exist yet — create it as an empty file `export {};` so imports resolve; Task 3 fills it.)
 
-- [ ] **Step 6: Smoke-test the connection**
+- [x] **Step 6: Smoke-test the connection**
 
 Run: `npx tsx -e "import 'dotenv/config'; import postgres from 'postgres'; const s = postgres(process.env.DATABASE_URL); const r = await s\`select postgis_version()\`; console.log(r[0]); await s.end();"`
 Expected: prints a PostGIS version object.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add -A
@@ -355,14 +359,26 @@ export async function truncateAll(db: Db) {
 		RESTART IDENTITY CASCADE
 	`);
 }
+
+export async function closeTestDb(db: Db) {
+	await db.$client.end();
+}
 ```
 
 Note: `$lib` aliases don't resolve from `tests/` by default — the helper deliberately uses a relative import. `src/lib/server/db/schema.ts` imports `$lib/types`; vitest resolves `$lib` inside `src/` via the SvelteKit vite plugin, which is already active in `vite.config.ts`. If the relative import of `client.ts` fails on the `$lib/types` alias when run from `tests/`, change `schema.ts` to import from `'../../types'` instead — both are acceptable.
 
 - [ ] **Step 2: Verify it compiles and connects**
 
-Run: `npx tsx -e "import { setupTestDb, truncateAll } from './tests/helpers/db'; const db = await setupTestDb(); await truncateAll(db); console.log('ok'); process.exit(0);"`
-Expected: `ok`
+`tsx -e` cannot use top-level await (cjs eval context — discovered in Task 2). Write a throwaway file `tmp-verify.ts` in the repo root:
+```ts
+import { setupTestDb, truncateAll, closeTestDb } from './tests/helpers/db';
+const db = await setupTestDb();
+await truncateAll(db);
+await closeTestDb(db);
+console.log('ok');
+```
+Run: `npx tsx tmp-verify.ts && rm tmp-verify.ts`
+Expected: `ok` (and the process exits on its own — proves the pool teardown works).
 
 - [ ] **Step 3: Commit**
 
@@ -558,7 +574,7 @@ for (const n of data) {
 		});
 }
 console.log(`Seeded ${data.length} networks.`);
-process.exit(0);
+await db.$client.end();
 ```
 
 - [ ] **Step 3: Add npm scripts**
@@ -866,7 +882,7 @@ for (const d of drafts) {
 console.log(`OCM seed: ${inserted} inserted, ${updated} updated, ${drafts.length} total.`);
 console.log('Skipped operators (review — add matchers to seeds/networks.json if any belong to our networks):');
 for (const s of skipped.sort((a, b) => b.count - a.count)) console.log(`  ${s.count}× ${s.operator}`);
-process.exit(0);
+await db.$client.end();
 ```
 
 - [ ] **Step 7: Run against the real API**
@@ -896,9 +912,9 @@ git commit -m "feat: import stations and connectors from Open Charge Map"
 
 `src/lib/server/db/prices.test.ts`:
 ```ts
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { desc } from 'drizzle-orm';
-import { TEST_DB_URL, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
+import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
 import { networks, prices } from './schema';
 import { insertPriceIfChanged } from './prices';
@@ -909,6 +925,9 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 
 	beforeAll(async () => {
 		db = await setupTestDb();
+	});
+	afterAll(async () => {
+		await closeTestDb(db);
 	});
 	beforeEach(async () => {
 		await truncateAll(db);
@@ -1080,7 +1099,7 @@ for (const r of rows) {
 	};
 	console.log(`${r.network}/${r.tariffKey}: ${await insertPriceIfChanged(db, reading)}`);
 }
-process.exit(0);
+await db.$client.end();
 ```
 
 - [ ] **Step 7: Run it twice**
@@ -1106,8 +1125,8 @@ git commit -m "feat: add price write path with plausibility guard, seed verified
 
 `src/lib/server/db/queries.test.ts`:
 ```ts
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { TEST_DB_URL, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
 import { connectors, networks, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
@@ -1119,6 +1138,9 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 
 	beforeAll(async () => {
 		db = await setupTestDb();
+	});
+	afterAll(async () => {
+		await closeTestDb(db);
 	});
 
 	beforeEach(async () => {
