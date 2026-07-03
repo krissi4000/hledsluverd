@@ -9,6 +9,9 @@ describe('deriveTariffKey', () => {
 	it('maps Type2 to AC regardless of power', () => {
 		expect(deriveTariffKey('Type2', 22, withTier)).toBe('AC');
 	});
+	it('keeps Type2 as AC even at tier-level power', () => {
+		expect(deriveTariffKey('Type2', 150, withTier)).toBe('AC');
+	});
 	it('maps DC connectors to DC below 150 kW', () => {
 		expect(deriveTariffKey('CCS2', 60, withTier)).toBe('DC');
 		expect(deriveTariffKey('CHAdeMO', 50, withTier)).toBe('DC');
