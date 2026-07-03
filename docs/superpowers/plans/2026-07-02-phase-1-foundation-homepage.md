@@ -1963,7 +1963,7 @@ git commit -m "feat: add rate-card and station-list read queries"
 - Create: `project.inlang/settings.json`, `messages/is.json`, `messages/en.json`, `src/routes/lang/+server.ts`, `src/hooks.server.ts`
 - Modify: `vite.config.ts`
 
-- [ ] **Step 1: Install and configure Paraglide**
+- [x] **Step 1: Install and configure Paraglide**
 
 ```bash
 npm i -D @inlang/paraglide-js
@@ -1977,7 +1977,7 @@ mkdir -p project.inlang messages
 	"$schema": "https://inlang.com/schema/project-settings",
 	"baseLocale": "is",
 	"locales": ["is", "en"],
-	"modules": ["https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@latest/dist/index.js"],
+	"modules": ["https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4.4.0/dist/index.js"],
 	"plugin.inlang.messageFormat": { "pathPattern": "./messages/{locale}.json" }
 }
 ```
@@ -1996,7 +1996,7 @@ paraglideVitePlugin({
 
 Add `src/lib/paraglide/` to `.gitignore` (generated code).
 
-- [ ] **Step 2: Write the messages**
+- [x] **Step 2: Write the messages**
 
 `messages/is.json`:
 
@@ -2037,7 +2037,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 	"th_network": "Network",
 	"th_price": "Price/kWh",
 	"th_connectors": "Connectors",
-	"th_free": "Free",
+	"th_free": "Available",
 	"filter_all_connectors": "All connectors",
 	"filter_all_networks": "All networks",
 	"price_unknown": "price unknown",
@@ -2050,7 +2050,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 }
 ```
 
-- [ ] **Step 3: Wire the server hook**
+- [x] **Step 3: Wire the server hook**
 
 `src/hooks.server.ts`:
 
@@ -2069,7 +2069,7 @@ export const handle: Handle = ({ event, resolve }) =>
 
 In `src/app.html`, change `<html lang="en">` to `<html lang="%paraglide.lang%">`.
 
-- [ ] **Step 4: No-JS language toggle route**
+- [x] **Step 4: No-JS language toggle route**
 
 `src/routes/lang/+server.ts`:
 
@@ -2077,21 +2077,25 @@ In `src/app.html`, change `<html lang="en">` to `<html lang="%paraglide.lang%">`
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+// Deliberate tradeoff: a GET that sets a cookie, so the toggle works without JS.
+// A forged request can only flip the display language (cosmetic). Note the SSR output
+// varies by this cookie — any future CDN/proxy caching needs Vary: Cookie handling.
 export const GET: RequestHandler = ({ url, cookies }) => {
 	const to = url.searchParams.get('to') === 'en' ? 'en' : 'is';
 	cookies.set('PARAGLIDE_LOCALE', to, { path: '/', maxAge: 60 * 60 * 24 * 365 });
 	const target = url.searchParams.get('redirect') ?? '/';
-	// only same-origin relative paths — an absolute or scheme-relative URL here would be an open redirect
-	redirect(303, target.startsWith('/') && !target.startsWith('//') ? target : '/');
+	// Only same-origin relative paths: require a leading '/' NOT followed by '/' or '\\' —
+	// browsers treat both '//host' and '/\\host' as protocol-relative, i.e. an open redirect.
+	redirect(303, /^\/(?![/\\])/.test(target) ? target : '/');
 };
 ```
 
-- [ ] **Step 5: Verify build compiles messages**
+- [x] **Step 5: Verify build compiles messages**
 
 Run: `npm run dev -- --open=false & sleep 5 && ls src/lib/paraglide/messages 2>/dev/null | head -3; kill %1`
 Expected: generated message modules exist; dev server starts without errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
