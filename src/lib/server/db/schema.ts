@@ -1,6 +1,16 @@
 import {
-	pgTable, pgEnum, serial, text, integer, boolean, doublePrecision,
-	timestamp, jsonb, geometry, index, unique
+	pgTable,
+	pgEnum,
+	serial,
+	text,
+	integer,
+	boolean,
+	doublePrecision,
+	timestamp,
+	jsonb,
+	geometry,
+	index,
+	unique
 } from 'drizzle-orm/pg-core';
 import { CONNECTOR_TYPES, TARIFF_KEYS, type ConnectorType } from '$lib/types';
 
@@ -18,22 +28,32 @@ export const stations = pgTable(
 	'stations',
 	{
 		id: serial('id').primaryKey(),
-		networkId: integer('network_id').notNull().references(() => networks.id),
+		networkId: integer('network_id')
+			.notNull()
+			.references(() => networks.id),
 		slug: text('slug').notNull().unique(),
 		name: text('name').notNull(),
 		address: text('address'),
 		location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
-		externalIds: jsonb('external_ids').$type<{ ocm?: number; tomtom?: string }>().notNull().default({}),
+		externalIds: jsonb('external_ids')
+			.$type<{ ocm?: number; tomtom?: string }>()
+			.notNull()
+			.default({}),
 		isActive: boolean('is_active').notNull().default(true),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date())
+		updatedAt: timestamp('updated_at', { withTimezone: true })
+			.notNull()
+			.defaultNow()
+			.$onUpdate(() => new Date())
 	},
 	(t) => [index('stations_location_idx').using('gist', t.location)]
 );
 
 export const connectors = pgTable('connectors', {
 	id: serial('id').primaryKey(),
-	stationId: integer('station_id').notNull().references(() => stations.id, { onDelete: 'cascade' }),
+	stationId: integer('station_id')
+		.notNull()
+		.references(() => stations.id, { onDelete: 'cascade' }),
 	type: connectorTypeEnum('type').notNull(),
 	powerKw: doublePrecision('power_kw').notNull(),
 	count: integer('count').notNull().default(1)
@@ -43,7 +63,9 @@ export const prices = pgTable(
 	'prices',
 	{
 		id: serial('id').primaryKey(),
-		networkId: integer('network_id').notNull().references(() => networks.id),
+		networkId: integer('network_id')
+			.notNull()
+			.references(() => networks.id),
 		stationId: integer('station_id').references(() => stations.id, { onDelete: 'restrict' }), // NULL = network-wide; price history blocks hard deletes — use is_active
 		tariffKey: text('tariff_key', { enum: TARIFF_KEYS }).notNull(),
 		priceIskPerKwh: doublePrecision('price_isk_per_kwh').notNull(),
@@ -57,10 +79,13 @@ export const prices = pgTable(
 );
 
 export const availability = pgTable('availability', {
-	stationId: integer('station_id').primaryKey().references(() => stations.id, { onDelete: 'cascade' }),
+	stationId: integer('station_id')
+		.primaryKey()
+		.references(() => stations.id, { onDelete: 'cascade' }),
 	freeCount: integer('free_count'),
 	totalCount: integer('total_count'),
-	perType: jsonb('per_type').$type<Partial<Record<ConnectorType, { free: number; total: number }>>>(),
+	perType:
+		jsonb('per_type').$type<Partial<Record<ConnectorType, { free: number; total: number }>>>(),
 	fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
 	source: text('source').notNull() // free text until Phase 3 pins the source set
 });
@@ -83,7 +108,9 @@ export const cars = pgTable(
 
 export const scrapeRuns = pgTable('scrape_runs', {
 	id: serial('id').primaryKey(),
-	networkId: integer('network_id').notNull().references(() => networks.id),
+	networkId: integer('network_id')
+		.notNull()
+		.references(() => networks.id),
 	startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
 	status: text('status', { enum: ['ok', 'changed', 'failed'] }).notNull(),
 	message: text('message')

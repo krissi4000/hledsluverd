@@ -1,6 +1,14 @@
 const MAP: Record<string, string> = {
-	á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ý: 'y',
-	ð: 'd', þ: 'th', æ: 'ae', ö: 'o'
+	á: 'a',
+	é: 'e',
+	í: 'i',
+	ó: 'o',
+	ú: 'u',
+	ý: 'y',
+	ð: 'd',
+	þ: 'th',
+	æ: 'ae',
+	ö: 'o'
 };
 
 export function slugify(input: string): string {
