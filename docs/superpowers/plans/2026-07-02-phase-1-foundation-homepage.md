@@ -113,17 +113,16 @@ npm i drizzle-orm postgres
 npm i -D drizzle-kit tsx dotenv
 ```
 
-- [ ] **Step 2: Create dev and test databases with PostGIS**
+- [ ] **Step 2: Verify dev and test databases with PostGIS**
 
-Postgres must be running locally (Arch: `sudo pacman -S postgresql postgis`, `sudo systemctl enable --now postgresql`, and an initialized cluster; if `psql -U kjb postgres` fails, create the role: `sudo -u postgres createuser -s kjb`).
+**Already done during environment prep (2026-07-03):** both databases exist and PostGIS was enabled by the superuser (Arch's postgis package is not a "trusted" extension, so `CREATE EXTENSION postgis` requires `sudo -u postgres psql -d <db> -c 'CREATE EXTENSION postgis;'` — plain-role `psql` fails). `.env` also already exists with `OCM_API_KEY` filled in; do not overwrite it, only reconcile it with `.env.example`.
 
+Verify only:
 ```bash
-createdb hledsluverd
-createdb hledsluverd_test
-psql -d hledsluverd -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-psql -d hledsluverd_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql -d hledsluverd -tAc "select postgis_version()"
+psql -d hledsluverd_test -tAc "select postgis_version()"
 ```
-Expected: `CREATE EXTENSION` twice.
+Expected: a PostGIS version string from each.
 
 - [ ] **Step 3: Write `.env` and `.env.example`**
 
@@ -2064,8 +2063,8 @@ Full documentation lives in the owner's Obsidian vault (notes tagged #hledsluver
 Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 
     createdb hledsluverd && createdb hledsluverd_test
-    psql -d hledsluverd -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-    psql -d hledsluverd_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+    sudo -u postgres psql -d hledsluverd -c "CREATE EXTENSION postgis;"
+    sudo -u postgres psql -d hledsluverd_test -c "CREATE EXTENSION postgis;"
     cp .env.example .env       # fill in OCM_API_KEY (free: openchargemap.org)
     npm install
     npm run db:migrate
