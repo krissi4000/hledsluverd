@@ -2081,16 +2081,28 @@ In `src/app.html`, change `<html lang="en">` to `<html lang="%paraglide.lang%">`
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+// Only same-origin destinations. String checks are not enough here: the WHATWG URL
+// parser browsers apply to the Location header strips tab/CR/LF anywhere in the value
+// (so '/\t/evil.com' becomes protocol-relative '//evil.com') and treats '\' as '/'.
+// Parse the way the browser will and require the origin to stay on our sentinel base.
+function safeRedirect(target: string | null): string {
+	if (!target) return '/';
+	try {
+		const u = new URL(target, 'http://sentinel.invalid');
+		if (u.origin !== 'http://sentinel.invalid') return '/';
+		return u.pathname + u.search + u.hash;
+	} catch {
+		return '/';
+	}
+}
+
 // Deliberate tradeoff: a GET that sets a cookie, so the toggle works without JS.
 // A forged request can only flip the display language (cosmetic). Note the SSR output
 // varies by this cookie — any future CDN/proxy caching needs Vary: Cookie handling.
 export const GET: RequestHandler = ({ url, cookies }) => {
 	const to = url.searchParams.get('to') === 'en' ? 'en' : 'is';
 	cookies.set('PARAGLIDE_LOCALE', to, { path: '/', maxAge: 60 * 60 * 24 * 365 });
-	const target = url.searchParams.get('redirect') ?? '/';
-	// Only same-origin relative paths: require a leading '/' NOT followed by '/' or '\\' —
-	// browsers treat both '//host' and '/\\host' as protocol-relative, i.e. an open redirect.
-	redirect(303, /^\/(?![/\\])/.test(target) ? target : '/');
+	redirect(303, safeRedirect(url.searchParams.get('redirect')));
 };
 ```
 
@@ -2738,6 +2750,25 @@ test('language toggle switches to English and back, without JavaScript', async (
 	await ctx.close();
 });
 
+test('language redirect refuses to leave the site', async ({ request }) => {
+	// %09 = tab: browsers strip tab/CR/LF from Location, turning '/\t/evil.com'
+	// into protocol-relative '//evil.com' — the guard must parse like a browser
+	const attacks = [
+		'//evil.com',
+		'/\\evil.com',
+		'/%09/evil.com',
+		'/%0a/evil.com',
+		'https://evil.com'
+	];
+	for (const attack of attacks) {
+		const res = await request.get(`/lang?to=en&redirect=${attack}`, { maxRedirects: 0 });
+		expect(res.status()).toBe(303);
+		expect(res.headers()['location']).toBe('/');
+	}
+	const ok = await request.get('/lang?to=en&redirect=%2F%3Fafl%3DAC', { maxRedirects: 0 });
+	expect(ok.headers()['location']).toBe('/?afl=AC');
+});
+
 test('station list renders without JavaScript', async ({ browser }) => {
 	const ctx = await browser.newContext({ javaScriptEnabled: false });
 	const page = await ctx.newPage();
@@ -2750,7 +2781,7 @@ test('station list renders without JavaScript', async ({ browser }) => {
 - [x] **Step 3: Run the E2E suite**
 
 Run: `npx playwright install chromium` (first time), then `npx playwright test`
-Expected: 5 tests PASS. If the sortedness test fails, debug the query — do not loosen the test.
+Expected: 6 tests PASS. If the sortedness test fails, debug the query — do not loosen the test.
 
 - [x] **Step 4: Commit**
 
@@ -2794,8 +2825,9 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 
 ## Tests
 
-    npx vitest run        # unit + DB tests (DB tests skip if DATABASE_URL_TEST unset)
-    npx playwright test   # E2E against a production build (needs seeded dev DB)
+    npx vitest run                    # unit + DB tests (skip if DATABASE_URL_TEST unset)
+    npx playwright install chromium   # one-time browser download, before the first E2E run
+    npx playwright test               # E2E against a production build (needs seeded dev DB)
 
 ## Data notes
 
