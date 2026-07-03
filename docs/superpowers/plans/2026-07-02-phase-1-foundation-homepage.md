@@ -1923,12 +1923,10 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 }
 ```
 
-(The first snippet in this step shows a dead-end `selectDistinctOn` draft for context; implement only the second, final version.)
-
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/db/queries.test.ts`
-Expected: PASS (10 tests).
+Expected: PASS (5 tests).
 
 - [ ] **Step 5: Run the whole unit suite**
 
