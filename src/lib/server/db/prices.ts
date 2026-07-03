@@ -8,6 +8,11 @@ export interface PriceReading {
 	stationId?: number | null;
 	tariffKey: TariffKey;
 	priceIskPerKwh: number;
+	/**
+	 * Omitted/null means the network charges no minute fee — not "unknown".
+	 * Scrapers must always pass the full reading: leaving this out when the
+	 * network has a fee writes a new history row that erases the fee.
+	 */
 	minuteFeeIsk?: number | null;
 	source: 'scraper' | 'manual';
 }
@@ -15,13 +20,28 @@ export interface PriceReading {
 const MIN_PLAUSIBLE = 10;
 const MAX_PLAUSIBLE = 200;
 
+/**
+ * The single price-write path (Phase 2 scrapers call this exact function).
+ * Changed value → new history row; unchanged → bump verified_at only.
+ * Assumes a single sequential writer per (network, tariff, station);
+ * concurrent writers may create duplicate history rows.
+ */
 export async function insertPriceIfChanged(
 	db: Db,
 	reading: PriceReading
 ): Promise<'inserted' | 'verified'> {
-	if (reading.priceIskPerKwh < MIN_PLAUSIBLE || reading.priceIskPerKwh > MAX_PLAUSIBLE) {
+	if (
+		!Number.isFinite(reading.priceIskPerKwh) ||
+		reading.priceIskPerKwh < MIN_PLAUSIBLE ||
+		reading.priceIskPerKwh > MAX_PLAUSIBLE
+	) {
 		throw new Error(
 			`Implausible price ${reading.priceIskPerKwh} ISK/kWh for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
+		);
+	}
+	if (reading.minuteFeeIsk != null && !Number.isFinite(reading.minuteFeeIsk)) {
+		throw new Error(
+			`Implausible minute fee ${reading.minuteFeeIsk} ISK for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
 		);
 	}
 

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { desc } from 'drizzle-orm';
 import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
-import { networks, prices } from './schema';
+import { networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
 
 describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
@@ -99,5 +99,96 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 			})
 		).rejects.toThrow(/implausible/i);
 		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+
+	it('rejects NaN prices and minute fees (parse failures must not enter history)', async () => {
+		await expect(
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: NaN,
+				source: 'scraper'
+			})
+		).rejects.toThrow(/implausible/i);
+		await expect(
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: 49,
+				minuteFeeIsk: NaN,
+				source: 'scraper'
+			})
+		).rejects.toThrow(/implausible/i);
+		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+
+	it('accepts the plausibility boundaries 10 and 200 inclusive', async () => {
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 10,
+			source: 'manual'
+		});
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 200,
+			source: 'manual'
+		});
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
+
+	it('appends a new row when only the minute fee changes', async () => {
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 48,
+			minuteFeeIsk: 0.5,
+			source: 'manual'
+		});
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 48,
+			minuteFeeIsk: 0,
+			source: 'scraper'
+		});
+		expect(r).toBe('inserted');
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
+
+	it('keeps station-scoped prices independent of the network-wide price', async () => {
+		const [st] = await db
+			.insert(stations)
+			.values({
+				networkId,
+				slug: 'hellisheidi-on',
+				name: 'Hellisheiði',
+				location: { x: -21.4009, y: 64.0374 }
+			})
+			.returning();
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
+		});
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			stationId: st.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 55,
+			source: 'manual'
+		});
+		expect(r).toBe('inserted');
+		// re-sending the network-wide price must still dedupe against its own scope
+		const again = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'scraper'
+		});
+		expect(again).toBe('verified');
+		expect(await db.select().from(prices)).toHaveLength(2);
 	});
 });
