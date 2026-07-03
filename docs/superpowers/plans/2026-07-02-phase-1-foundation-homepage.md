@@ -1233,9 +1233,11 @@ git commit -m "feat: import stations and connectors from Open Charge Map"
 
 - Create: `src/lib/server/db/prices.ts`, `src/lib/server/db/prices.test.ts`, `seeds/prices-initial.json`, `scripts/seed-prices.ts`
 
-`insertPriceIfChanged` is THE price-write path — Phase 2 scrapers will call this exact function. Rules (spec: Gagnasöfnun note): plausibility guard 10–200 ISK/kWh; changed value → new row; unchanged → bump `verified_at` only.
+`insertPriceIfChanged` is THE price-write path — Phase 2 scrapers will call this exact function. Rules (spec: Gagnasöfnun note): plausibility guard 10–200 ISK/kWh **and finiteness — NaN compares false everywhere, so an unguarded NaN both bypasses the bounds and defeats the dedupe, appending a poison row every run (quality-review finding)**; changed value → new row; unchanged → bump `verified_at` only.
 
-- [ ] **Step 1: Write the failing test**
+**As-built notes (2026-07-03):** tests grew from 5 to 10 (NaN rejection, inclusive boundaries, minute-fee-only change, station-scoped prices). Step 4's expected count is 10. The initial seed holds only what was verifiable from public operator pages on 2026-07-03: ON AC 48 kr/kWh + 0,5 kr/mín and ON DC 62 kr/kWh (temporary reduction, per https://www.on.is/verdskrar). Ísorka, N1, e1 and Orkan publish prices only in their apps or on JS-only pages — rows dropped rather than guessed; Phase 2 scrapers (headless/API) must fill them, and until then those networks render "verð óþekkt" like Tesla.
+
+- [x] **Step 1: Write the failing test**
 
 `src/lib/server/db/prices.test.ts`:
 
@@ -1244,7 +1246,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { desc } from 'drizzle-orm';
 import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
-import { networks, prices } from './schema';
+import { networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
 
 describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
@@ -1342,15 +1344,106 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 		).rejects.toThrow(/implausible/i);
 		expect(await db.select().from(prices)).toHaveLength(0);
 	});
+
+	it('rejects NaN prices and minute fees (parse failures must not enter history)', async () => {
+		await expect(
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: NaN,
+				source: 'scraper'
+			})
+		).rejects.toThrow(/implausible/i);
+		await expect(
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: 49,
+				minuteFeeIsk: NaN,
+				source: 'scraper'
+			})
+		).rejects.toThrow(/implausible/i);
+		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+
+	it('accepts the plausibility boundaries 10 and 200 inclusive', async () => {
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 10,
+			source: 'manual'
+		});
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 200,
+			source: 'manual'
+		});
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
+
+	it('appends a new row when only the minute fee changes', async () => {
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 48,
+			minuteFeeIsk: 0.5,
+			source: 'manual'
+		});
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 48,
+			minuteFeeIsk: 0,
+			source: 'scraper'
+		});
+		expect(r).toBe('inserted');
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
+
+	it('keeps station-scoped prices independent of the network-wide price', async () => {
+		const [st] = await db
+			.insert(stations)
+			.values({
+				networkId,
+				slug: 'hellisheidi-on',
+				name: 'Hellisheiði',
+				location: { x: -21.4009, y: 64.0374 }
+			})
+			.returning();
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
+		});
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			stationId: st.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 55,
+			source: 'manual'
+		});
+		expect(r).toBe('inserted');
+		// re-sending the network-wide price must still dedupe against its own scope
+		const again = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'scraper'
+		});
+		expect(again).toBe('verified');
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/server/db/prices.test.ts`
 Expected: FAIL — cannot find module `./prices`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 First, in `vite.config.ts`, add `fileParallelism: false` to the server project's `test` block: DB suites share one test database, and vitest's parallel workers would truncate each other mid-test once the second DB suite arrives in Task 10. (The drizzle migrator also takes no advisory lock, so concurrent `migrate()` races on a fresh DB.)
 
@@ -1367,6 +1460,11 @@ export interface PriceReading {
 	stationId?: number | null;
 	tariffKey: TariffKey;
 	priceIskPerKwh: number;
+	/**
+	 * Omitted/null means the network charges no minute fee — not "unknown".
+	 * Scrapers must always pass the full reading: leaving this out when the
+	 * network has a fee writes a new history row that erases the fee.
+	 */
 	minuteFeeIsk?: number | null;
 	source: 'scraper' | 'manual';
 }
@@ -1374,13 +1472,28 @@ export interface PriceReading {
 const MIN_PLAUSIBLE = 10;
 const MAX_PLAUSIBLE = 200;
 
+/**
+ * The single price-write path (Phase 2 scrapers call this exact function).
+ * Changed value → new history row; unchanged → bump verified_at only.
+ * Assumes a single sequential writer per (network, tariff, station);
+ * concurrent writers may create duplicate history rows.
+ */
 export async function insertPriceIfChanged(
 	db: Db,
 	reading: PriceReading
 ): Promise<'inserted' | 'verified'> {
-	if (reading.priceIskPerKwh < MIN_PLAUSIBLE || reading.priceIskPerKwh > MAX_PLAUSIBLE) {
+	if (
+		!Number.isFinite(reading.priceIskPerKwh) ||
+		reading.priceIskPerKwh < MIN_PLAUSIBLE ||
+		reading.priceIskPerKwh > MAX_PLAUSIBLE
+	) {
 		throw new Error(
 			`Implausible price ${reading.priceIskPerKwh} ISK/kWh for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
+		);
+	}
+	if (reading.minuteFeeIsk != null && !Number.isFinite(reading.minuteFeeIsk)) {
+		throw new Error(
+			`Implausible minute fee ${reading.minuteFeeIsk} ISK for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
 		);
 	}
 
@@ -1430,12 +1543,12 @@ export async function insertPriceIfChanged(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/db/prices.test.ts`
-Expected: PASS (5 tests).
+Expected: PASS (10 tests).
 
-- [ ] **Step 5: Write the initial price data — THEN VERIFY IT BY HAND**
+- [x] **Step 5: Write the initial price data — THEN VERIFY IT BY HAND**
 
 `seeds/prices-initial.json` (values below came from research articles and are probably stale — the verification step is mandatory):
 
@@ -1454,7 +1567,7 @@ Expected: PASS (5 tests).
 
 **Verification (do not skip):** open each operator's price page — https://www.on.is , https://www.isorka.is , https://www.n1.is , https://www.e1.is , https://www.orkan.is — and correct every value, add missing tariffs (AC rates, per-minute fees as `"minuteFeeIsk"`), delete tariffs an operator doesn't offer. Tesla is intentionally absent (in-app pricing; its stations show "verð óþekkt" until Phase 2 resolves it). Record what you verified in the commit message.
 
-- [ ] **Step 6: Write the seed script**
+- [x] **Step 6: Write the seed script**
 
 `scripts/seed-prices.ts`:
 
@@ -1492,12 +1605,12 @@ for (const r of rows) {
 await db.$client.end();
 ```
 
-- [ ] **Step 7: Run it twice**
+- [x] **Step 7: Run it twice**
 
 Run: `npm run seed:prices && npm run seed:prices`
 Expected: first run all `inserted`, second run all `verified` (idempotent — this also proves the changed/unchanged logic against the dev DB).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/lib/server/db/prices.ts src/lib/server/db/prices.test.ts seeds/prices-initial.json scripts/seed-prices.ts vite.config.ts
@@ -1815,7 +1928,7 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/db/queries.test.ts`
-Expected: PASS (5 tests).
+Expected: PASS (10 tests).
 
 - [ ] **Step 5: Run the whole unit suite**
 
