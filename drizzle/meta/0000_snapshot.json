@@ -1,5 +1,5 @@
 {
-  "id": "0cc4e2d7-cde7-4362-ad96-b05f9700eae0",
+  "id": "27702d39-35fa-47d0-9589-a9ec14ae6c44",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -128,35 +128,7 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "cars_make_model_variant_idx": {
-          "name": "cars_make_model_variant_idx",
-          "columns": [
-            {
-              "expression": "make",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "model",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "variant",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
@@ -165,6 +137,15 @@
           "nullsNotDistinct": false,
           "columns": [
             "slug"
+          ]
+        },
+        "cars_make_model_variant_idx": {
+          "name": "cars_make_model_variant_idx",
+          "nullsNotDistinct": true,
+          "columns": [
+            "make",
+            "model",
+            "variant"
           ]
         }
       },
@@ -403,7 +384,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },

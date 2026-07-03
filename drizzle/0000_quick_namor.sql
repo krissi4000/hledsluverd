@@ -18,7 +18,8 @@ CREATE TABLE "cars" (
 	"max_ac_kw" double precision,
 	"dc_connector" "connector_type",
 	"max_dc_kw" double precision,
-	CONSTRAINT "cars_slug_unique" UNIQUE("slug")
+	CONSTRAINT "cars_slug_unique" UNIQUE("slug"),
+	CONSTRAINT "cars_make_model_variant_idx" UNIQUE NULLS NOT DISTINCT("make","model","variant")
 );
 --> statement-breakpoint
 CREATE TABLE "connectors" (
@@ -76,9 +77,8 @@ CREATE TABLE "stations" (
 ALTER TABLE "availability" ADD CONSTRAINT "availability_station_id_stations_id_fk" FOREIGN KEY ("station_id") REFERENCES "public"."stations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "connectors" ADD CONSTRAINT "connectors_station_id_stations_id_fk" FOREIGN KEY ("station_id") REFERENCES "public"."stations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prices" ADD CONSTRAINT "prices_network_id_networks_id_fk" FOREIGN KEY ("network_id") REFERENCES "public"."networks"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "prices" ADD CONSTRAINT "prices_station_id_stations_id_fk" FOREIGN KEY ("station_id") REFERENCES "public"."stations"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "prices" ADD CONSTRAINT "prices_station_id_stations_id_fk" FOREIGN KEY ("station_id") REFERENCES "public"."stations"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "scrape_runs" ADD CONSTRAINT "scrape_runs_network_id_networks_id_fk" FOREIGN KEY ("network_id") REFERENCES "public"."networks"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "stations" ADD CONSTRAINT "stations_network_id_networks_id_fk" FOREIGN KEY ("network_id") REFERENCES "public"."networks"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "cars_make_model_variant_idx" ON "cars" USING btree ("make","model","variant");--> statement-breakpoint
 CREATE INDEX "prices_current_idx" ON "prices" USING btree ("network_id","tariff_key","valid_from");--> statement-breakpoint
 CREATE INDEX "stations_location_idx" ON "stations" USING gist ("location");
