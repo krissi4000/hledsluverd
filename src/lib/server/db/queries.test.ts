@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
-import { connectors, networks, stations } from './schema';
+import { connectors, networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
 import { currentPrices, rateCard, stationList } from './queries';
 
@@ -130,5 +130,57 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	it('excludes inactive stations', async () => {
 		const all = [...(await stationList(db, 'DC')), ...(await stationList(db, 'AC'))];
 		expect(all.find((s) => s.slug === 'gamla-n1')).toBeUndefined();
+	});
+
+	it('currentPrices ignores station-scoped rows and breaks validFrom ties by id', async () => {
+		const [st] = await db.select().from(stations);
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			stationId: st.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 99,
+			source: 'manual'
+		});
+		// two rows with identical validFrom — the higher id (later insert) must win
+		const validFrom = new Date('2026-01-01T00:00:00Z');
+		await db.insert(prices).values([
+			{ networkId: n1, tariffKey: 'AC', priceIskPerKwh: 30, source: 'manual', validFrom },
+			{ networkId: n1, tariffKey: 'AC', priceIskPerKwh: 32, source: 'manual', validFrom }
+		]);
+		const cp = await currentPrices(db);
+		expect(cp.find((p) => p.networkId === on && p.tariffKey === 'DC')!.priceIskPerKwh).toBe(44);
+		expect(cp.find((p) => p.networkId === n1 && p.tariffKey === 'AC')!.priceIskPerKwh).toBe(32);
+	});
+
+	it('rateCard keeps a network whose only price is the DC_150 tier', async () => {
+		const [ork] = await db.insert(networks).values({ name: 'Orkan', slug: 'orkan' }).returning();
+		await insertPriceIfChanged(db, {
+			networkId: ork.id,
+			tariffKey: 'DC_150',
+			priceIskPerKwh: 89,
+			source: 'manual'
+		});
+		const cards = await rateCard(db);
+		expect(cards.map((c) => c.networkSlug)).toEqual(['on', 'n1', 'orkan']);
+		expect(cards[2]).toMatchObject({ networkSlug: 'orkan', dc: 89, ac: null });
+	});
+
+	it('stationList prices stations on price-less networks as unknown, sorted last', async () => {
+		const [e1] = await db.insert(networks).values({ name: 'e1', slug: 'e1' }).returning();
+		const [st] = await db
+			.insert(stations)
+			.values({
+				networkId: e1.id,
+				slug: 'verdlaus-e1',
+				name: 'Verðlaus',
+				location: { x: -20, y: 64 }
+			})
+			.returning();
+		await db.insert(connectors).values({ stationId: st.id, type: 'CCS2', powerKw: 150, count: 1 });
+		const list = await stationList(db, 'DC');
+		expect(list.map((s) => s.slug)).toEqual(['hellisheidi-on', 'stadarskali-n1', 'verdlaus-e1']);
+		expect(list[2].price).toBeNull();
+		expect(list[2].minuteFeeIsk).toBeNull();
+		expect(list[2].verifiedAt).toBeNull();
 	});
 });

@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { ConnectorType, TariffKey } from '$lib/types';
 import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
@@ -52,14 +52,18 @@ export interface RateCardEntry {
 	acVerifiedAt: Date | null;
 }
 
-/** One entry per network that has any price; sorted by DC price asc (nulls last), then AC. */
+/** One entry per network that has any current price; sorted by DC price asc (nulls last), then AC. */
 export async function rateCard(db: Db): Promise<RateCardEntry[]> {
 	const [nets, cp] = await Promise.all([db.select().from(networks), currentPrices(db)]);
 	const entries: RateCardEntry[] = [];
 	for (const n of nets) {
-		const dc = cp.find((p) => p.networkId === n.id && p.tariffKey === 'DC');
-		const ac = cp.find((p) => p.networkId === n.id && p.tariffKey === 'AC');
-		if (!dc && !ac) continue;
+		const forNet = cp.filter((p) => p.networkId === n.id);
+		if (forNet.length === 0) continue;
+		// a network pricing only the ≥150 kW tier still has a fast-charge price — fall back
+		// to DC_150 so the network doesn't vanish from the card
+		const dc =
+			forNet.find((p) => p.tariffKey === 'DC') ?? forNet.find((p) => p.tariffKey === 'DC_150');
+		const ac = forNet.find((p) => p.tariffKey === 'AC');
 		entries.push({
 			networkSlug: n.slug,
 			networkName: n.name,
@@ -92,7 +96,7 @@ export interface StationRow {
  */
 export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow[]> {
 	const [sts, cons, nets, cp] = await Promise.all([
-		db.select().from(stations).where(eq(stations.isActive, true)).orderBy(asc(stations.name)),
+		db.select().from(stations).where(eq(stations.isActive, true)),
 		db.select().from(connectors),
 		db.select().from(networks),
 		currentPrices(db)
@@ -100,16 +104,15 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 	const netById = new Map(nets.map((n) => [n.id, n]));
 	const consByStation = new Map<number, (typeof cons)[number][]>();
 	for (const c of cons) {
-		(consByStation.get(c.stationId) ?? consByStation.set(c.stationId, []).get(c.stationId)!).push(
-			c
-		);
+		let arr = consByStation.get(c.stationId);
+		if (!arr) consByStation.set(c.stationId, (arr = []));
+		arr.push(c);
 	}
 	const tariffsByNetwork = new Map<number, Set<TariffKey>>();
 	for (const p of cp) {
-		(
-			tariffsByNetwork.get(p.networkId) ??
-			tariffsByNetwork.set(p.networkId, new Set()).get(p.networkId)!
-		).add(p.tariffKey);
+		let set = tariffsByNetwork.get(p.networkId);
+		if (!set) tariffsByNetwork.set(p.networkId, (set = new Set()));
+		set.add(p.tariffKey);
 	}
 
 	const rows: StationRow[] = [];
