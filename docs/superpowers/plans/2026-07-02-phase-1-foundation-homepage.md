@@ -404,7 +404,7 @@ git commit -m "test: add test-database helper (migrate + truncate)"
 **Files:**
 - Create: `src/lib/server/slug.ts`, `src/lib/server/slug.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/server/slug.test.ts`:
 ```ts
@@ -427,12 +427,12 @@ describe('slugify', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/server/slug.test.ts`
 Expected: FAIL — cannot find module `./slug`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 First remove `passWithNoTests: true` from `vite.config.ts` — a real test exists from this task on, so vitest must fail if it ever finds zero tests (guards against include-pattern typos).
 
@@ -454,12 +454,12 @@ export function slugify(input: string): string {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/slug.test.ts`
 Expected: PASS (3 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/server/slug.ts src/lib/server/slug.test.ts vite.config.ts
