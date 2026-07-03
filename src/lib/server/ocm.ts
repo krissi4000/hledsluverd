@@ -118,7 +118,8 @@ export function parseOcm(
 		const byKey = new Map<string, { type: ConnectorType; powerKw: number; count: number }>();
 		for (const c of poi.Connections ?? []) {
 			const type = c.ConnectionTypeID != null ? CONNECTION_TYPE_MAP[c.ConnectionTypeID] : undefined;
-			if (!type || c.PowerKW == null) continue;
+			// 0/negative PowerKW is OCM data noise — treat like an unknown connection type.
+			if (!type || c.PowerKW == null || c.PowerKW <= 0) continue;
 			const key = `${type}:${c.PowerKW}`;
 			const entry = byKey.get(key) ?? { type, powerKw: c.PowerKW, count: 0 };
 			entry.count += c.Quantity ?? 1;
