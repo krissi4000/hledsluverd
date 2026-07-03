@@ -475,7 +475,7 @@ git commit -m "feat: add slugify with Icelandic transliteration"
 
 Spec rule (Gagnalíkan note): Type2 → `AC`; CCS2/CHAdeMO → `DC_150` when `power_kw ≥ 150` **and** the network defines that tier, otherwise `DC`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/server/matching.test.ts`:
 ```ts
@@ -504,12 +504,12 @@ describe('deriveTariffKey', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/server/matching.test.ts`
 Expected: FAIL — cannot find module `./matching`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `src/lib/server/matching.ts`:
 ```ts
@@ -526,12 +526,12 @@ export function deriveTariffKey(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/matching.test.ts`
 Expected: PASS (4 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/server/matching.ts src/lib/server/matching.test.ts
