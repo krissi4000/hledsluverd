@@ -14,7 +14,11 @@
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright install && playwright test",
 		"lint": "prettier --check .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"db:migrate": "drizzle-kit migrate",
+		"seed:networks": "tsx scripts/seed-networks.ts",
+		"seed:ocm": "tsx scripts/seed-ocm.ts",
+		"seed:prices": "tsx scripts/seed-prices.ts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.60.0",

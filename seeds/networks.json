@@ -1,0 +1,8 @@
+[
+	{ "name": "ON", "slug": "on", "websiteUrl": "https://www.on.is", "ocmMatchers": ["orka náttúrunnar", "on power", "on -"] },
+	{ "name": "Ísorka", "slug": "isorka", "websiteUrl": "https://www.isorka.is", "ocmMatchers": ["ísorka", "isorka"] },
+	{ "name": "N1", "slug": "n1", "websiteUrl": "https://www.n1.is", "ocmMatchers": ["n1"] },
+	{ "name": "e1", "slug": "e1", "websiteUrl": "https://www.e1.is", "ocmMatchers": ["e1", "eone"] },
+	{ "name": "Orkan", "slug": "orkan", "websiteUrl": "https://www.orkan.is", "ocmMatchers": ["orkan"] },
+	{ "name": "Tesla", "slug": "tesla", "websiteUrl": "https://www.tesla.com/findus", "ocmMatchers": ["tesla"] }
+]
