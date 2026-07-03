@@ -2767,7 +2767,7 @@ git commit -m "test: add homepage E2E suite (sorting, filters, no-JS, language t
 
 - Create: `README.md`
 
-- [ ] **Step 1: Write the README**
+- [x] **Step 1: Write the README**
 
 `README.md`:
 
@@ -2807,7 +2807,7 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
   websites on the date in git history. Scrapers arrive in Phase 2.
 ```
 
-- [ ] **Step 2: Full verification run**
+- [x] **Step 2: Full verification run**
 
 ```bash
 npx vitest run && npx playwright test && npm run build
@@ -2815,7 +2815,7 @@ npx vitest run && npx playwright test && npm run build
 
 Expected: everything green, build succeeds.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md
