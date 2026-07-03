@@ -13,7 +13,12 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	const [cards, allStations] = await Promise.all([rateCard(db), stationList(db, mode)]);
 
-	const network = cards.some((c) => c.networkSlug === rawNetwork) ? rawNetwork : null;
+	// filter options come from the stations in view, not the rate card — most networks
+	// have stations long before they have verified prices
+	const networkOptions = [...new Map(allStations.map((s) => [s.networkSlug, s.networkName]))]
+		.map(([slug, name]) => ({ slug, name }))
+		.sort((a, b) => a.name.localeCompare(b.name, 'is'));
+	const network = networkOptions.some((n) => n.slug === rawNetwork) ? rawNetwork : null;
 
 	const stations = allStations.filter(
 		(s) =>
@@ -27,6 +32,6 @@ export const load: PageServerLoad = async ({ url }) => {
 		network,
 		cards,
 		stations,
-		networkOptions: cards.map((c) => ({ slug: c.networkSlug, name: c.networkName }))
+		networkOptions
 	};
 };
