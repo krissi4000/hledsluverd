@@ -967,7 +967,7 @@ export function parseOcm(
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/ocm.test.ts`
-Expected: PASS (3 tests).
+Expected: PASS (6 tests).
 
 - [ ] **Step 6: Write the seed script**
 
