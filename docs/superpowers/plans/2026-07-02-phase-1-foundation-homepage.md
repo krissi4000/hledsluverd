@@ -15,6 +15,7 @@
 **Known limitation (for Phase 3):** drizzle-orm 0.45.2 ignores the `srid` option — `stations.location` is `geometry(Point)` without SRID enforcement at the column level. Our writes embed SRID 4326; Phase 3 nearest-station queries must pass SRID explicitly (e.g. `ST_SetSRID` / `ST_DistanceSphere`) rather than relying on a column constraint.
 
 **Conventions for the executor:**
+
 - Node ≥ 20. Run everything from the repo root `/home/kjb/Projects/hledsluverd`.
 - CLI tools (`sv`, `paraglide-js`) evolve; if a flag is rejected or a prompt differs, pick the option matching the step's intent and note the deviation in the commit message.
 - Icelandic characters in strings and filenames are intentional — preserve them exactly.
@@ -64,24 +65,29 @@ Unit tests are colocated: `src/lib/server/slug.test.ts`, `matching.test.ts`, `oc
 ### Task 1: Scaffold SvelteKit project with test tooling
 
 **Files:**
+
 - Create: entire SvelteKit skeleton (via CLI), `vitest` + `playwright` + `prettier` add-ons
 - Modify: `.gitignore` (already exists — CLI may append)
 
 - [x] **Step 1: Scaffold into the existing repo**
 
 Run:
+
 ```bash
 cd /home/kjb/Projects/hledsluverd
 npx sv@latest create . --template minimal --types ts --no-add-ons --install npm
 ```
+
 Expected: files created (`package.json`, `svelte.config.js`, `vite.config.ts`, `src/routes/+page.svelte`, …). If prompted about the non-empty directory, choose to continue.
 
 - [x] **Step 2: Add test/format tooling**
 
 Run:
+
 ```bash
 npx sv add vitest playwright prettier --install npm
 ```
+
 Expected: `vitest` config merged into `vite.config.ts`, `playwright.config.ts` created (with an `e2e/` test dir or similar — if it creates `e2e/demo.test.ts`, keep the folder, delete the demo test), prettier config added.
 
 - [x] **Step 3: Verify dev server boots**
@@ -106,6 +112,7 @@ git commit -m "chore: scaffold SvelteKit app with vitest, playwright, prettier"
 ### Task 2: Postgres databases, Drizzle config, connection factory
 
 **Files:**
+
 - Create: `.env`, `.env.example`, `drizzle.config.ts`, `src/lib/server/db/client.ts`, `src/lib/server/db/index.ts`
 
 - [x] **Step 1: Install dependencies**
@@ -120,15 +127,18 @@ npm i -D drizzle-kit tsx dotenv
 **Already done during environment prep (2026-07-03):** both databases exist and PostGIS was enabled by the superuser (Arch's postgis package is not a "trusted" extension, so `CREATE EXTENSION postgis` requires `sudo -u postgres psql -d <db> -c 'CREATE EXTENSION postgis;'` — plain-role `psql` fails). `.env` also already exists with `OCM_API_KEY` filled in; do not overwrite it, only reconcile it with `.env.example`.
 
 Verify only:
+
 ```bash
 psql -d hledsluverd -tAc "select postgis_version()"
 psql -d hledsluverd_test -tAc "select postgis_version()"
 ```
+
 Expected: a PostGIS version string from each.
 
 - [x] **Step 3: Write `.env` and `.env.example`**
 
 `.env` (gitignored already) and `.env.example` (committed), same content:
+
 ```bash
 DATABASE_URL=postgres://localhost:5432/hledsluverd
 DATABASE_URL_TEST=postgres://localhost:5432/hledsluverd_test
@@ -157,6 +167,7 @@ export default defineConfig({
 - [x] **Step 5: Write connection factory and app instance**
 
 `src/lib/server/db/client.ts`:
+
 ```ts
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -171,6 +182,7 @@ export type Db = ReturnType<typeof createDb>;
 ```
 
 `src/lib/server/db/index.ts` (app-facing; SvelteKit loads `.env` itself):
+
 ```ts
 import { env } from '$env/dynamic/private';
 import { createDb } from './client';
@@ -198,6 +210,7 @@ git commit -m "feat: add Postgres + Drizzle setup with dev/test databases"
 ### Task 3: Full database schema + first migration
 
 **Files:**
+
 - Create: `src/lib/types.ts`
 - Modify: `src/lib/server/db/schema.ts`
 - Create: `drizzle/0000_*.sql` (generated)
@@ -205,6 +218,7 @@ git commit -m "feat: add Postgres + Drizzle setup with dev/test databases"
 - [x] **Step 1: Write shared types**
 
 `src/lib/types.ts`:
+
 ```ts
 export const CONNECTOR_TYPES = ['CCS2', 'CHAdeMO', 'Type2'] as const;
 export type ConnectorType = (typeof CONNECTOR_TYPES)[number];
@@ -216,10 +230,21 @@ export type TariffKey = (typeof TARIFF_KEYS)[number];
 - [x] **Step 2: Write the schema (all 7 tables — spec: Gagnalíkan note)**
 
 `src/lib/server/db/schema.ts`:
+
 ```ts
 import {
-	pgTable, pgEnum, serial, text, integer, boolean, doublePrecision,
-	timestamp, jsonb, geometry, index, unique
+	pgTable,
+	pgEnum,
+	serial,
+	text,
+	integer,
+	boolean,
+	doublePrecision,
+	timestamp,
+	jsonb,
+	geometry,
+	index,
+	unique
 } from 'drizzle-orm/pg-core';
 import { CONNECTOR_TYPES, TARIFF_KEYS, type ConnectorType } from '$lib/types';
 
@@ -237,22 +262,32 @@ export const stations = pgTable(
 	'stations',
 	{
 		id: serial('id').primaryKey(),
-		networkId: integer('network_id').notNull().references(() => networks.id),
+		networkId: integer('network_id')
+			.notNull()
+			.references(() => networks.id),
 		slug: text('slug').notNull().unique(),
 		name: text('name').notNull(),
 		address: text('address'),
 		location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
-		externalIds: jsonb('external_ids').$type<{ ocm?: number; tomtom?: string }>().notNull().default({}),
+		externalIds: jsonb('external_ids')
+			.$type<{ ocm?: number; tomtom?: string }>()
+			.notNull()
+			.default({}),
 		isActive: boolean('is_active').notNull().default(true),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date())
+		updatedAt: timestamp('updated_at', { withTimezone: true })
+			.notNull()
+			.defaultNow()
+			.$onUpdate(() => new Date())
 	},
 	(t) => [index('stations_location_idx').using('gist', t.location)]
 );
 
 export const connectors = pgTable('connectors', {
 	id: serial('id').primaryKey(),
-	stationId: integer('station_id').notNull().references(() => stations.id, { onDelete: 'cascade' }),
+	stationId: integer('station_id')
+		.notNull()
+		.references(() => stations.id, { onDelete: 'cascade' }),
 	type: connectorTypeEnum('type').notNull(),
 	powerKw: doublePrecision('power_kw').notNull(),
 	count: integer('count').notNull().default(1)
@@ -262,7 +297,9 @@ export const prices = pgTable(
 	'prices',
 	{
 		id: serial('id').primaryKey(),
-		networkId: integer('network_id').notNull().references(() => networks.id),
+		networkId: integer('network_id')
+			.notNull()
+			.references(() => networks.id),
 		stationId: integer('station_id').references(() => stations.id, { onDelete: 'restrict' }), // NULL = network-wide; price history blocks hard deletes — use is_active
 		tariffKey: text('tariff_key', { enum: TARIFF_KEYS }).notNull(),
 		priceIskPerKwh: doublePrecision('price_isk_per_kwh').notNull(),
@@ -276,10 +313,13 @@ export const prices = pgTable(
 );
 
 export const availability = pgTable('availability', {
-	stationId: integer('station_id').primaryKey().references(() => stations.id, { onDelete: 'cascade' }),
+	stationId: integer('station_id')
+		.primaryKey()
+		.references(() => stations.id, { onDelete: 'cascade' }),
 	freeCount: integer('free_count'),
 	totalCount: integer('total_count'),
-	perType: jsonb('per_type').$type<Partial<Record<ConnectorType, { free: number; total: number }>>>(),
+	perType:
+		jsonb('per_type').$type<Partial<Record<ConnectorType, { free: number; total: number }>>>(),
 	fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
 	source: text('source').notNull() // free text until Phase 3 pins the source set
 });
@@ -302,7 +342,9 @@ export const cars = pgTable(
 
 export const scrapeRuns = pgTable('scrape_runs', {
 	id: serial('id').primaryKey(),
-	networkId: integer('network_id').notNull().references(() => networks.id),
+	networkId: integer('network_id')
+		.notNull()
+		.references(() => networks.id),
 	startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
 	status: text('status', { enum: ['ok', 'changed', 'failed'] }).notNull(),
 	message: text('message')
@@ -320,6 +362,7 @@ Expected: one SQL file in `drizzle/` creating all 7 tables + enum. Open it and v
 npx drizzle-kit migrate
 DATABASE_URL=postgres://localhost:5432/hledsluverd_test npx drizzle-kit migrate
 ```
+
 Expected: no errors. Verify: `psql -d hledsluverd -c '\dt'` lists the 7 tables.
 
 - [x] **Step 5: Commit**
@@ -334,6 +377,7 @@ git commit -m "feat: add full database schema (7 tables) and initial migration"
 ### Task 4: Test-DB helper
 
 **Files:**
+
 - Create: `tests/helpers/db.ts`
 
 DB-touching tests run against `DATABASE_URL_TEST` and are skipped when it's unset. Vitest loads `.env` only if told to — the helper uses `dotenv`.
@@ -341,6 +385,7 @@ DB-touching tests run against `DATABASE_URL_TEST` and are skipped when it's unse
 - [x] **Step 1: Write the helper**
 
 `tests/helpers/db.ts` (TRUNCATE list is derived from the schema module so Phase 2+ tables can't be forgotten; the /test/ URL check keeps destructive helpers away from real databases):
+
 ```ts
 import 'dotenv/config';
 import { getTableName, sql } from 'drizzle-orm';
@@ -380,6 +425,7 @@ Note: `$lib` aliases don't resolve from `tests/` by default — the helper delib
 - [x] **Step 2: Verify it compiles and connects**
 
 `tsx -e` cannot use top-level await (cjs eval context — discovered in Task 2). Write a throwaway file `tmp-verify.ts` in the repo root:
+
 ```ts
 import { setupTestDb, truncateAll, closeTestDb } from './tests/helpers/db';
 const db = await setupTestDb();
@@ -387,6 +433,7 @@ await truncateAll(db);
 await closeTestDb(db);
 console.log('ok');
 ```
+
 Run: `npx tsx tmp-verify.ts && rm tmp-verify.ts`
 Expected: `ok` (and the process exits on its own — proves the pool teardown works).
 
@@ -402,11 +449,13 @@ git commit -m "test: add test-database helper (migrate + truncate)"
 ### Task 5: Slug utility (TDD)
 
 **Files:**
+
 - Create: `src/lib/server/slug.ts`, `src/lib/server/slug.test.ts`
 
 - [x] **Step 1: Write the failing test**
 
 `src/lib/server/slug.test.ts`:
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import { slugify } from './slug';
@@ -437,10 +486,19 @@ Expected: FAIL — cannot find module `./slug`.
 First remove `passWithNoTests: true` from `vite.config.ts` — a real test exists from this task on, so vitest must fail if it ever finds zero tests (guards against include-pattern typos).
 
 `src/lib/server/slug.ts`:
+
 ```ts
 const MAP: Record<string, string> = {
-	á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ý: 'y',
-	ð: 'd', þ: 'th', æ: 'ae', ö: 'o'
+	á: 'a',
+	é: 'e',
+	í: 'i',
+	ó: 'o',
+	ú: 'u',
+	ý: 'y',
+	ð: 'd',
+	þ: 'th',
+	æ: 'ae',
+	ö: 'o'
 };
 
 export function slugify(input: string): string {
@@ -471,6 +529,7 @@ git commit -m "feat: add slugify with Icelandic transliteration"
 ### Task 6: Tariff derivation (TDD)
 
 **Files:**
+
 - Create: `src/lib/server/matching.ts`, `src/lib/server/matching.test.ts`
 
 Spec rule (Gagnalíkan note): Type2 → `AC`; CCS2/CHAdeMO → `DC_150` when `power_kw ≥ 150` **and** the network defines that tier, otherwise `DC`.
@@ -478,6 +537,7 @@ Spec rule (Gagnalíkan note): Type2 → `AC`; CCS2/CHAdeMO → `DC_150` when `po
 - [x] **Step 1: Write the failing test**
 
 `src/lib/server/matching.test.ts`:
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import { deriveTariffKey } from './matching';
@@ -512,6 +572,7 @@ Expected: FAIL — cannot find module `./matching`.
 - [x] **Step 3: Write the implementation**
 
 `src/lib/server/matching.ts`:
+
 ```ts
 import type { ConnectorType, TariffKey } from '$lib/types';
 
@@ -543,26 +604,49 @@ git commit -m "feat: add tariff derivation rule"
 ### Task 7: Networks seed data + script
 
 **Files:**
+
 - Create: `seeds/networks.json`, `scripts/seed-networks.ts`
 - Modify: `package.json` (scripts)
 
-- [ ] **Step 1: Write the seed data**
+- [x] **Step 1: Write the seed data**
 
-`seeds/networks.json` — `ocmMatchers` are lowercase substrings matched against OCM's operator title (used by Task 8):
+`seeds/networks.json` — `ocmMatchers` are fallback title matchers for Task 8 (matched case-insensitively on Unicode word boundaries; Task 8 Step 0 adds `ocmOperatorIds` as the primary matching key):
+
 ```json
 [
-	{ "name": "ON", "slug": "on", "websiteUrl": "https://www.on.is", "ocmMatchers": ["orka náttúrunnar", "on power", "on -"] },
-	{ "name": "Ísorka", "slug": "isorka", "websiteUrl": "https://www.isorka.is", "ocmMatchers": ["ísorka", "isorka"] },
+	{
+		"name": "ON",
+		"slug": "on",
+		"websiteUrl": "https://www.on.is",
+		"ocmMatchers": ["orka náttúrunnar", "on power", "on -"]
+	},
+	{
+		"name": "Ísorka",
+		"slug": "isorka",
+		"websiteUrl": "https://www.isorka.is",
+		"ocmMatchers": ["ísorka", "isorka"]
+	},
 	{ "name": "N1", "slug": "n1", "websiteUrl": "https://www.n1.is", "ocmMatchers": ["n1"] },
 	{ "name": "e1", "slug": "e1", "websiteUrl": "https://www.e1.is", "ocmMatchers": ["e1", "eone"] },
-	{ "name": "Orkan", "slug": "orkan", "websiteUrl": "https://www.orkan.is", "ocmMatchers": ["orkan"] },
-	{ "name": "Tesla", "slug": "tesla", "websiteUrl": "https://www.tesla.com/findus", "ocmMatchers": ["tesla"] }
+	{
+		"name": "Orkan",
+		"slug": "orkan",
+		"websiteUrl": "https://www.orkan.is",
+		"ocmMatchers": ["orkan"]
+	},
+	{
+		"name": "Tesla",
+		"slug": "tesla",
+		"websiteUrl": "https://www.tesla.com/findus",
+		"ocmMatchers": ["tesla"]
+	}
 ]
 ```
 
-- [ ] **Step 2: Write the seed script (idempotent upsert by slug)**
+- [x] **Step 2: Write the seed script (idempotent upsert by slug)**
 
 `scripts/seed-networks.ts`:
+
 ```ts
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
@@ -570,10 +654,11 @@ import { createDb } from '../src/lib/server/db/client';
 import { networks } from '../src/lib/server/db/schema';
 
 const data: { name: string; slug: string; websiteUrl: string }[] = JSON.parse(
-	readFileSync('seeds/networks.json', 'utf8')
+	readFileSync(new URL('../seeds/networks.json', import.meta.url), 'utf8')
 );
 
-const db = createDb(process.env.DATABASE_URL!);
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+const db = createDb(process.env.DATABASE_URL);
 for (const n of data) {
 	await db
 		.insert(networks)
@@ -587,23 +672,25 @@ console.log(`Seeded ${data.length} networks.`);
 await db.$client.end();
 ```
 
-- [ ] **Step 3: Add npm scripts**
+- [x] **Step 3: Add npm scripts**
 
 In `package.json` `"scripts"`, add:
+
 ```json
 "db:migrate": "drizzle-kit migrate",
 "seed:networks": "tsx scripts/seed-networks.ts",
 "seed:ocm": "tsx scripts/seed-ocm.ts",
 "seed:prices": "tsx scripts/seed-prices.ts"
 ```
+
 (`seed:ocm` / `seed:prices` targets are created in Tasks 8–9.)
 
-- [ ] **Step 4: Run it twice (idempotency check)**
+- [x] **Step 4: Run it twice (idempotency check)**
 
 Run: `npm run seed:networks && npm run seed:networks && psql -d hledsluverd -c "SELECT slug FROM networks ORDER BY slug;"`
 Expected: 6 rows (`e1, isorka, n1, on, orkan, tesla`) — not 12.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add seeds/networks.json scripts/seed-networks.ts package.json
@@ -615,11 +702,20 @@ git commit -m "feat: seed the six charging networks"
 ### Task 8: OCM parser (fixture TDD) + station seed script
 
 **Files:**
+
 - Create: `tests/fixtures/ocm-sample.json`, `src/lib/server/ocm.ts`, `src/lib/server/ocm.test.ts`, `scripts/seed-ocm.ts`
+- Modify: `seeds/networks.json` (add `ocmOperatorIds`)
+
+**Matching strategy (amended after Task 7 quality review):** match POIs to networks by **OCM operator ID first** (exact, stable), with title matchers as a reviewable fallback for operators whose IDs we haven't recorded yet. Title matching uses case-insensitive Unicode word-boundary regexes, never `includes()` — bare substrings like `n1`/`on` false-positive inside unrelated operator names. The parser reports every matched operator → slug pair (not just skips) so false positives are visible.
+
+- [ ] **Step 0: Add operator IDs to the networks seed**
+
+In `seeds/networks.json`, add an `"ocmOperatorIds"` number array to every network: `[3372]` for ON (confirmed OCM operator id), `[]` for the others — Step 7 backfills real ids from the matched-pairs log of the first live run.
 
 - [ ] **Step 1: Write the fixture**
 
 `tests/fixtures/ocm-sample.json` — trimmed to the fields we read; 3 POIs: an ON fast-charge site (CCS2 ×2 + CHAdeMO, mixed), an Ísorka AC site (Type2 socket ×4), and one with an unknown operator (must be skipped):
+
 ```json
 [
 	{
@@ -671,6 +767,7 @@ git commit -m "feat: seed the six charging networks"
 - [ ] **Step 2: Write the failing test**
 
 `src/lib/server/ocm.test.ts`:
+
 ```ts
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -678,8 +775,8 @@ import { parseOcm, type NetworkMatcher } from './ocm';
 
 const pois = JSON.parse(readFileSync('tests/fixtures/ocm-sample.json', 'utf8'));
 const matchers: NetworkMatcher[] = [
-	{ slug: 'on', ocmMatchers: ['orka náttúrunnar', 'on power', 'on -'] },
-	{ slug: 'isorka', ocmMatchers: ['ísorka', 'isorka'] }
+	{ slug: 'on', ocmOperatorIds: [3372], ocmMatchers: ['orka náttúrunnar', 'on power'] },
+	{ slug: 'isorka', ocmOperatorIds: [], ocmMatchers: ['ísorka', 'isorka'] }
 ];
 
 describe('parseOcm', () => {
@@ -692,6 +789,32 @@ describe('parseOcm', () => {
 		expect(on.lat).toBeCloseTo(64.0374);
 		expect(on.lng).toBeCloseTo(-21.4009);
 		expect(on.ocmId).toBe(111001);
+	});
+
+	it('matches by operator ID even when no title matcher would hit', () => {
+		const { drafts } = parseOcm(pois, [{ slug: 'on', ocmOperatorIds: [3372], ocmMatchers: [] }]);
+		expect(drafts.map((d) => d.networkSlug)).toEqual(['on']);
+	});
+
+	it('falls back to title matching on Unicode word boundaries only', () => {
+		// contains the substring 'on' but not the word 'on' — must NOT match
+		const decoy = { ...pois[2], OperatorInfo: { ID: 9999, Title: 'Onion Hotels' } };
+		const { drafts, skipped } = parseOcm(
+			[decoy],
+			[{ slug: 'on', ocmOperatorIds: [], ocmMatchers: ['on'] }]
+		);
+		expect(drafts).toHaveLength(0);
+		expect(skipped).toEqual([{ operator: 'Onion Hotels', count: 1 }]);
+	});
+
+	it('reports matched operator → slug pairs for review', () => {
+		const { matched } = parseOcm(pois, matchers);
+		expect(matched).toEqual(
+			expect.arrayContaining([
+				{ operator: 'Orka náttúrunnar (ON)', operatorId: 3372, slug: 'on', via: 'id' },
+				{ operator: 'Ísorka', operatorId: 3400, slug: 'isorka', via: 'title' }
+			])
+		);
 	});
 
 	it('aggregates connections by (type, power), defaulting quantity to 1', () => {
@@ -724,6 +847,7 @@ Expected: FAIL — cannot find module `./ocm`.
 - [ ] **Step 4: Write the implementation**
 
 `src/lib/server/ocm.ts`:
+
 ```ts
 import type { ConnectorType } from '$lib/types';
 
@@ -739,7 +863,15 @@ const CONNECTION_TYPE_MAP: Record<number, ConnectorType> = {
 
 export interface NetworkMatcher {
 	slug: string;
+	ocmOperatorIds: number[];
 	ocmMatchers: string[];
+}
+
+export interface MatchedOperator {
+	operator: string;
+	operatorId: number | null;
+	slug: string;
+	via: 'id' | 'title';
 }
 
 export interface StationDraft {
@@ -754,7 +886,7 @@ export interface StationDraft {
 
 interface OcmPoi {
 	ID: number;
-	OperatorInfo?: { Title?: string } | null;
+	OperatorInfo?: { ID?: number; Title?: string } | null;
 	AddressInfo?: {
 		Title?: string;
 		AddressLine1?: string | null;
@@ -762,26 +894,46 @@ interface OcmPoi {
 		Latitude?: number;
 		Longitude?: number;
 	} | null;
-	Connections?: { ConnectionTypeID?: number; PowerKW?: number | null; Quantity?: number | null }[] | null;
+	Connections?:
+		{ ConnectionTypeID?: number; PowerKW?: number | null; Quantity?: number | null }[] | null;
 }
+
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Whole-word, case-insensitive title match. \b is ASCII-only, so use Unicode property classes.
+const wordRegex = (m: string) =>
+	new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(m)}(?![\\p{L}\\p{N}])`, 'iu');
 
 export function parseOcm(
 	pois: OcmPoi[],
 	matchers: NetworkMatcher[]
-): { drafts: StationDraft[]; skipped: { operator: string; count: number }[] } {
+): {
+	drafts: StationDraft[];
+	skipped: { operator: string; count: number }[];
+	matched: MatchedOperator[];
+} {
+	const compiled = matchers.map((m) => ({ ...m, regexes: m.ocmMatchers.map(wordRegex) }));
 	const drafts: StationDraft[] = [];
 	const skippedCounts = new Map<string, number>();
+	const matchedByKey = new Map<string, MatchedOperator>();
 
 	for (const poi of pois) {
 		const operator = poi.OperatorInfo?.Title ?? '(no operator)';
-		const network = matchers.find((m) =>
-			m.ocmMatchers.some((s) => operator.toLowerCase().includes(s))
-		);
+		const operatorId = poi.OperatorInfo?.ID ?? null;
+		const byId =
+			operatorId != null ? compiled.find((m) => m.ocmOperatorIds.includes(operatorId)) : undefined;
+		const network = byId ?? compiled.find((m) => m.regexes.some((r) => r.test(operator)));
 		const a = poi.AddressInfo;
 		if (!network || !a?.Title || a.Latitude == null || a.Longitude == null) {
 			skippedCounts.set(operator, (skippedCounts.get(operator) ?? 0) + 1);
 			continue;
 		}
+		matchedByKey.set(`${operatorId}:${operator}`, {
+			operator,
+			operatorId,
+			slug: network.slug,
+			via: byId ? 'id' : 'title'
+		});
 
 		const byKey = new Map<string, { type: ConnectorType; powerKw: number; count: number }>();
 		for (const c of poi.Connections ?? []) {
@@ -806,7 +958,8 @@ export function parseOcm(
 
 	return {
 		drafts,
-		skipped: [...skippedCounts.entries()].map(([operator, count]) => ({ operator, count }))
+		skipped: [...skippedCounts.entries()].map(([operator, count]) => ({ operator, count })),
+		matched: [...matchedByKey.values()]
 	};
 }
 ```
@@ -819,6 +972,7 @@ Expected: PASS (3 tests).
 - [ ] **Step 6: Write the seed script**
 
 `scripts/seed-ocm.ts` — fetches Iceland POIs, parses, upserts by `external_ids->>'ocm'`, replaces connectors on update, ensures slug uniqueness:
+
 ```ts
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
@@ -838,15 +992,17 @@ if (!res.ok) throw new Error(`OCM request failed: ${res.status}`);
 const pois = await res.json();
 
 const seedNetworks: (NetworkMatcher & { name: string })[] = JSON.parse(
-	readFileSync('seeds/networks.json', 'utf8')
+	readFileSync(new URL('../seeds/networks.json', import.meta.url), 'utf8')
 );
-const { drafts, skipped } = parseOcm(pois, seedNetworks);
+const { drafts, skipped, matched } = parseOcm(pois, seedNetworks);
 
-const db = createDb(process.env.DATABASE_URL!);
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+const db = createDb(process.env.DATABASE_URL);
 const dbNetworks = await db.select().from(networks);
 const idBySlug = new Map(dbNetworks.map((n) => [n.slug, n.id]));
 
-let inserted = 0, updated = 0;
+let inserted = 0,
+	updated = 0;
 for (const d of drafts) {
 	const networkId = idBySlug.get(d.networkSlug);
 	if (!networkId) throw new Error(`Network not seeded: ${d.networkSlug} (run seed:networks first)`);
@@ -861,12 +1017,20 @@ for (const d of drafts) {
 		stationId = existing[0].id;
 		await db
 			.update(stations)
-			.set({ name: d.name, address: d.address, location: { x: d.lng, y: d.lat }, updatedAt: new Date() })
+			.set({
+				name: d.name,
+				address: d.address,
+				location: { x: d.lng, y: d.lat },
+				updatedAt: new Date()
+			})
 			.where(eq(stations.id, stationId));
 		updated++;
 	} else {
 		let slug = slugify(`${d.name}-${d.networkSlug}`);
-		const clash = await db.select({ id: stations.id }).from(stations).where(eq(stations.slug, slug));
+		const clash = await db
+			.select({ id: stations.id })
+			.from(stations)
+			.where(eq(stations.slug, slug));
 		if (clash.length > 0) slug = `${slug}-${d.ocmId}`;
 		const [row] = await db
 			.insert(stations)
@@ -890,8 +1054,14 @@ for (const d of drafts) {
 }
 
 console.log(`OCM seed: ${inserted} inserted, ${updated} updated, ${drafts.length} total.`);
-console.log('Skipped operators (review — add matchers to seeds/networks.json if any belong to our networks):');
-for (const s of skipped.sort((a, b) => b.count - a.count)) console.log(`  ${s.count}× ${s.operator}`);
+console.log('Matched operators (verify each mapping; backfill ids for ones matched via title):');
+for (const m of matched)
+	console.log(`  ${m.operator} (OCM id ${m.operatorId}) → ${m.slug} [${m.via}]`);
+console.log(
+	'Skipped operators (review — add ids/matchers to seeds/networks.json if any belong to our networks):'
+);
+for (const s of skipped.sort((a, b) => b.count - a.count))
+	console.log(`  ${s.count}× ${s.operator}`);
 await db.$client.end();
 ```
 
@@ -900,7 +1070,12 @@ await db.$client.end();
 Register a free API key at https://openchargemap.org (My Profile → API keys), put it in `.env` as `OCM_API_KEY`, then:
 
 Run: `npm run seed:ocm && psql -d hledsluverd -c "SELECT n.slug, count(*) FROM stations s JOIN networks n ON n.id = s.network_id GROUP BY 1 ORDER BY 2 DESC;"`
-Expected: a few hundred stations spread across the networks; a skipped-operators report. **Read the skipped list**: if an operator clearly belongs to one of our six networks under a different OCM name, add a matcher string to `seeds/networks.json` and re-run (idempotent). Run it twice to confirm `updated` equals the previous `inserted`.
+Expected: a few hundred stations spread across the networks; a matched-operators report and a skipped-operators report. **Read both lists:**
+
+- For every operator matched `[title]`, verify the mapping is right, then backfill its OCM id into that network's `ocmOperatorIds` in `seeds/networks.json` so future runs match by id.
+- If a skipped operator clearly belongs to one of our six networks, add its OCM id to `ocmOperatorIds` (preferred over a title matcher) and re-run (idempotent).
+
+Run it twice to confirm `updated` equals the previous `inserted`.
 
 - [ ] **Step 8: Commit**
 
@@ -914,6 +1089,7 @@ git commit -m "feat: import stations and connectors from Open Charge Map"
 ### Task 9: Price writing (TDD) + initial price seed
 
 **Files:**
+
 - Create: `src/lib/server/db/prices.ts`, `src/lib/server/db/prices.test.ts`, `seeds/prices-initial.json`, `scripts/seed-prices.ts`
 
 `insertPriceIfChanged` is THE price-write path — Phase 2 scrapers will call this exact function. Rules (spec: Gagnasöfnun note): plausibility guard 10–200 ISK/kWh; changed value → new row; unchanged → bump `verified_at` only.
@@ -921,6 +1097,7 @@ git commit -m "feat: import stations and connectors from Open Charge Map"
 - [ ] **Step 1: Write the failing test**
 
 `src/lib/server/db/prices.test.ts`:
+
 ```ts
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { desc } from 'drizzle-orm';
@@ -947,17 +1124,30 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 
 	it('inserts a first price row', async () => {
 		const r = await insertPriceIfChanged(db, {
-			networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual'
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
 		});
 		expect(r).toBe('inserted');
 		expect(await db.select().from(prices)).toHaveLength(1);
 	});
 
 	it('bumps verified_at without a new row when unchanged', async () => {
-		await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
+		});
 		const [before] = await db.select().from(prices);
 		await new Promise((r) => setTimeout(r, 20));
-		const r = await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'scraper' });
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'scraper'
+		});
 		expect(r).toBe('verified');
 		const rows = await db.select().from(prices);
 		expect(rows).toHaveLength(1);
@@ -965,8 +1155,18 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 	});
 
 	it('appends a new row when the price changes, keeping history', async () => {
-		await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
-		const r = await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 55, source: 'scraper' });
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
+		});
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 55,
+			source: 'scraper'
+		});
 		expect(r).toBe('inserted');
 		const rows = await db.select().from(prices).orderBy(desc(prices.validFrom), desc(prices.id));
 		expect(rows).toHaveLength(2);
@@ -974,15 +1174,30 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 	});
 
 	it('treats separate tariff keys independently', async () => {
-		await insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
-		const r = await insertPriceIfChanged(db, { networkId, tariffKey: 'AC', priceIskPerKwh: 39, source: 'manual' });
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
+		});
+		const r = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'AC',
+			priceIskPerKwh: 39,
+			source: 'manual'
+		});
 		expect(r).toBe('inserted');
 		expect(await db.select().from(prices)).toHaveLength(2);
 	});
 
 	it('rejects implausible prices', async () => {
 		await expect(
-			insertPriceIfChanged(db, { networkId, tariffKey: 'DC', priceIskPerKwh: 4900, source: 'scraper' })
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: 4900,
+				source: 'scraper'
+			})
 		).rejects.toThrow(/implausible/i);
 		expect(await db.select().from(prices)).toHaveLength(0);
 	});
@@ -999,6 +1214,7 @@ Expected: FAIL — cannot find module `./prices`.
 First, in `vite.config.ts`, add `fileParallelism: false` to the server project's `test` block: DB suites share one test database, and vitest's parallel workers would truncate each other mid-test once the second DB suite arrives in Task 10. (The drizzle migrator also takes no advisory lock, so concurrent `migrate()` races on a fresh DB.)
 
 `src/lib/server/db/prices.ts`:
+
 ```ts
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { TariffKey } from '$lib/types';
@@ -1030,7 +1246,8 @@ export async function insertPriceIfChanged(
 	// normalize to 2 decimals — derived scraper prices (VAT math etc.) must not create
 	// spurious history rows via float noise
 	const priceIskPerKwh = Math.round(reading.priceIskPerKwh * 100) / 100;
-	const minuteFeeIsk = reading.minuteFeeIsk == null ? null : Math.round(reading.minuteFeeIsk * 100) / 100;
+	const minuteFeeIsk =
+		reading.minuteFeeIsk == null ? null : Math.round(reading.minuteFeeIsk * 100) / 100;
 
 	const stationCond =
 		reading.stationId == null ? isNull(prices.stationId) : eq(prices.stationId, reading.stationId);
@@ -1038,7 +1255,13 @@ export async function insertPriceIfChanged(
 	const [current] = await db
 		.select()
 		.from(prices)
-		.where(and(eq(prices.networkId, reading.networkId), eq(prices.tariffKey, reading.tariffKey), stationCond))
+		.where(
+			and(
+				eq(prices.networkId, reading.networkId),
+				eq(prices.tariffKey, reading.tariffKey),
+				stationCond
+			)
+		)
 		.orderBy(desc(prices.validFrom), desc(prices.id))
 		.limit(1);
 
@@ -1047,7 +1270,10 @@ export async function insertPriceIfChanged(
 		current.priceIskPerKwh === priceIskPerKwh &&
 		(current.minuteFeeIsk ?? null) === minuteFeeIsk
 	) {
-		await db.update(prices).set({ verifiedAt: sql`now()` }).where(eq(prices.id, current.id));
+		await db
+			.update(prices)
+			.set({ verifiedAt: sql`now()` })
+			.where(eq(prices.id, current.id));
 		return 'verified';
 	}
 
@@ -1071,6 +1297,7 @@ Expected: PASS (5 tests).
 - [ ] **Step 5: Write the initial price data — THEN VERIFY IT BY HAND**
 
 `seeds/prices-initial.json` (values below came from research articles and are probably stale — the verification step is mandatory):
+
 ```json
 [
 	{ "network": "on", "tariffKey": "AC", "priceIskPerKwh": 39.9 },
@@ -1089,6 +1316,7 @@ Expected: PASS (5 tests).
 - [ ] **Step 6: Write the seed script**
 
 `scripts/seed-prices.ts`:
+
 ```ts
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
@@ -1097,8 +1325,12 @@ import { networks } from '../src/lib/server/db/schema';
 import { insertPriceIfChanged, type PriceReading } from '../src/lib/server/db/prices';
 import type { TariffKey } from '../src/lib/types';
 
-const rows: { network: string; tariffKey: TariffKey; priceIskPerKwh: number; minuteFeeIsk?: number }[] =
-	JSON.parse(readFileSync('seeds/prices-initial.json', 'utf8'));
+const rows: {
+	network: string;
+	tariffKey: TariffKey;
+	priceIskPerKwh: number;
+	minuteFeeIsk?: number;
+}[] = JSON.parse(readFileSync('seeds/prices-initial.json', 'utf8'));
 
 const db = createDb(process.env.DATABASE_URL!);
 const nets = await db.select().from(networks);
@@ -1136,11 +1368,13 @@ git commit -m "feat: add price write path with plausibility guard, seed verified
 ### Task 10: Read queries — current prices, rate card, station list (TDD)
 
 **Files:**
+
 - Create: `src/lib/server/db/queries.ts`, `src/lib/server/db/queries.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
 `src/lib/server/db/queries.test.ts`:
+
 ```ts
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
@@ -1173,20 +1407,66 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		n1 = rows[1].id;
 
 		// ON: cheap DC + a 150 kW tier + AC. N1: expensive DC only.
-		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'AC', priceIskPerKwh: 39, source: 'manual' });
-		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'DC', priceIskPerKwh: 49, source: 'manual' });
-		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'DC_150', priceIskPerKwh: 55, source: 'manual' });
-		await insertPriceIfChanged(db, { networkId: n1, tariffKey: 'DC', priceIskPerKwh: 70, source: 'manual' });
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			tariffKey: 'AC',
+			priceIskPerKwh: 39,
+			source: 'manual'
+		});
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			tariffKey: 'DC',
+			priceIskPerKwh: 49,
+			source: 'manual'
+		});
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			tariffKey: 'DC_150',
+			priceIskPerKwh: 55,
+			source: 'manual'
+		});
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			tariffKey: 'DC',
+			priceIskPerKwh: 70,
+			source: 'manual'
+		});
 		// price change: DC 49 → 44 (current must be 44)
-		await insertPriceIfChanged(db, { networkId: on, tariffKey: 'DC', priceIskPerKwh: 44, source: 'manual' });
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			tariffKey: 'DC',
+			priceIskPerKwh: 44,
+			source: 'manual'
+		});
 
 		const st = await db
 			.insert(stations)
 			.values([
-				{ networkId: on, slug: 'hellisheidi-on', name: 'Hellisheiði', location: { x: -21.4, y: 64.03 } },
-				{ networkId: on, slug: 'laugardalur-on', name: 'Laugardalur', location: { x: -21.87, y: 64.14 } },
-				{ networkId: n1, slug: 'stadarskali-n1', name: 'Staðarskáli', location: { x: -21.08, y: 65.13 } },
-				{ networkId: n1, slug: 'gamla-n1', name: 'Gömul stöð', isActive: false, location: { x: -21, y: 64 } }
+				{
+					networkId: on,
+					slug: 'hellisheidi-on',
+					name: 'Hellisheiði',
+					location: { x: -21.4, y: 64.03 }
+				},
+				{
+					networkId: on,
+					slug: 'laugardalur-on',
+					name: 'Laugardalur',
+					location: { x: -21.87, y: 64.14 }
+				},
+				{
+					networkId: n1,
+					slug: 'stadarskali-n1',
+					name: 'Staðarskáli',
+					location: { x: -21.08, y: 65.13 }
+				},
+				{
+					networkId: n1,
+					slug: 'gamla-n1',
+					name: 'Gömul stöð',
+					isActive: false,
+					location: { x: -21, y: 64 }
+				}
 			])
 			.returning();
 		await db.insert(connectors).values([
@@ -1269,7 +1549,11 @@ export async function currentPrices(db: Db): Promise<CurrentPrice[]> {
 		if (p.stationId != null) continue;
 		const key = `${p.networkId}:${p.tariffKey}`;
 		const cur = best.get(key);
-		if (!cur || p.validFrom > cur.validFrom || (p.validFrom.getTime() === cur.validFrom.getTime() && p.id > cur.id)) {
+		if (
+			!cur ||
+			p.validFrom > cur.validFrom ||
+			(p.validFrom.getTime() === cur.validFrom.getTime() && p.id > cur.id)
+		) {
 			best.set(key, p);
 		}
 	}
@@ -1340,11 +1624,16 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 	const netById = new Map(nets.map((n) => [n.id, n]));
 	const consByStation = new Map<number, (typeof cons)[number][]>();
 	for (const c of cons) {
-		(consByStation.get(c.stationId) ?? consByStation.set(c.stationId, []).get(c.stationId)!).push(c);
+		(consByStation.get(c.stationId) ?? consByStation.set(c.stationId, []).get(c.stationId)!).push(
+			c
+		);
 	}
 	const tariffsByNetwork = new Map<number, Set<TariffKey>>();
 	for (const p of cp) {
-		(tariffsByNetwork.get(p.networkId) ?? tariffsByNetwork.set(p.networkId, new Set()).get(p.networkId)!).add(p.tariffKey);
+		(
+			tariffsByNetwork.get(p.networkId) ??
+			tariffsByNetwork.set(p.networkId, new Set()).get(p.networkId)!
+		).add(p.tariffKey);
 	}
 
 	const rows: StationRow[] = [];
@@ -1367,10 +1656,16 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 			price: price?.priceIskPerKwh ?? null,
 			minuteFeeIsk: price?.minuteFeeIsk ?? null,
 			verifiedAt: price?.verifiedAt ?? null,
-			connectors: all.map((c) => ({ type: c.type as ConnectorType, powerKw: c.powerKw, count: c.count }))
+			connectors: all.map((c) => ({
+				type: c.type as ConnectorType,
+				powerKw: c.powerKw,
+				count: c.count
+			}))
 		});
 	}
-	return rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name, 'is'));
+	return rows.sort(
+		(a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name, 'is')
+	);
 }
 ```
 
@@ -1398,6 +1693,7 @@ git commit -m "feat: add rate-card and station-list read queries"
 ### Task 11: i18n with Paraglide (IS base, EN toggle)
 
 **Files:**
+
 - Create: `project.inlang/settings.json`, `messages/is.json`, `messages/en.json`, `src/routes/lang/+server.ts`, `src/hooks.server.ts`
 - Modify: `vite.config.ts`
 
@@ -1409,6 +1705,7 @@ mkdir -p project.inlang messages
 ```
 
 `project.inlang/settings.json`:
+
 ```json
 {
 	"$schema": "https://inlang.com/schema/project-settings",
@@ -1420,6 +1717,7 @@ mkdir -p project.inlang messages
 ```
 
 In `vite.config.ts`, add to the plugins array (before `sveltekit()`):
+
 ```ts
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 // inside plugins: [...]
@@ -1427,13 +1725,15 @@ paraglideVitePlugin({
 	project: './project.inlang',
 	outdir: './src/lib/paraglide',
 	strategy: ['cookie', 'baseLocale']
-})
+});
 ```
+
 Add `src/lib/paraglide/` to `.gitignore` (generated code).
 
 - [ ] **Step 2: Write the messages**
 
 `messages/is.json`:
+
 ```json
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
@@ -1459,6 +1759,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 ```
 
 `messages/en.json`:
+
 ```json
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
@@ -1486,6 +1787,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 - [ ] **Step 3: Wire the server hook**
 
 `src/hooks.server.ts`:
+
 ```ts
 import type { Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
@@ -1498,11 +1800,13 @@ export const handle: Handle = ({ event, resolve }) =>
 		});
 	});
 ```
+
 In `src/app.html`, change `<html lang="en">` to `<html lang="%paraglide.lang%">`.
 
 - [ ] **Step 4: No-JS language toggle route**
 
 `src/routes/lang/+server.ts`:
+
 ```ts
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -1531,11 +1835,13 @@ git commit -m "feat: add Paraglide i18n (is base, en) with no-JS cookie toggle"
 ### Task 12: Formatting utilities (TDD)
 
 **Files:**
+
 - Create: `src/lib/format.ts`, `src/lib/format.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
 `src/lib/format.test.ts`:
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import { formatIsk, formatDate } from './format';
@@ -1564,6 +1870,7 @@ Expected: FAIL — cannot find module `./format`.
 - [ ] **Step 3: Write the implementation**
 
 `src/lib/format.ts`:
+
 ```ts
 export function formatIsk(value: number): string {
 	const s = Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
@@ -1592,6 +1899,7 @@ git commit -m "feat: add ISK and date formatting"
 ### Task 13: Homepage — load function, rate card, station table
 
 **Files:**
+
 - Create: `src/routes/+page.server.ts`, `src/lib/components/RateCard.svelte`, `src/lib/components/StationTable.svelte`
 - Modify: `src/routes/+page.svelte`, `src/routes/+layout.svelte`
 
@@ -1600,6 +1908,7 @@ Everything is links + query params — zero client JS required. URL contract: `?
 - [ ] **Step 1: Write the load function**
 
 `src/routes/+page.server.ts`:
+
 ```ts
 import { db } from '$lib/server/db';
 import { rateCard, stationList } from '$lib/server/db/queries';
@@ -1636,6 +1945,7 @@ export const load: PageServerLoad = async ({ url }) => {
 - [ ] **Step 2: Write the RateCard component**
 
 `src/lib/components/RateCard.svelte`:
+
 ```svelte
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
@@ -1705,6 +2015,7 @@ export const load: PageServerLoad = async ({ url }) => {
 - [ ] **Step 3: Write the StationTable component**
 
 `src/lib/components/StationTable.svelte`:
+
 ```svelte
 <script lang="ts">
 	import { page } from '$app/state';
@@ -1777,8 +2088,11 @@ export const load: PageServerLoad = async ({ url }) => {
 					<td data-label={m.th_price()}>
 						{#if s.price !== null}
 							<strong data-testid="price">{formatIsk(s.price)}</strong>
-							{#if s.minuteFeeIsk}<small>{m.minute_fee({ fee: String(s.minuteFeeIsk) })}</small>{/if}
-							{#if s.verifiedAt}<small class="verified">{m.verified_on({ date: formatDate(s.verifiedAt) })}</small>{/if}
+							{#if s.minuteFeeIsk}<small>{m.minute_fee({ fee: String(s.minuteFeeIsk) })}</small
+								>{/if}
+							{#if s.verifiedAt}<small class="verified"
+									>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
+								>{/if}
 						{:else}
 							<em>{m.price_unknown()}</em>
 						{/if}
@@ -1882,6 +2196,7 @@ export const load: PageServerLoad = async ({ url }) => {
 - [ ] **Step 4: Write the page and layout**
 
 `src/routes/+page.svelte`:
+
 ```svelte
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
@@ -1907,6 +2222,7 @@ export const load: PageServerLoad = async ({ url }) => {
 ```
 
 `src/routes/+layout.svelte`:
+
 ```svelte
 <script lang="ts">
 	import { page } from '$app/state';
@@ -1920,7 +2236,11 @@ export const load: PageServerLoad = async ({ url }) => {
 <header>
 	<a href="/" class="logo">{m.site_title()}</a>
 	<p class="tagline">{m.site_tagline()}</p>
-	<a class="lang" data-testid="lang-toggle" href="/lang?to={other()}&redirect={encodeURIComponent(page.url.pathname + page.url.search)}">
+	<a
+		class="lang"
+		data-testid="lang-toggle"
+		href="/lang?to={other()}&redirect={encodeURIComponent(page.url.pathname + page.url.search)}"
+	>
 		{m.lang_switch()}
 	</a>
 </header>
@@ -1969,11 +2289,13 @@ export const load: PageServerLoad = async ({ url }) => {
 - [ ] **Step 5: Manual verification**
 
 Run: `npm run dev -- --open=false` and check in a browser (or with curl):
+
 ```bash
 curl -s "http://localhost:5173/" | grep -o 'data-testid="station-row"' | wc -l   # > 0 rows
 curl -s "http://localhost:5173/?afl=AC" | grep -c 'Hæg'                          # AC mode active
 curl -s "http://localhost:5173/?tengi=CHAdeMO" | grep -o 'data-testid="station-row"' | wc -l  # fewer rows
 ```
+
 Expected: station rows render server-side; filters change the row set; prices display with "staðfest" dates. Kill the dev server after.
 
 - [ ] **Step 6: Commit**
@@ -1988,6 +2310,7 @@ git commit -m "feat: server-rendered homepage with rate card, station table, lin
 ### Task 14: End-to-end tests (Playwright)
 
 **Files:**
+
 - Create: `e2e/homepage.test.ts`
 - Modify: `playwright.config.ts` (REPLACE the generated config — see Step 1), `package.json` (trim `test:e2e` script)
 
@@ -1996,6 +2319,7 @@ E2E runs against the dev DB — Tasks 7–9 seeds must have been run. Tests asse
 - [ ] **Step 1: Replace the playwright config**
 
 The sv-generated config has `testMatch: '**/*.e2e.{ts,js}'` and no `testDir` — it will find ZERO tests in `e2e/homepage.test.ts` — and it lacks `reuseExistingServer`. Replace the whole file with:
+
 ```ts
 import { defineConfig } from '@playwright/test';
 
@@ -2015,6 +2339,7 @@ Also change `package.json`'s `test:e2e` script from `playwright install && playw
 - [ ] **Step 2: Write the failing tests**
 
 `e2e/homepage.test.ts`:
+
 ```ts
 import { expect, test } from '@playwright/test';
 
@@ -2026,7 +2351,9 @@ test('homepage renders the rate card and a station list sorted by price', async 
 	await page.goto('/');
 	expect(await page.locator('[data-testid="rate-card"]').count()).toBeGreaterThan(0);
 
-	const prices = await page.locator('[data-testid="station-row"] [data-testid="price"]').allTextContents();
+	const prices = await page
+		.locator('[data-testid="station-row"] [data-testid="price"]')
+		.allTextContents();
 	expect(prices.length).toBeGreaterThan(0);
 	const nums = prices.map(parsePrice);
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
@@ -2089,11 +2416,13 @@ git commit -m "test: add homepage E2E suite (sorting, filters, no-JS, language t
 ### Task 15: README + final green run
 
 **Files:**
+
 - Create: `README.md`
 
 - [ ] **Step 1: Write the README**
 
 `README.md`:
+
 ```markdown
 # Hleðsluverð
 
@@ -2135,6 +2464,7 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 ```bash
 npx vitest run && npx playwright test && npm run build
 ```
+
 Expected: everything green, build succeeds.
 
 - [ ] **Step 3: Commit**
