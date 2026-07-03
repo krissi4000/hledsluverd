@@ -1625,153 +1625,167 @@ git commit -m "feat: add price write path with plausibility guard, seed verified
 
 - Create: `src/lib/server/db/queries.ts`, `src/lib/server/db/queries.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/server/db/queries.test.ts`:
 
 ```ts
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
+import { eq } from 'drizzle-orm';
+import type { ConnectorType, TariffKey } from '$lib/types';
+import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
-import { connectors, networks, stations } from './schema';
-import { insertPriceIfChanged } from './prices';
-import { currentPrices, rateCard, stationList } from './queries';
+import { connectors, networks, prices, stations } from './schema';
 
-describe.skipIf(!TEST_DB_URL)('read queries', () => {
-	let db: Db;
-	let on: number, n1: number;
+export interface CurrentPrice {
+	networkId: number;
+	tariffKey: TariffKey;
+	priceIskPerKwh: number;
+	minuteFeeIsk: number | null;
+	verifiedAt: Date;
+	validFrom: Date;
+}
 
-	beforeAll(async () => {
-		db = await setupTestDb();
-	});
-	afterAll(async () => {
-		await closeTestDb(db);
-	});
+/**
+ * Newest network-wide price per (network, tariff), computed in TS —
+ * the prices table stays small (a few rows per network per year).
+ * Station-specific overrides (stationId != null) are ignored until a later phase needs them.
+ */
+export async function currentPrices(db: Db): Promise<CurrentPrice[]> {
+	const all = await db.select().from(prices);
+	const best = new Map<string, (typeof all)[number]>();
+	for (const p of all) {
+		if (p.stationId != null) continue;
+		const key = `${p.networkId}:${p.tariffKey}`;
+		const cur = best.get(key);
+		if (
+			!cur ||
+			p.validFrom > cur.validFrom ||
+			(p.validFrom.getTime() === cur.validFrom.getTime() && p.id > cur.id)
+		) {
+			best.set(key, p);
+		}
+	}
+	return [...best.values()].map((p) => ({
+		networkId: p.networkId,
+		tariffKey: p.tariffKey as TariffKey,
+		priceIskPerKwh: p.priceIskPerKwh,
+		minuteFeeIsk: p.minuteFeeIsk,
+		verifiedAt: p.verifiedAt,
+		validFrom: p.validFrom
+	}));
+}
 
-	beforeEach(async () => {
-		await truncateAll(db);
-		const rows = await db
-			.insert(networks)
-			.values([
-				{ name: 'ON', slug: 'on' },
-				{ name: 'N1', slug: 'n1' }
-			])
-			.returning();
-		on = rows[0].id;
-		n1 = rows[1].id;
+export interface RateCardEntry {
+	networkSlug: string;
+	networkName: string;
+	dc: number | null;
+	dcVerifiedAt: Date | null;
+	ac: number | null;
+	acVerifiedAt: Date | null;
+}
 
-		// ON: cheap DC + a 150 kW tier + AC. N1: expensive DC only.
-		await insertPriceIfChanged(db, {
-			networkId: on,
-			tariffKey: 'AC',
-			priceIskPerKwh: 39,
-			source: 'manual'
+/** One entry per network that has any current price; sorted by DC price asc (nulls last), then AC. */
+export async function rateCard(db: Db): Promise<RateCardEntry[]> {
+	const [nets, cp] = await Promise.all([db.select().from(networks), currentPrices(db)]);
+	const entries: RateCardEntry[] = [];
+	for (const n of nets) {
+		const forNet = cp.filter((p) => p.networkId === n.id);
+		if (forNet.length === 0) continue;
+		// a network pricing only the ≥150 kW tier still has a fast-charge price — fall back
+		// to DC_150 so the network doesn't vanish from the card
+		const dc =
+			forNet.find((p) => p.tariffKey === 'DC') ?? forNet.find((p) => p.tariffKey === 'DC_150');
+		const ac = forNet.find((p) => p.tariffKey === 'AC');
+		entries.push({
+			networkSlug: n.slug,
+			networkName: n.name,
+			dc: dc?.priceIskPerKwh ?? null,
+			dcVerifiedAt: dc?.verifiedAt ?? null,
+			ac: ac?.priceIskPerKwh ?? null,
+			acVerifiedAt: ac?.verifiedAt ?? null
 		});
-		await insertPriceIfChanged(db, {
-			networkId: on,
-			tariffKey: 'DC',
-			priceIskPerKwh: 49,
-			source: 'manual'
+	}
+	return entries.sort(
+		(a, b) => (a.dc ?? Infinity) - (b.dc ?? Infinity) || (a.ac ?? Infinity) - (b.ac ?? Infinity)
+	);
+}
+
+export interface StationRow {
+	slug: string;
+	name: string;
+	networkSlug: string;
+	networkName: string;
+	price: number | null;
+	minuteFeeIsk: number | null;
+	verifiedAt: Date | null;
+	connectors: { type: ConnectorType; powerKw: number; count: number }[];
+}
+
+/**
+ * Active stations that have a connector for the mode (AC → Type2; DC → CCS2/CHAdeMO),
+ * priced via the tariff of their highest-power connector of that mode,
+ * sorted by price asc (unknown price last), then name.
+ */
+export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow[]> {
+	const [sts, cons, nets, cp] = await Promise.all([
+		db.select().from(stations).where(eq(stations.isActive, true)),
+		db.select().from(connectors),
+		db.select().from(networks),
+		currentPrices(db)
+	]);
+	const netById = new Map(nets.map((n) => [n.id, n]));
+	const consByStation = new Map<number, (typeof cons)[number][]>();
+	for (const c of cons) {
+		let arr = consByStation.get(c.stationId);
+		if (!arr) consByStation.set(c.stationId, (arr = []));
+		arr.push(c);
+	}
+	const tariffsByNetwork = new Map<number, Set<TariffKey>>();
+	for (const p of cp) {
+		let set = tariffsByNetwork.get(p.networkId);
+		if (!set) tariffsByNetwork.set(p.networkId, (set = new Set()));
+		set.add(p.tariffKey);
+	}
+
+	const rows: StationRow[] = [];
+	for (const s of sts) {
+		const all = consByStation.get(s.id) ?? [];
+		const ofMode = all.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
+		if (ofMode.length === 0) continue;
+
+		const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
+		const tariffs = tariffsByNetwork.get(s.networkId) ?? new Set<TariffKey>();
+		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
+		const price = cp.find((p) => p.networkId === s.networkId && p.tariffKey === key) ?? null;
+		const net = netById.get(s.networkId)!;
+
+		rows.push({
+			slug: s.slug,
+			name: s.name,
+			networkSlug: net.slug,
+			networkName: net.name,
+			price: price?.priceIskPerKwh ?? null,
+			minuteFeeIsk: price?.minuteFeeIsk ?? null,
+			verifiedAt: price?.verifiedAt ?? null,
+			connectors: all.map((c) => ({
+				type: c.type as ConnectorType,
+				powerKw: c.powerKw,
+				count: c.count
+			}))
 		});
-		await insertPriceIfChanged(db, {
-			networkId: on,
-			tariffKey: 'DC_150',
-			priceIskPerKwh: 55,
-			source: 'manual'
-		});
-		await insertPriceIfChanged(db, {
-			networkId: n1,
-			tariffKey: 'DC',
-			priceIskPerKwh: 70,
-			source: 'manual'
-		});
-		// price change: DC 49 → 44 (current must be 44)
-		await insertPriceIfChanged(db, {
-			networkId: on,
-			tariffKey: 'DC',
-			priceIskPerKwh: 44,
-			source: 'manual'
-		});
-
-		const st = await db
-			.insert(stations)
-			.values([
-				{
-					networkId: on,
-					slug: 'hellisheidi-on',
-					name: 'Hellisheiði',
-					location: { x: -21.4, y: 64.03 }
-				},
-				{
-					networkId: on,
-					slug: 'laugardalur-on',
-					name: 'Laugardalur',
-					location: { x: -21.87, y: 64.14 }
-				},
-				{
-					networkId: n1,
-					slug: 'stadarskali-n1',
-					name: 'Staðarskáli',
-					location: { x: -21.08, y: 65.13 }
-				},
-				{
-					networkId: n1,
-					slug: 'gamla-n1',
-					name: 'Gömul stöð',
-					isActive: false,
-					location: { x: -21, y: 64 }
-				}
-			])
-			.returning();
-		await db.insert(connectors).values([
-			{ stationId: st[0].id, type: 'CCS2', powerKw: 200, count: 2 }, // → DC_150 (55)
-			{ stationId: st[0].id, type: 'CHAdeMO', powerKw: 50, count: 1 },
-			{ stationId: st[1].id, type: 'Type2', powerKw: 22, count: 4 }, // AC only
-			{ stationId: st[2].id, type: 'CCS2', powerKw: 60, count: 2 } // → DC (70)
-		]);
-	});
-
-	it('currentPrices returns the newest row per network+tariff', async () => {
-		const cp = await currentPrices(db);
-		const onDc = cp.find((p) => p.networkId === on && p.tariffKey === 'DC')!;
-		expect(onDc.priceIskPerKwh).toBe(44);
-		expect(cp).toHaveLength(4); // ON AC, DC, DC_150 + N1 DC
-	});
-
-	it('rateCard groups by network sorted by DC price', async () => {
-		const cards = await rateCard(db);
-		expect(cards.map((c) => c.networkSlug)).toEqual(['on', 'n1']);
-		expect(cards[0]).toMatchObject({ networkSlug: 'on', dc: 44, ac: 39 });
-		expect(cards[1]).toMatchObject({ networkSlug: 'n1', dc: 70, ac: null });
-	});
-
-	it('stationList DC: only stations with DC connectors, tier-derived price, sorted cheapest first', async () => {
-		const list = await stationList(db, 'DC');
-		expect(list.map((s) => s.slug)).toEqual(['hellisheidi-on', 'stadarskali-n1']);
-		expect(list[0].price).toBe(55); // max-power connector is 200 kW → DC_150 tier
-		expect(list[0].connectors).toHaveLength(2);
-		expect(list[1].price).toBe(70);
-	});
-
-	it('stationList AC: only stations with Type2', async () => {
-		const list = await stationList(db, 'AC');
-		expect(list.map((s) => s.slug)).toEqual(['laugardalur-on']);
-		expect(list[0].price).toBe(39);
-	});
-
-	it('excludes inactive stations', async () => {
-		const all = [...(await stationList(db, 'DC')), ...(await stationList(db, 'AC'))];
-		expect(all.find((s) => s.slug === 'gamla-n1')).toBeUndefined();
-	});
-});
+	}
+	return rows.sort(
+		(a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name, 'is')
+	);
+}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/server/db/queries.test.ts`
 Expected: FAIL — cannot find module `./queries`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `src/lib/server/db/queries.ts` (current-price resolution is done in TS rather than SQL `DISTINCT ON` — the prices table stays tiny, a few rows per network per year, and the TS version is unambiguous about tie-breaking):
 
@@ -1923,17 +1937,17 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/server/db/queries.test.ts`
-Expected: PASS (5 tests).
+Expected: PASS (8 tests — quality review added: station-scoped exclusion + id tie-break, DC_150-only rate-card fallback, unpriced-network station path).
 
-- [ ] **Step 5: Run the whole unit suite**
+- [x] **Step 5: Run the whole unit suite**
 
 Run: `npx vitest run`
 Expected: all tests green (slug, matching, ocm, prices, queries).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/server/db/queries.ts src/lib/server/db/queries.test.ts
