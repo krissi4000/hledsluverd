@@ -2007,6 +2007,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 	"site_tagline": "Verð á hleðslu rafbíla á Íslandi — á einum stað",
 	"mode_dc": "Hraðhleðsla (DC)",
 	"mode_ac": "Hæg hleðsla (AC)",
+	"filter_mode": "Afl",
 	"th_station": "Stöð",
 	"th_network": "Fyrirtæki",
 	"th_price": "Verð/kWh",
@@ -2015,6 +2016,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 	"filter_all_connectors": "Öll tengi",
 	"filter_all_networks": "Öll fyrirtæki",
 	"price_unknown": "verð óþekkt",
+	"no_results": "Engar stöðvar fundust með þessum síum.",
 	"cheapest": "ódýrast",
 	"verified_on": "staðfest {date}",
 	"minute_fee": "+ {fee} kr/mín",
@@ -2033,6 +2035,7 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 	"site_tagline": "EV charging prices in Iceland — in one place",
 	"mode_dc": "Fast charging (DC)",
 	"mode_ac": "Slow charging (AC)",
+	"filter_mode": "Charging speed",
 	"th_station": "Station",
 	"th_network": "Network",
 	"th_price": "Price/kWh",
@@ -2041,9 +2044,10 @@ Add `src/lib/paraglide/` to `.gitignore` (generated code).
 	"filter_all_connectors": "All connectors",
 	"filter_all_networks": "All networks",
 	"price_unknown": "price unknown",
+	"no_results": "No stations match these filters.",
 	"cheapest": "cheapest",
 	"verified_on": "verified {date}",
-	"minute_fee": "+ {fee} ISK/min",
+	"minute_fee": "+ {fee} kr/min",
 	"rate_card_title": "Network price list",
 	"stations_title": "All charging stations",
 	"lang_switch": "Íslenska"
@@ -2116,7 +2120,16 @@ git commit -m "feat: add Paraglide i18n (is base, en) with no-JS cookie toggle"
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { formatIsk, formatDate } from './format';
+import { formatIsk, formatDate, formatNumber } from './format';
+
+describe('formatNumber', () => {
+	it('formats fractional values with an Icelandic comma', () => {
+		expect(formatNumber(0.5)).toBe('0,5');
+	});
+	it('formats whole numbers without decimals', () => {
+		expect(formatNumber(2)).toBe('2');
+	});
+});
 
 describe('formatIsk', () => {
 	it('shows whole ISK without decimals', () => {
@@ -2144,9 +2157,12 @@ Expected: FAIL — cannot find module `./format`.
 `src/lib/format.ts`:
 
 ```ts
+export function formatNumber(value: number): string {
+	return Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
+}
+
 export function formatIsk(value: number): string {
-	const s = Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
-	return `${s} kr`;
+	return `${formatNumber(value)} kr`;
 }
 
 export function formatDate(d: Date): string {
@@ -2177,7 +2193,9 @@ git commit -m "feat: add ISK and date formatting"
 
 Everything is links + query params — zero client JS required. URL contract: `?afl=AC|DC` (mode, default DC), `?tengi=CCS2|CHAdeMO|Type2` (connector filter), `?fyrirtaeki=<slug>` (network filter).
 
-- [ ] **Step 1: Write the load function**
+**As-built notes (2026-07-03, from quality review):** favicon link restored in the layout; minute fees format via a new `formatNumber` (Icelandic comma; en `minute_fee` unified to "kr/min"); `no_results` empty state; `fyrirtaeki` validated against — and filter options derived from — the stations in view (not the rate card, which only lists priced networks); `aria-current` + translated `aria-label`s (new key `filter_mode`) on filter links; site title is an `<h1>`. Snippets below are as-built.
+
+- [x] **Step 1: Write the load function**
 
 `src/routes/+page.server.ts`:
 
@@ -2193,9 +2211,16 @@ export const load: PageServerLoad = async ({ url }) => {
 	const connector = (CONNECTOR_TYPES as readonly string[]).includes(tengi ?? '')
 		? (tengi as ConnectorType)
 		: null;
-	const network = url.searchParams.get('fyrirtaeki');
+	const rawNetwork = url.searchParams.get('fyrirtaeki');
 
 	const [cards, allStations] = await Promise.all([rateCard(db), stationList(db, mode)]);
+
+	// filter options come from the stations in view, not the rate card — most networks
+	// have stations long before they have verified prices
+	const networkOptions = [...new Map(allStations.map((s) => [s.networkSlug, s.networkName]))]
+		.map(([slug, name]) => ({ slug, name }))
+		.sort((a, b) => a.name.localeCompare(b.name, 'is'));
+	const network = networkOptions.some((n) => n.slug === rawNetwork) ? rawNetwork : null;
 
 	const stations = allStations.filter(
 		(s) =>
@@ -2209,12 +2234,12 @@ export const load: PageServerLoad = async ({ url }) => {
 		network,
 		cards,
 		stations,
-		networkOptions: cards.map((c) => ({ slug: c.networkSlug, name: c.networkName }))
+		networkOptions
 	};
 };
 ```
 
-- [ ] **Step 2: Write the RateCard component**
+- [x] **Step 2: Write the RateCard component**
 
 `src/lib/components/RateCard.svelte`:
 
@@ -2284,7 +2309,7 @@ export const load: PageServerLoad = async ({ url }) => {
 </style>
 ```
 
-- [ ] **Step 3: Write the StationTable component**
+- [x] **Step 3: Write the StationTable component**
 
 `src/lib/components/StationTable.svelte`:
 
@@ -2292,7 +2317,7 @@ export const load: PageServerLoad = async ({ url }) => {
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk, formatDate } from '$lib/format';
+	import { formatIsk, formatDate, formatNumber } from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import type { StationRow } from '$lib/server/db/queries';
 
@@ -2324,61 +2349,90 @@ export const load: PageServerLoad = async ({ url }) => {
 	<h2>{m.stations_title()}</h2>
 
 	<nav class="filters">
-		<span class="group" role="group" aria-label="mode">
-			<a href={href({ afl: null })} class:active={mode === 'DC'}>{m.mode_dc()}</a>
-			<a href={href({ afl: 'AC' })} class:active={mode === 'AC'}>{m.mode_ac()}</a>
+		<span class="group" role="group" aria-label={m.filter_mode()}>
+			<a
+				href={href({ afl: null })}
+				class:active={mode === 'DC'}
+				aria-current={mode === 'DC' ? 'page' : undefined}>{m.mode_dc()}</a
+			>
+			<a
+				href={href({ afl: 'AC' })}
+				class:active={mode === 'AC'}
+				aria-current={mode === 'AC' ? 'page' : undefined}>{m.mode_ac()}</a
+			>
 		</span>
-		<span class="group" role="group" aria-label="connector">
-			<a href={href({ tengi: null })} class:active={!connector}>{m.filter_all_connectors()}</a>
+		<span class="group" role="group" aria-label={m.th_connectors()}>
+			<a
+				href={href({ tengi: null })}
+				class:active={!connector}
+				aria-current={!connector ? 'page' : undefined}>{m.filter_all_connectors()}</a
+			>
 			{#each CONNECTOR_TYPES as t}
-				<a href={href({ tengi: t })} class:active={connector === t}>{t}</a>
+				<a
+					href={href({ tengi: t })}
+					class:active={connector === t}
+					aria-current={connector === t ? 'page' : undefined}>{t}</a
+				>
 			{/each}
 		</span>
-		<span class="group" role="group" aria-label="network">
-			<a href={href({ fyrirtaeki: null })} class:active={!network}>{m.filter_all_networks()}</a>
+		<span class="group" role="group" aria-label={m.th_network()}>
+			<a
+				href={href({ fyrirtaeki: null })}
+				class:active={!network}
+				aria-current={!network ? 'page' : undefined}>{m.filter_all_networks()}</a
+			>
 			{#each networkOptions as n}
-				<a href={href({ fyrirtaeki: n.slug })} class:active={network === n.slug}>{n.name}</a>
+				<a
+					href={href({ fyrirtaeki: n.slug })}
+					class:active={network === n.slug}
+					aria-current={network === n.slug ? 'page' : undefined}>{n.name}</a
+				>
 			{/each}
 		</span>
 	</nav>
 
-	<table>
-		<thead>
-			<tr>
-				<th>{m.th_station()}</th>
-				<th>{m.th_network()}</th>
-				<th>{m.th_price()}</th>
-				<th>{m.th_connectors()}</th>
-				<th>{m.th_free()}</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each stations as s (s.slug)}
-				<tr data-testid="station-row">
-					<td data-label={m.th_station()}>{s.name}</td>
-					<td data-label={m.th_network()}>{s.networkName}</td>
-					<td data-label={m.th_price()}>
-						{#if s.price !== null}
-							<strong data-testid="price">{formatIsk(s.price)}</strong>
-							{#if s.minuteFeeIsk}<small>{m.minute_fee({ fee: String(s.minuteFeeIsk) })}</small
-								>{/if}
-							{#if s.verifiedAt}<small class="verified"
-									>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
-								>{/if}
-						{:else}
-							<em>{m.price_unknown()}</em>
-						{/if}
-					</td>
-					<td data-label={m.th_connectors()}>
-						{#each s.connectors as c}
-							<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
-						{/each}
-					</td>
-					<td data-label={m.th_free()}>—</td>
+	{#if stations.length === 0}
+		<p class="empty">{m.no_results()}</p>
+	{:else}
+		<table>
+			<thead>
+				<tr>
+					<th>{m.th_station()}</th>
+					<th>{m.th_network()}</th>
+					<th>{m.th_price()}</th>
+					<th>{m.th_connectors()}</th>
+					<th>{m.th_free()}</th>
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each stations as s (s.slug)}
+					<tr data-testid="station-row">
+						<td data-label={m.th_station()}>{s.name}</td>
+						<td data-label={m.th_network()}>{s.networkName}</td>
+						<td data-label={m.th_price()}>
+							{#if s.price !== null}
+								<strong data-testid="price">{formatIsk(s.price)}</strong>
+								{#if s.minuteFeeIsk}<small
+										>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
+									>{/if}
+								{#if s.verifiedAt}<small class="verified"
+										>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
+									>{/if}
+							{:else}
+								<em>{m.price_unknown()}</em>
+							{/if}
+						</td>
+						<td data-label={m.th_connectors()}>
+							{#each s.connectors as c}
+								<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
+							{/each}
+						</td>
+						<td data-label={m.th_free()}>—</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
 </section>
 
 <style>
@@ -2405,6 +2459,10 @@ export const load: PageServerLoad = async ({ url }) => {
 		background: var(--accent, #2e7d32);
 		border-color: var(--accent, #2e7d32);
 		color: #fff;
+	}
+	.empty {
+		opacity: 0.7;
+		padding: 1rem 0;
 	}
 	table {
 		width: 100%;
@@ -2465,7 +2523,7 @@ export const load: PageServerLoad = async ({ url }) => {
 </style>
 ```
 
-- [ ] **Step 4: Write the page and layout**
+- [x] **Step 4: Write the page and layout**
 
 `src/routes/+page.svelte`:
 
@@ -2498,6 +2556,7 @@ export const load: PageServerLoad = async ({ url }) => {
 ```svelte
 <script lang="ts">
 	import { page } from '$app/state';
+	import favicon from '$lib/assets/favicon.svg';
 	import * as m from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 
@@ -2505,8 +2564,12 @@ export const load: PageServerLoad = async ({ url }) => {
 	const other = () => (getLocale() === 'is' ? 'en' : 'is');
 </script>
 
+<svelte:head>
+	<link rel="icon" href={favicon} />
+</svelte:head>
+
 <header>
-	<a href="/" class="logo">{m.site_title()}</a>
+	<h1 class="logo"><a href="/">{m.site_title()}</a></h1>
 	<p class="tagline">{m.site_tagline()}</p>
 	<a
 		class="lang"
@@ -2538,6 +2601,9 @@ export const load: PageServerLoad = async ({ url }) => {
 	.logo {
 		font-size: 1.3rem;
 		font-weight: 700;
+		margin: 0;
+	}
+	.logo a {
 		text-decoration: none;
 		color: inherit;
 	}
@@ -2558,7 +2624,7 @@ export const load: PageServerLoad = async ({ url }) => {
 </style>
 ```
 
-- [ ] **Step 5: Manual verification**
+- [x] **Step 5: Manual verification**
 
 Run: `npm run dev -- --open=false` and check in a browser (or with curl):
 
@@ -2570,7 +2636,7 @@ curl -s "http://localhost:5173/?tengi=CHAdeMO" | grep -o 'data-testid="station-r
 
 Expected: station rows render server-side; filters change the row set; prices display with "staðfest" dates. Kill the dev server after.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/routes src/lib/components
