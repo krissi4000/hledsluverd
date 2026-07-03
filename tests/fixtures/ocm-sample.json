@@ -1,0 +1,67 @@
+[
+	{
+		"ID": 111001,
+		"OperatorInfo": { "ID": 102, "Title": "Orka Náttúrunnar" },
+		"AddressInfo": {
+			"Title": "Hellisheiði",
+			"AddressLine1": "Hellisheiðarvirkjun",
+			"Town": "Ölfus",
+			"Latitude": 64.0374,
+			"Longitude": -21.4009
+		},
+		"Connections": [
+			{ "ConnectionTypeID": 33, "PowerKW": 150, "Quantity": 2 },
+			{ "ConnectionTypeID": 2, "PowerKW": 50, "Quantity": 1 },
+			{ "ConnectionTypeID": 25, "PowerKW": 22, "Quantity": null }
+		]
+	},
+	{
+		"ID": 111002,
+		"OperatorInfo": { "ID": 3400, "Title": "Ísorka" },
+		"AddressInfo": {
+			"Title": "Olís Norðlingaholt",
+			"AddressLine1": "Norðlingabraut 2",
+			"Town": "Reykjavík",
+			"Latitude": 64.1101,
+			"Longitude": -21.7702
+		},
+		"Connections": [
+			{ "ConnectionTypeID": 25, "PowerKW": 22, "Quantity": 2 },
+			{ "ConnectionTypeID": 1036, "PowerKW": 22, "Quantity": 2 }
+		]
+	},
+	{
+		"ID": 111003,
+		"OperatorInfo": { "ID": 1, "Title": "Some Hotel Chain" },
+		"AddressInfo": {
+			"Title": "Hótel X",
+			"AddressLine1": "Gata 1",
+			"Town": "Akureyri",
+			"Latitude": 65.6835,
+			"Longitude": -18.1002
+		},
+		"Connections": [{ "ConnectionTypeID": 25, "PowerKW": 11, "Quantity": 1 }]
+	},
+	{
+		"ID": 111004,
+		"AddressInfo": {
+			"Title": "Staðarskáli (N1)",
+			"AddressLine1": "Þjóðvegur 1",
+			"Town": "Hrútafjörður",
+			"Latitude": 65.1213,
+			"Longitude": -21.0805
+		},
+		"Connections": [{ "ConnectionTypeID": 33, "PowerKW": 150, "Quantity": 2 }]
+	},
+	{
+		"ID": 111000,
+		"AddressInfo": {
+			"Title": "Staðarskáli (N1)",
+			"AddressLine1": "Þjóðvegur 1",
+			"Town": "Hrútafjörður",
+			"Latitude": 65.1213,
+			"Longitude": -21.0805
+		},
+		"Connections": [{ "ConnectionTypeID": 33, "PowerKW": 150, "Quantity": 2 }]
+	}
+]
