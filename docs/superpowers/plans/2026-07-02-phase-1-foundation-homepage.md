@@ -65,7 +65,7 @@ Unit tests are colocated: `src/lib/server/slug.test.ts`, `matching.test.ts`, `oc
 - Create: entire SvelteKit skeleton (via CLI), `vitest` + `playwright` + `prettier` add-ons
 - Modify: `.gitignore` (already exists — CLI may append)
 
-- [ ] **Step 1: Scaffold into the existing repo**
+- [x] **Step 1: Scaffold into the existing repo**
 
 Run:
 ```bash
@@ -74,7 +74,7 @@ npx sv@latest create . --template minimal --types ts --no-add-ons --install npm
 ```
 Expected: files created (`package.json`, `svelte.config.js`, `vite.config.ts`, `src/routes/+page.svelte`, …). If prompted about the non-empty directory, choose to continue.
 
-- [ ] **Step 2: Add test/format tooling**
+- [x] **Step 2: Add test/format tooling**
 
 Run:
 ```bash
@@ -82,17 +82,17 @@ npx sv add vitest playwright prettier --install npm
 ```
 Expected: `vitest` config merged into `vite.config.ts`, `playwright.config.ts` created (with an `e2e/` test dir or similar — if it creates `e2e/demo.test.ts`, keep the folder, delete the demo test), prettier config added.
 
-- [ ] **Step 3: Verify dev server boots**
+- [x] **Step 3: Verify dev server boots**
 
 Run: `npm run dev -- --open=false & sleep 5 && curl -sf http://localhost:5173 | head -c 200; kill %1`
 Expected: HTML output containing `<!doctype html>` (any content). No errors.
 
-- [ ] **Step 4: Verify test runners work**
+- [x] **Step 4: Verify test runners work**
 
 Run: `npm run test:unit -- --run 2>&1 | tail -5` (or `npx vitest run`)
 Expected: passes (or "no test files found" exit 0 — acceptable at this point).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -408,6 +408,8 @@ Expected: FAIL — cannot find module `./slug`.
 
 - [ ] **Step 3: Write the implementation**
 
+First remove `passWithNoTests: true` from `vite.config.ts` — a real test exists from this task on, so vitest must fail if it ever finds zero tests (guards against include-pattern typos).
+
 `src/lib/server/slug.ts`:
 ```ts
 const MAP: Record<string, string> = {
@@ -434,7 +436,7 @@ Expected: PASS (3 tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/server/slug.ts src/lib/server/slug.test.ts
+git add src/lib/server/slug.ts src/lib/server/slug.test.ts vite.config.ts
 git commit -m "feat: add slugify with Icelandic transliteration"
 ```
 
@@ -1948,13 +1950,13 @@ git commit -m "feat: server-rendered homepage with rate card, station table, lin
 
 **Files:**
 - Create: `e2e/homepage.test.ts`
-- Modify: `playwright.config.ts` (only if the webServer block is missing)
+- Modify: `playwright.config.ts` (REPLACE the generated config — see Step 1), `package.json` (trim `test:e2e` script)
 
 E2E runs against the dev DB — Tasks 7–9 seeds must have been run. Tests assert structure (sortedness, filter behavior), not exact prices, so they survive price changes.
 
-- [ ] **Step 1: Ensure playwright config starts the app**
+- [ ] **Step 1: Replace the playwright config**
 
-`playwright.config.ts` must contain (adapt if `sv add playwright` already wrote an equivalent):
+The sv-generated config has `testMatch: '**/*.e2e.{ts,js}'` and no `testDir` — it will find ZERO tests in `e2e/homepage.test.ts` — and it lacks `reuseExistingServer`. Replace the whole file with:
 ```ts
 import { defineConfig } from '@playwright/test';
 
@@ -1968,6 +1970,8 @@ export default defineConfig({
 	use: { baseURL: 'http://localhost:4173' }
 });
 ```
+
+Also change `package.json`'s `test:e2e` script from `playwright install && playwright test` to just `playwright test` — browser install is a one-time manual step, not something to run on every invocation.
 
 - [ ] **Step 2: Write the failing tests**
 
