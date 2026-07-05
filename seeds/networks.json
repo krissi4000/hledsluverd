@@ -19,6 +19,7 @@
 		"name": "N1",
 		"slug": "n1",
 		"websiteUrl": "https://www.n1.is",
+		"scraperId": "n1",
 		"ocmOperatorIds": [],
 		"ocmMatchers": ["n1"]
 	},
