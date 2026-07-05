@@ -1091,7 +1091,7 @@ git commit -m "feat: ON scraper — Framer verðskrá parser with stale-attribut
 - Create: `scripts/scrape.ts`
 - Modify: `seeds/networks.json` (scraperId for ON), `scripts/seed-networks.ts`, `package.json`, `.env.example`
 
-- [ ] **Step 1: Registry**
+- [x] **Step 1: Registry**
 
 `src/lib/server/scrapers/index.ts` (grows by one line per scraper task):
 
@@ -1102,7 +1102,7 @@ import { onScraper } from './on';
 export const allScrapers: Scraper[] = [onScraper];
 ```
 
-- [ ] **Step 2: Seed scraperId**
+- [x] **Step 2: Seed scraperId**
 
 In `seeds/networks.json` add `"scraperId": "on"` to the ON entry (leave the others without the key for now; each scraper task adds its own):
 
@@ -1135,7 +1135,7 @@ const data: { name: string; slug: string; websiteUrl: string; scraperId?: string
 		});
 ```
 
-- [ ] **Step 3: Entry point**
+- [x] **Step 3: Entry point**
 
 `scripts/scrape.ts`:
 
@@ -1167,14 +1167,14 @@ Append to `.env.example`:
 NTFY_TOPIC=
 ```
 
-- [ ] **Step 4: Live smoke run against the dev DB**
+- [x] **Step 4: Live smoke run against the dev DB**
 
 ```bash
 npm run seed:networks && npm run scrape
 ```
 Expected: `Seeded 6 networks.` then `on: ok — 0 inserted, 2 verified` (the Phase 1 seed matches today's live prices AC 48+0,5 / DC 62). If ON changed prices since 2026-07-05, `changed — N inserted` is equally correct — eyeball that the values printed by `psql $DATABASE_URL -c "SELECT tariff_key, price_isk_per_kwh, minute_fee_isk, source FROM prices ORDER BY id"` look sane before continuing.
 
-- [ ] **Step 5: Full unit suite, then commit**
+- [x] **Step 5: Full unit suite, then commit**
 
 ```bash
 npx vitest run
