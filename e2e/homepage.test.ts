@@ -83,3 +83,15 @@ test('station list renders without JavaScript', async ({ browser }) => {
 	expect(await page.locator('[data-testid="station-row"]').count()).toBeGreaterThan(0);
 	await ctx.close();
 });
+
+test('trend page draws the chart and offers a no-JS table', async ({ page, browser }) => {
+	await page.goto('/');
+	await page.locator('nav a[href="/verdthroun"]').click();
+	await expect(page.locator('[data-testid="trend-chart"]')).toBeVisible();
+
+	const ctx = await browser.newContext({ javaScriptEnabled: false });
+	const noJs = await ctx.newPage();
+	await noJs.goto('/verdthroun');
+	expect(await noJs.locator('[data-testid="trend-row"]').count()).toBeGreaterThan(0);
+	await ctx.close();
+});

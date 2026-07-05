@@ -21,5 +21,11 @@
 	"price_from": "from {price}",
 	"rate_card_title": "Network price list",
 	"stations_title": "All charging stations",
+	"nav_trends": "Price trends",
+	"trends_title": "Charging price trends",
+	"trends_note": "Each line shows a network's lowest price per kWh over time. History begins when collection started, 2026.",
+	"trends_no_data": "No price history yet.",
+	"trends_current": "Current lowest price",
+	"trends_since": "since {date}",
 	"lang_switch": "Íslenska"
 }

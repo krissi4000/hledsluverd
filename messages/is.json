@@ -21,5 +21,11 @@
 	"price_from": "frá {price}",
 	"rate_card_title": "Verðskrá fyrirtækja",
 	"stations_title": "Allar hleðslustöðvar",
+	"nav_trends": "Verðþróun",
+	"trends_title": "Verðþróun hleðsluverðs",
+	"trends_note": "Hver lína sýnir lægsta verð fyrirtækis á kWst yfir tíma. Verðsagan hefst þegar söfnun hófst, 2026.",
+	"trends_no_data": "Engin verðsaga enn.",
+	"trends_current": "Núverandi lægsta verð",
+	"trends_since": "síðan {date}",
 	"lang_switch": "English"
 }

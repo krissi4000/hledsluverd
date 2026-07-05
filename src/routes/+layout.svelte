@@ -15,6 +15,9 @@
 <header>
 	<h1 class="logo"><a href="/">{m.site_title()}</a></h1>
 	<p class="tagline">{m.site_tagline()}</p>
+	<nav class="nav">
+		<a href="/verdthroun">{m.nav_trends()}</a>
+	</nav>
 	<a
 		class="lang"
 		data-testid="lang-toggle"
@@ -54,6 +57,9 @@
 	.tagline {
 		margin: 0;
 		opacity: 0.7;
+		font-size: 0.9rem;
+	}
+	.nav {
 		font-size: 0.9rem;
 	}
 	.lang {
