@@ -39,7 +39,10 @@
 		"vitest": "^4.1.8"
 	},
 	"dependencies": {
+		"chart.js": "^4.5.1",
+		"cheerio": "^1.2.0",
 		"drizzle-orm": "^0.45.2",
+		"playwright": "^1.61.1",
 		"postgres": "^3.4.9"
 	}
 }
