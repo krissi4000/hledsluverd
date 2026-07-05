@@ -36,7 +36,7 @@ export const stations = pgTable(
 		address: text('address'),
 		location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
 		externalIds: jsonb('external_ids')
-			.$type<{ ocm?: number; tomtom?: string }>()
+			.$type<{ ocm?: number; tomtom?: string; virta?: number; n1?: string }>()
 			.notNull()
 			.default({}),
 		isActive: boolean('is_active').notNull().default(true),
@@ -70,6 +70,9 @@ export const prices = pgTable(
 		tariffKey: text('tariff_key', { enum: TARIFF_KEYS }).notNull(),
 		priceIskPerKwh: doublePrecision('price_isk_per_kwh').notNull(),
 		minuteFeeIsk: doublePrecision('minute_fee_isk'),
+		// Minutes of charging before minute_fee_isk starts to apply (Ísorka free period,
+		// Orkan biðgjald). NULL = the fee runs from the first minute (ON).
+		minuteFeeAfterMin: integer('minute_fee_after_min'),
 		validFrom: timestamp('valid_from', { withTimezone: true }).notNull().defaultNow(),
 		source: text('source', { enum: ['scraper', 'manual'] }).notNull(),
 		verifiedAt: timestamp('verified_at', { withTimezone: true }).notNull().defaultNow(),

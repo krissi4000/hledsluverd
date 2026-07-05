@@ -14,6 +14,8 @@ export interface PriceReading {
 	 * network has a fee writes a new history row that erases the fee.
 	 */
 	minuteFeeIsk?: number | null;
+	/** Minutes of charging before minuteFeeIsk applies; null = from the first minute. */
+	minuteFeeAfterMin?: number | null;
 	source: 'scraper' | 'manual';
 }
 
@@ -44,12 +46,21 @@ export async function insertPriceIfChanged(
 			`Implausible minute fee ${reading.minuteFeeIsk} ISK for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
 		);
 	}
+	if (
+		reading.minuteFeeAfterMin != null &&
+		(!Number.isInteger(reading.minuteFeeAfterMin) || reading.minuteFeeAfterMin < 0)
+	) {
+		throw new Error(
+			`Implausible fee-free period ${reading.minuteFeeAfterMin} min for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
+		);
+	}
 
 	// normalize to 2 decimals — derived scraper prices (VAT math etc.) must not create
 	// spurious history rows via float noise
 	const priceIskPerKwh = Math.round(reading.priceIskPerKwh * 100) / 100;
 	const minuteFeeIsk =
 		reading.minuteFeeIsk == null ? null : Math.round(reading.minuteFeeIsk * 100) / 100;
+	const minuteFeeAfterMin = reading.minuteFeeAfterMin ?? null;
 
 	const stationCond =
 		reading.stationId == null ? isNull(prices.stationId) : eq(prices.stationId, reading.stationId);
@@ -70,7 +81,8 @@ export async function insertPriceIfChanged(
 	if (
 		current &&
 		current.priceIskPerKwh === priceIskPerKwh &&
-		(current.minuteFeeIsk ?? null) === minuteFeeIsk
+		(current.minuteFeeIsk ?? null) === minuteFeeIsk &&
+		(current.minuteFeeAfterMin ?? null) === minuteFeeAfterMin
 	) {
 		await db
 			.update(prices)
@@ -85,6 +97,7 @@ export async function insertPriceIfChanged(
 		tariffKey: reading.tariffKey,
 		priceIskPerKwh,
 		minuteFeeIsk,
+		minuteFeeAfterMin,
 		source: reading.source
 	});
 	return 'inserted';

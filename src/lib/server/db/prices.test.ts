@@ -157,6 +157,60 @@ describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', () => {
 		expect(await db.select().from(prices)).toHaveLength(2);
 	});
 
+	it('appends a new row when only the fee-free period changes', async () => {
+		await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 73,
+			minuteFeeIsk: 60,
+			minuteFeeAfterMin: 60,
+			source: 'scraper'
+		});
+		const same = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 73,
+			minuteFeeIsk: 60,
+			minuteFeeAfterMin: 60,
+			source: 'scraper'
+		});
+		expect(same).toBe('verified');
+		const changed = await insertPriceIfChanged(db, {
+			networkId,
+			tariffKey: 'DC',
+			priceIskPerKwh: 73,
+			minuteFeeIsk: 60,
+			minuteFeeAfterMin: 30,
+			source: 'scraper'
+		});
+		expect(changed).toBe('inserted');
+		expect(await db.select().from(prices)).toHaveLength(2);
+	});
+
+	it('rejects a non-integer or negative fee-free period', async () => {
+		await expect(
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: 73,
+				minuteFeeIsk: 60,
+				minuteFeeAfterMin: 1.5,
+				source: 'scraper'
+			})
+		).rejects.toThrow(/implausible/i);
+		await expect(
+			insertPriceIfChanged(db, {
+				networkId,
+				tariffKey: 'DC',
+				priceIskPerKwh: 73,
+				minuteFeeIsk: 60,
+				minuteFeeAfterMin: -5,
+				source: 'scraper'
+			})
+		).rejects.toThrow(/implausible/i);
+		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+
 	it('keeps station-scoped prices independent of the network-wide price', async () => {
 		const [st] = await db
 			.insert(stations)

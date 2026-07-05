@@ -1,0 +1,1 @@
+ALTER TABLE "prices" ADD COLUMN "minute_fee_after_min" integer;
