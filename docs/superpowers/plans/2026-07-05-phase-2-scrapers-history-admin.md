@@ -1691,7 +1691,7 @@ git commit -m "feat: match:n1 — stamp N1 verdtafla location ids onto stations 
 - Test: `src/lib/server/scrapers/n1.test.ts`
 - Modify: `src/lib/server/scrapers/index.ts`, `seeds/networks.json`
 
-- [ ] **Step 1: Fixtures (all verbatim captures, 2026-07-05)**
+- [x] **Step 1: Fixtures (all verbatim captures, 2026-07-05)**
 
 `tests/fixtures/n1-blob.txt` — one line, exactly as found inside the raw HTML (quotes are backslash-escaped there):
 
@@ -1712,7 +1712,7 @@ git commit -m "feat: match:n1 — stamp N1 verdtafla location ids onto stations 
 =e.i(785029),i=e.i(751540),l=e.i(486186);let a=(0,l.createServerReference)("4051f8163eecdb5165ae60c3c94541d4e3cb624d2b",l.callServer,void 0,l.findSourceMapURL,"getFuelPricesForStation");va
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/lib/server/scrapers/n1.test.ts`:
 
@@ -1758,14 +1758,14 @@ describe('N1 parsers', () => {
 });
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/scrapers/n1.test.ts
 ```
 Expected: FAIL — `./n1` does not exist.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 `src/lib/server/scrapers/n1.ts`:
 
@@ -1872,14 +1872,14 @@ export const n1Scraper: Scraper = {
 };
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 npx vitest run src/lib/server/scrapers/n1.test.ts
 ```
 Expected: PASS (6 tests).
 
-- [ ] **Step 6: Enable + live smoke**
+- [x] **Step 6: Enable + live smoke**
 
 Add `n1Scraper` to `src/lib/server/scrapers/index.ts` (import + array). Add `"scraperId": "n1"` to the N1 entry in `seeds/networks.json`. Then:
 
@@ -1888,7 +1888,7 @@ npm run seed:networks && npm run scrape
 ```
 Expected: `n1: changed — N inserted, 0 verified` with the list price (≈56) plus a station row per stamped station (50 or 65 as of research); "no Rafmagn published" warnings are normal for some stations.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tests/fixtures/n1-*.txt tests/fixtures/n1-chunk-snippet.js src/lib/server/scrapers/n1.ts src/lib/server/scrapers/n1.test.ts src/lib/server/scrapers/index.ts seeds/networks.json
