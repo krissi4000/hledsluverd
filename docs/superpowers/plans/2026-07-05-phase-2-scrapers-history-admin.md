@@ -277,7 +277,7 @@ git commit -m "feat: minute_fee_after_min on prices — fees with free periods (
 - Modify: `src/lib/server/db/queries.ts`
 - Test: `src/lib/server/db/queries.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `src/lib/server/db/queries.test.ts`, **replace** the test `'currentPrices ignores station-scoped rows and breaks validFrom ties by id'` with:
 
@@ -383,14 +383,14 @@ Then add these new tests at the end of the describe block:
 	});
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/db/queries.test.ts
 ```
 Expected: FAIL — `dcFrom`/`minuteFeeAfterMin`/`stationId` missing, override not applied.
 
-- [ ] **Step 3: Rewrite the three queries in `src/lib/server/db/queries.ts`**
+- [x] **Step 3: Rewrite the three queries in `src/lib/server/db/queries.ts`**
 
 Replace `CurrentPrice` and `currentPrices`:
 
@@ -525,14 +525,14 @@ In `stationList`, replace the price-resolution part of the station loop (from `c
 
 The `tariffsByNetwork` map built before the loop is no longer used — delete it.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 ```bash
 npx vitest run src/lib/server/db/queries.test.ts && npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json
 ```
 Expected: tests PASS; svelte-check clean (nothing consumes the changed fields yet — UI updates come in Task 13).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/server/db/queries.ts src/lib/server/db/queries.test.ts
