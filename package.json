@@ -20,7 +20,8 @@
 		"seed:ocm": "tsx scripts/seed-ocm.ts",
 		"seed:prices": "tsx scripts/seed-prices.ts",
 		"scrape": "tsx scripts/scrape.ts",
-		"match:virta": "tsx scripts/match-virta.ts"
+		"match:virta": "tsx scripts/match-virta.ts",
+		"match:n1": "tsx scripts/match-n1.ts"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.20.2",
