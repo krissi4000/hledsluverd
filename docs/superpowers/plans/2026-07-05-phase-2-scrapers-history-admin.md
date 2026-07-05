@@ -657,7 +657,7 @@ git commit -m "feat: trendSeries — cheapest-price-per-network stepped history 
 
 **Constraint:** nothing under `src/lib/server/scrapers/` may import `$env/*` — `scripts/scrape.ts` runs these modules under tsx where SvelteKit's virtual modules do not exist (`$lib/...` path aliases are fine; the seed scripts already rely on them).
 
-- [ ] **Step 1: Create the interfaces**
+- [x] **Step 1: Create the interfaces**
 
 `src/lib/server/scrapers/types.ts`:
 
@@ -692,7 +692,7 @@ export interface Scraper {
 }
 ```
 
-- [ ] **Step 2: Write the failing runner tests**
+- [x] **Step 2: Write the failing runner tests**
 
 `src/lib/server/scrapers/runner.test.ts`:
 
@@ -812,14 +812,14 @@ describe.skipIf(!TEST_DB_URL)('runScrapers', () => {
 });
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/scrapers/runner.test.ts
 ```
 Expected: FAIL — `./runner` does not exist.
 
-- [ ] **Step 4: Implement the runner**
+- [x] **Step 4: Implement the runner**
 
 `src/lib/server/scrapers/runner.ts`:
 
@@ -917,14 +917,14 @@ export async function runScrapers(
 }
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 npx vitest run src/lib/server/scrapers/runner.test.ts
 ```
 Expected: PASS (8 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/server/scrapers/
