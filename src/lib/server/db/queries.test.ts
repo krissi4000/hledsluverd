@@ -3,7 +3,7 @@ import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../
 import type { Db } from './client';
 import { connectors, networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
-import { currentPrices, rateCard, stationList } from './queries';
+import { currentPrices, rateCard, stationList, trendSeries } from './queries';
 
 describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	let db: Db;
@@ -237,6 +237,38 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect(priced.minuteFeeAfterMin).toBe(60);
 		const unpriced = list.find((s) => s.slug === 'kfc-moso')!;
 		expect(unpriced.price).toBeNull();
+	});
+
+	it('trendSeries: one stepped series per network of its cheapest price over time', async () => {
+		const series = await trendSeries(db, 'DC');
+		// beforeEach seeded ON DC 49→44 (two points) and N1 DC 70 (one point);
+		// ON's DC_150 at 55 never undercuts the DC price so it adds no point
+		const onSeries = series.find((s) => s.networkSlug === 'on')!;
+		expect(onSeries.points.map((p) => p.y)).toEqual([49, 44]);
+		expect(onSeries.points[0].t).toBeLessThanOrEqual(onSeries.points[1].t);
+		const n1Series = series.find((s) => s.networkSlug === 'n1')!;
+		expect(n1Series.points.map((p) => p.y)).toEqual([70]);
+	});
+
+	it('trendSeries: a cheaper station-scoped row lowers the network minimum', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+		const series = await trendSeries(db, 'DC');
+		const n1Series = series.find((s) => s.networkSlug === 'n1')!;
+		expect(n1Series.points.map((p) => p.y)).toEqual([70, 50]);
+	});
+
+	it('trendSeries: AC mode excludes DC rows and vice versa', async () => {
+		const ac = await trendSeries(db, 'AC');
+		expect(ac.find((s) => s.networkSlug === 'on')!.points.map((p) => p.y)).toEqual([39]);
+		expect(ac.find((s) => s.networkSlug === 'n1')).toBeUndefined();
 	});
 
 	it('rateCard: per-station variance yields the minimum price and a frá flag', async () => {

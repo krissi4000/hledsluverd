@@ -158,3 +158,39 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 		(a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name, 'is')
 	);
 }
+
+export interface TrendSeries {
+	networkSlug: string;
+	networkName: string;
+	/** stepped points: t = epoch ms of valid_from, y = the network's cheapest price then */
+	points: { t: number; y: number }[];
+}
+
+/**
+ * Price history for the trend graph. With three networks priced per station there is
+ * no single "network price" — each line plots the network's CHEAPEST current price
+ * (min across its network-wide + station rows) at every change point.
+ */
+export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSeries[]> {
+	const keys: TariffKey[] = mode === 'AC' ? ['AC'] : ['DC', 'DC_150'];
+	const [nets, all] = await Promise.all([db.select().from(networks), db.select().from(prices)]);
+	const rows = all
+		.filter((p) => (keys as string[]).includes(p.tariffKey))
+		.sort((a, b) => a.validFrom.getTime() - b.validFrom.getTime() || a.id - b.id);
+	const state = new Map<string, number>(); // "network:station-or-net:tariff" → latest price
+	const byNetwork = new Map<number, { t: number; y: number }[]>();
+	for (const p of rows) {
+		state.set(`${p.networkId}:${p.stationId ?? 'net'}:${p.tariffKey}`, p.priceIskPerKwh);
+		let min = Infinity;
+		for (const [k, v] of state) if (k.startsWith(`${p.networkId}:`)) min = Math.min(min, v);
+		const pts = byNetwork.get(p.networkId) ?? [];
+		if (pts.length === 0 || pts[pts.length - 1].y !== min) {
+			pts.push({ t: p.validFrom.getTime(), y: min });
+		}
+		byNetwork.set(p.networkId, pts);
+	}
+	return nets
+		.filter((n) => byNetwork.has(n.id))
+		.map((n) => ({ networkSlug: n.slug, networkName: n.name, points: byNetwork.get(n.id)! }))
+		.sort((a, b) => a.networkName.localeCompare(b.networkName, 'is'));
+}
