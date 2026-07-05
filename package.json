@@ -18,7 +18,8 @@
 		"db:migrate": "drizzle-kit migrate",
 		"seed:networks": "tsx scripts/seed-networks.ts",
 		"seed:ocm": "tsx scripts/seed-ocm.ts",
-		"seed:prices": "tsx scripts/seed-prices.ts"
+		"seed:prices": "tsx scripts/seed-prices.ts",
+		"scrape": "tsx scripts/scrape.ts"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.20.2",

@@ -3,6 +3,7 @@
 		"name": "ON",
 		"slug": "on",
 		"websiteUrl": "https://www.on.is",
+		"scraperId": "on",
 		"ocmOperatorIds": [102],
 		"ocmMatchers": ["orka náttúrunnar", "on power", "on -"]
 	},
