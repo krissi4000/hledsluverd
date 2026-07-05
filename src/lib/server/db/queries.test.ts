@@ -132,7 +132,7 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect(all.find((s) => s.slug === 'gamla-n1')).toBeUndefined();
 	});
 
-	it('currentPrices ignores station-scoped rows and breaks validFrom ties by id', async () => {
+	it('currentPrices keys station-scoped rows separately and breaks validFrom ties by id', async () => {
 		const [st] = await db.select().from(stations);
 		await insertPriceIfChanged(db, {
 			networkId: on,
@@ -148,7 +148,12 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 			{ networkId: n1, tariffKey: 'AC', priceIskPerKwh: 32, source: 'manual', validFrom }
 		]);
 		const cp = await currentPrices(db);
-		expect(cp.find((p) => p.networkId === on && p.tariffKey === 'DC')!.priceIskPerKwh).toBe(44);
+		const netWideDc = cp.find(
+			(p) => p.networkId === on && p.tariffKey === 'DC' && p.stationId === null
+		)!;
+		expect(netWideDc.priceIskPerKwh).toBe(44);
+		const stationDc = cp.find((p) => p.networkId === on && p.stationId === st.id)!;
+		expect(stationDc.priceIskPerKwh).toBe(99);
 		expect(cp.find((p) => p.networkId === n1 && p.tariffKey === 'AC')!.priceIskPerKwh).toBe(32);
 	});
 
@@ -182,5 +187,76 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect(list[2].price).toBeNull();
 		expect(list[2].minuteFeeIsk).toBeNull();
 		expect(list[2].verifiedAt).toBeNull();
+	});
+
+	it('stationList: a station-specific price overrides the network-wide price', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+		const list = await stationList(db, 'DC');
+		const row = list.find((s) => s.slug === 'stadarskali-n1')!;
+		expect(row.price).toBe(50);
+		// override sorts by its own value: 44/55 ON station keeps place by DC_150=55
+		expect(list.map((s) => s.slug)).toEqual(['stadarskali-n1', 'hellisheidi-on']);
+	});
+
+	it('stationList: station-only pricing works with no network-wide row at all', async () => {
+		const [isorka] = await db
+			.insert(networks)
+			.values({ name: 'Ísorka', slug: 'isorka' })
+			.returning();
+		const st = await db
+			.insert(stations)
+			.values([
+				{ networkId: isorka.id, slug: 'olis-ananaust', name: 'Olís Ánanaust', location: { x: -21.95, y: 64.15 } },
+				{ networkId: isorka.id, slug: 'kfc-moso', name: 'KFC Mosó', location: { x: -21.7, y: 64.16 } }
+			])
+			.returning();
+		await db.insert(connectors).values([
+			{ stationId: st[0].id, type: 'CCS2', powerKw: 150, count: 1 },
+			{ stationId: st[1].id, type: 'CCS2', powerKw: 150, count: 1 }
+		]);
+		await insertPriceIfChanged(db, {
+			networkId: isorka.id,
+			stationId: st[0].id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 73,
+			minuteFeeIsk: 60,
+			minuteFeeAfterMin: 60,
+			source: 'scraper'
+		});
+		const list = await stationList(db, 'DC');
+		const priced = list.find((s) => s.slug === 'olis-ananaust')!;
+		expect(priced.price).toBe(73);
+		expect(priced.minuteFeeAfterMin).toBe(60);
+		const unpriced = list.find((s) => s.slug === 'kfc-moso')!;
+		expect(unpriced.price).toBeNull();
+	});
+
+	it('rateCard: per-station variance yields the minimum price and a frá flag', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+		const cards = await rateCard(db);
+		const n1Card = cards.find((c) => c.networkSlug === 'n1')!;
+		expect(n1Card.dc).toBe(50); // min(70 network-wide, 50 station)
+		expect(n1Card.dcFrom).toBe(true);
+		const onCard = cards.find((c) => c.networkSlug === 'on')!;
+		// ON prices DC (44) and DC_150 (55) differently — that variance is also "frá"
+		expect(onCard.dcFrom).toBe(true);
+		// n1 now sorts ahead of ON's DC 44? no — 44 < 50, ON stays first
+		expect(cards.map((c) => c.networkSlug)).toEqual(['on', 'n1']);
 	});
 });
