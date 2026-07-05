@@ -17,6 +17,8 @@
 	"cheapest": "ódýrast",
 	"verified_on": "staðfest {date}",
 	"minute_fee": "+ {fee} kr/mín",
+	"minute_fee_after": "+ {fee} kr/mín eftir {min} mín",
+	"price_from": "frá {price}",
 	"rate_card_title": "Verðskrá fyrirtækja",
 	"stations_title": "Allar hleðslustöðvar",
 	"lang_switch": "English"

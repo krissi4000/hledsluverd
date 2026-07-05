@@ -13,10 +13,14 @@
 			<li class="card" class:best={i === 0 && card.dc !== null} data-testid="rate-card">
 				<span class="network">{card.networkName}</span>
 				<span class="dc">
-					{#if card.dc !== null}<strong data-testid="rate-dc">{formatIsk(card.dc)}</strong> DC{/if}
+					{#if card.dc !== null}<strong data-testid="rate-dc"
+							>{card.dcFrom ? m.price_from({ price: formatIsk(card.dc) }) : formatIsk(card.dc)}</strong
+						> DC{/if}
 				</span>
 				<span class="ac">
-					{#if card.ac !== null}{formatIsk(card.ac)} AC{/if}
+					{#if card.ac !== null}{card.acFrom
+							? m.price_from({ price: formatIsk(card.ac) })
+							: formatIsk(card.ac)} AC{/if}
 				</span>
 				{#if i === 0 && card.dc !== null}<span class="badge">{m.cheapest()}</span>{/if}
 			</li>

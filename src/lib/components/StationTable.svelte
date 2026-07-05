@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk, formatDate, formatNumber } from '$lib/format';
+	import { formatIsk, formatDate, formatNumber, isStale } from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import type { StationRow } from '$lib/server/db/queries';
 
@@ -97,9 +97,14 @@
 							{#if s.price !== null}
 								<strong data-testid="price">{formatIsk(s.price)}</strong>
 								{#if s.minuteFeeIsk}<small
-										>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
+										>{s.minuteFeeAfterMin
+											? m.minute_fee_after({
+													fee: formatNumber(s.minuteFeeIsk),
+													min: s.minuteFeeAfterMin
+												})
+											: m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
 									>{/if}
-								{#if s.verifiedAt}<small class="verified"
+								{#if s.verifiedAt}<small class="verified" class:stale={isStale(s.verifiedAt)}
 										>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
 									>{/if}
 							{:else}
@@ -177,6 +182,10 @@
 		display: block;
 		opacity: 0.6;
 		font-size: 0.75rem;
+	}
+	.verified.stale {
+		color: #b26a00;
+		opacity: 1;
 	}
 	small {
 		display: block;

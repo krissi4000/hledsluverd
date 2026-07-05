@@ -17,6 +17,8 @@
 	"cheapest": "cheapest",
 	"verified_on": "verified {date}",
 	"minute_fee": "+ {fee} kr/min",
+	"minute_fee_after": "+ {fee} kr/min after {min} min",
+	"price_from": "from {price}",
 	"rate_card_title": "Network price list",
 	"stations_title": "All charging stations",
 	"lang_switch": "Íslenska"
