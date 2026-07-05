@@ -80,6 +80,8 @@ describe.skipIf(!TEST_DB_URL)('runScrapers', () => {
 		const summaries = await runScrapers(db, [good('orkan', 49)]);
 		expect(summaries.find((s) => s.networkSlug === 'on')!.status).toBe('failed');
 		expect(summaries.find((s) => s.networkSlug === 'on')!.message).toMatch(/no scraper module/);
+		const runs = await db.select().from(scrapeRuns);
+		expect(runs.find((r) => r.networkId === onId)!.status).toBe('failed');
 	});
 
 	it('notifies exactly once, when the 3rd consecutive failure lands', async () => {
@@ -108,6 +110,6 @@ describe.skipIf(!TEST_DB_URL)('runScrapers', () => {
 		};
 		await runScrapers(db, [warny]);
 		const runs = await db.select().from(scrapeRuns).orderBy(desc(scrapeRuns.id));
-		expect(runs[0].message).toMatch(/Baula/);
+		expect(runs.find((r) => r.networkId === onId)!.message).toMatch(/Baula/);
 	});
 });

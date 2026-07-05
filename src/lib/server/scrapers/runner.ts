@@ -39,18 +39,9 @@ export async function runScrapers(
 	for (const net of nets) {
 		let status: RunSummary['status'];
 		let message: string;
-		const scraper = byId.get(net.scraperId!);
-		if (!scraper) {
-			// Config-time gap, not a transient scraper failure — report in summaries but do
-			// not pollute scrape_runs with noise (no streak counter, no ntfy trigger).
-			summaries.push({
-				networkSlug: net.slug,
-				status: 'failed',
-				message: `no scraper module registered for '${net.scraperId}'`
-			});
-			continue;
-		}
 		try {
+			const scraper = byId.get(net.scraperId!);
+			if (!scraper) throw new Error(`no scraper module registered for '${net.scraperId}'`);
 			const { readings, warnings } = await scraper.scrape(db);
 			if (readings.length === 0) throw new Error('scraper returned no readings');
 			let inserted = 0;
