@@ -65,13 +65,13 @@ Non-goals here (Phase 4): systemd timer, deployment, Caddy basic-auth in front o
 
 **Files:** `package.json` (via npm)
 
-- [ ] **Step 1: Create the feature branch**
+- [x] **Step 1: Create the feature branch**
 
 ```bash
 git checkout -b phase-2-scrapers
 ```
 
-- [ ] **Step 2: Install runtime dependencies**
+- [x] **Step 2: Install runtime dependencies**
 
 cheerio parses ON/Orkan HTML; chart.js renders the trend graph client-side; playwright (same major as the existing @playwright/test) drives Chromium for Orkan and shares its downloaded browser.
 
@@ -79,14 +79,14 @@ cheerio parses ON/Orkan HTML; chart.js renders the trend graph client-side; play
 npm install cheerio chart.js playwright
 ```
 
-- [ ] **Step 3: Verify install and existing suite still green**
+- [x] **Step 3: Verify install and existing suite still green**
 
 ```bash
 npx vitest run
 ```
 Expected: 40 tests pass (6 files).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add package.json package-lock.json
@@ -104,7 +104,7 @@ git commit -m "chore: add cheerio, chart.js, playwright for phase 2 scrapers"
 - Test: `src/lib/server/db/prices.test.ts`
 - Create: `drizzle/0001_*.sql` (generated)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add inside the existing `describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', ...)` block in `src/lib/server/db/prices.test.ts` (it provides `db` and `networkId`):
 
@@ -164,14 +164,14 @@ Add inside the existing `describe.skipIf(!TEST_DB_URL)('insertPriceIfChanged', .
 	});
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/db/prices.test.ts
 ```
 Expected: FAIL — TypeScript error (`minuteFeeAfterMin` not in `PriceReading`) or unknown-column at runtime.
 
-- [ ] **Step 3: Schema change**
+- [x] **Step 3: Schema change**
 
 In `src/lib/server/db/schema.ts`, add to the `prices` table between `minuteFeeIsk` and `validFrom`:
 
@@ -192,7 +192,7 @@ And extend the stations `externalIds` type for the Phase 2 matchers:
 			.default({}),
 ```
 
-- [ ] **Step 4: Generate and apply the migration**
+- [x] **Step 4: Generate and apply the migration**
 
 ```bash
 npx drizzle-kit generate --name minute_fee_after_min
@@ -200,7 +200,7 @@ npm run db:migrate
 ```
 Expected: new `drizzle/0001_minute_fee_after_min.sql` containing `ALTER TABLE "prices" ADD COLUMN "minute_fee_after_min" integer;`. The test DB migrates itself in `setupTestDb`.
 
-- [ ] **Step 5: Extend `PriceReading` and `insertPriceIfChanged`**
+- [x] **Step 5: Extend `PriceReading` and `insertPriceIfChanged`**
 
 In `src/lib/server/db/prices.ts` — add the field to the interface:
 
@@ -255,14 +255,14 @@ Add normalization next to the fee normalization, extend the unchanged-comparison
 	});
 ```
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 ```bash
 npx vitest run src/lib/server/db/prices.test.ts
 ```
 Expected: PASS (all, including the two new).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/server/db/schema.ts src/lib/server/db/prices.ts src/lib/server/db/prices.test.ts drizzle/
