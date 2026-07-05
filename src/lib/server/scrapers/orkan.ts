@@ -52,6 +52,26 @@ export async function fetchOrkanHtml(): Promise<string> {
 
 const norm = (s: string) => s.toLowerCase().normalize('NFC').trim();
 
+/**
+ * Price-table names are bare place names, sometimes compound ("Austurmörk, Hveragerði");
+ * ours carry "(Orkan)" and OCM addresses. Try the full name, then comma-separated
+ * tokens (street before town), first candidate with any hit wins.
+ */
+export function matchOrkanStations<T extends { name: string; address: string | null }>(
+	rowName: string,
+	sts: T[]
+): T[] {
+	const full = norm(rowName);
+	const candidates = [full, ...full.split(/\s*,\s*/).filter((t) => t.length >= 4)];
+	for (const token of candidates) {
+		const matches = sts.filter(
+			(s) => norm(s.name).includes(token) || norm(s.address ?? '').includes(token)
+		);
+		if (matches.length > 0) return matches;
+	}
+	return [];
+}
+
 export const orkanScraper: Scraper = {
 	id: 'orkan',
 	async scrape(db) {
@@ -64,12 +84,7 @@ export const orkanScraper: Scraper = {
 		const warnings: string[] = [];
 		const matchedStations = new Set<number>();
 		for (const row of rows) {
-			const rowName = norm(row.name);
-			// price-table names are bare place names; ours carry "(Orkan)" and OCM
-			// addresses — match by containment in name or address
-			const matches = sts.filter(
-				(s) => norm(s.name).includes(rowName) || norm(s.address ?? '').includes(rowName)
-			);
+			const matches = matchOrkanStations(row.name, sts);
 			if (matches.length === 0) {
 				warnings.push(`óþekkt stöð í verðtöflu: ${row.name}`);
 				continue;
