@@ -20,3 +20,9 @@ bun.lockb
 
 # Local tool state
 /.claude/
+
+# Verbatim scraper fixtures — byte-exact captures of live responses, never reformat
+/tests/fixtures/
+
+# Plan documents — line numbers are load-bearing (fixtures are sed-extracted by line range)
+/docs/superpowers/plans/

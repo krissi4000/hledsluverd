@@ -214,8 +214,18 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		const st = await db
 			.insert(stations)
 			.values([
-				{ networkId: isorka.id, slug: 'olis-ananaust', name: 'Olís Ánanaust', location: { x: -21.95, y: 64.15 } },
-				{ networkId: isorka.id, slug: 'kfc-moso', name: 'KFC Mosó', location: { x: -21.7, y: 64.16 } }
+				{
+					networkId: isorka.id,
+					slug: 'olis-ananaust',
+					name: 'Olís Ánanaust',
+					location: { x: -21.95, y: 64.15 }
+				},
+				{
+					networkId: isorka.id,
+					slug: 'kfc-moso',
+					name: 'KFC Mosó',
+					location: { x: -21.7, y: 64.16 }
+				}
 			])
 			.returning();
 		await db.insert(connectors).values([

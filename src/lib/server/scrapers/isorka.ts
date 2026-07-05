@@ -76,12 +76,15 @@ export const isorkaScraper: Scraper = {
 		const sts = (await db.select().from(stations).where(eq(stations.networkId, net.id))).filter(
 			(s) => s.externalIds.virta != null
 		);
-		if (sts.length === 0) throw new Error('no stations have externalIds.virta — run npm run match:virta');
+		if (sts.length === 0)
+			throw new Error('no stations have externalIds.virta — run npm run match:virta');
 		const readings: ScrapedReading[] = [];
 		const warnings: string[] = [];
 		let fetched = 0;
 		for (const s of sts) {
-			const res = await fetch(`${VIRTA_BASE}/stations/${s.externalIds.virta}`, { headers: HEADERS });
+			const res = await fetch(`${VIRTA_BASE}/stations/${s.externalIds.virta}`, {
+				headers: HEADERS
+			});
 			if (!res.ok) {
 				warnings.push(`${s.name}: HTTP ${res.status}`);
 				continue;

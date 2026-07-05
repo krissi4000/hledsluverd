@@ -14,7 +14,9 @@
 				<span class="network">{card.networkName}</span>
 				<span class="dc">
 					{#if card.dc !== null}<strong data-testid="rate-dc"
-							>{card.dcFrom ? m.price_from({ price: formatIsk(card.dc) }) : formatIsk(card.dc)}</strong
+							>{card.dcFrom
+								? m.price_from({ price: formatIsk(card.dc) })
+								: formatIsk(card.dc)}</strong
 						> DC{/if}
 				</span>
 				<span class="ac">

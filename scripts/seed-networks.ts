@@ -12,7 +12,12 @@ const db = createDb(process.env.DATABASE_URL);
 for (const n of data) {
 	await db
 		.insert(networks)
-		.values({ name: n.name, slug: n.slug, websiteUrl: n.websiteUrl, scraperId: n.scraperId ?? null })
+		.values({
+			name: n.name,
+			slug: n.slug,
+			websiteUrl: n.websiteUrl,
+			scraperId: n.scraperId ?? null
+		})
 		.onConflictDoUpdate({
 			target: networks.slug,
 			set: { name: n.name, websiteUrl: n.websiteUrl, scraperId: n.scraperId ?? null }

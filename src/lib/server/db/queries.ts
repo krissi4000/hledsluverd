@@ -135,7 +135,8 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 		const tariffs = new Set<TariffKey>([...own, ...netWide].map((p) => p.tariffKey));
 		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
 		// station-specific current price wins; network-wide price is the fallback
-		const price = own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key) ?? null;
+		const price =
+			own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key) ?? null;
 		const net = netById.get(s.networkId)!;
 
 		rows.push({
