@@ -1,0 +1,18 @@
+{
+	"id": 10360,
+	"name": "RVK-Borg Vitatorg",
+	"operatorName": "Isorka",
+	"evses": [
+		{
+			"id": 10360,
+			"connectors": [{ "connectorID": 1, "type": "Type 2", "maxKw": 22, "currentType": "AC", "status": "Operative" }],
+			"currency": "ISK",
+			"pricing": [
+				{ "name": "price_per_kwh", "priceCents": 2400, "currency": "ISK", "priceCentsWithoutVat": 1935.48, "priceCentsVat": 464.52, "freePeriod": null },
+				{ "name": "price_per_minute", "priceCents": 0, "currency": "ISK", "priceCentsWithoutVat": 0, "priceCentsVat": 0, "freePeriod": null }
+			],
+			"minutesWithoutTimeCharge": 180,
+			"isFree": false
+		}
+	]
+}

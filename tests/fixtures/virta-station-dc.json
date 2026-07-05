@@ -1,0 +1,35 @@
+{
+	"id": 165718,
+	"name": "Ísorka - Olís Ánanaustum",
+	"operatorName": "Isorka",
+	"evses": [
+		{
+			"id": 165718,
+			"connectors": [
+				{
+					"connectorID": 1,
+					"type": "CCS",
+					"maxKwh": 150,
+					"maxKw": 150,
+					"currentType": "DC",
+					"operativeStatus": "Charging",
+					"status": "Operative"
+				}
+			],
+			"currency": "ISK",
+			"pricing": [
+				{ "name": "price_per_kwh", "priceCents": 7300, "currency": "ISK", "priceCentsWithoutVat": 5887.1, "priceCentsVat": 1412.9, "freePeriod": null },
+				{ "name": "price_per_minute", "priceCents": 6000, "currency": "ISK", "priceCentsWithoutVat": 4838.71, "priceCentsVat": 1161.29, "freePeriod": null },
+				{ "name": "price_initial_charge_fee", "priceCents": 0, "currency": "ISK", "priceCentsWithoutVat": 0, "priceCentsVat": 0, "freePeriod": null },
+				{ "name": "price_reservation_per_minute", "priceCents": 0, "currency": "ISK", "priceCentsWithoutVat": 0, "priceCentsVat": 0, "freePeriod": null }
+			],
+			"oneTimePricing": [
+				{ "name": "price_per_kwh", "priceCents": 8030, "currency": "ISK", "priceCentsWithoutVat": 6475.81, "priceCentsVat": 1554.19, "freePeriod": null },
+				{ "name": "price_per_minute", "priceCents": 6600, "currency": "ISK", "priceCentsWithoutVat": 5322.58, "priceCentsVat": 1277.42, "freePeriod": null }
+			],
+			"oneTimePricingRatio": 1.1,
+			"minutesWithoutTimeCharge": 60,
+			"isFree": false
+		}
+	]
+}

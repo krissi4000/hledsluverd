@@ -1,0 +1,27 @@
+{
+	"id": 999999,
+	"name": "Tilbúin stöð með ósamræmi",
+	"operatorName": "Isorka",
+	"evses": [
+		{
+			"id": 1,
+			"connectors": [{ "connectorID": 1, "type": "CCS", "maxKw": 150, "currentType": "DC" }],
+			"currency": "ISK",
+			"pricing": [
+				{ "name": "price_per_kwh", "priceCents": 7300, "currency": "ISK" },
+				{ "name": "price_per_minute", "priceCents": 0, "currency": "ISK" }
+			],
+			"minutesWithoutTimeCharge": 60
+		},
+		{
+			"id": 2,
+			"connectors": [{ "connectorID": 1, "type": "CCS", "maxKw": 50, "currentType": "DC" }],
+			"currency": "ISK",
+			"pricing": [
+				{ "name": "price_per_kwh", "priceCents": 6700, "currency": "ISK" },
+				{ "name": "price_per_minute", "priceCents": 0, "currency": "ISK" }
+			],
+			"minutesWithoutTimeCharge": 60
+		}
+	]
+}

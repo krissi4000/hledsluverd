@@ -11,6 +11,7 @@
 		"name": "Ísorka",
 		"slug": "isorka",
 		"websiteUrl": "https://www.isorka.is",
+		"scraperId": "isorka",
 		"ocmOperatorIds": [],
 		"ocmMatchers": ["ísorka", "isorka"]
 	},
