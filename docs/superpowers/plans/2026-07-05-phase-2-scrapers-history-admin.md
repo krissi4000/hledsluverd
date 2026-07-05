@@ -940,7 +940,7 @@ git commit -m "feat: scraper interface + shared runner — scrape_runs logging, 
 - Create: `src/lib/server/scrapers/on.ts`
 - Test: `src/lib/server/scrapers/on.test.ts`
 
-- [ ] **Step 1: Create the fixture**
+- [x] **Step 1: Create the fixture**
 
 `tests/fixtures/on-verdskrar.html` — verbatim cell markup captured from on.is/verdskrar on 2026-07-05 (the live page is one ~747 KB minified line; this keeps the four relevant rows plus a home-subscription row that must be ignored). Note the deliberately STALE `data-framer-name` attributes ("45 kr/kWh", "69 kr/kWh") — they are the trap this parser must not fall into:
 
@@ -958,7 +958,7 @@ git commit -m "feat: scraper interface + shared runner — scrape_runs logging, 
 </div>
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/lib/server/scrapers/on.test.ts`:
 
@@ -992,14 +992,14 @@ describe('parseOnVerdskra', () => {
 });
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/scrapers/on.test.ts
 ```
 Expected: FAIL — `./on` does not exist.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 `src/lib/server/scrapers/on.ts`:
 
@@ -1068,14 +1068,14 @@ export const onScraper: Scraper = {
 };
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 npx vitest run src/lib/server/scrapers/on.test.ts
 ```
 Expected: PASS (3 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/fixtures/on-verdskrar.html src/lib/server/scrapers/on.ts src/lib/server/scrapers/on.test.ts
