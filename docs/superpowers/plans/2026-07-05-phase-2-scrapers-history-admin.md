@@ -1306,7 +1306,7 @@ git commit -m "feat: match:virta — stamp Virta station ids onto Ísorka statio
 - Test: `src/lib/server/scrapers/isorka.test.ts`
 - Modify: `src/lib/server/scrapers/index.ts`, `seeds/networks.json`
 
-- [ ] **Step 1: Fixtures**
+- [x] **Step 1: Fixtures**
 
 `tests/fixtures/virta-station-dc.json` — subset of the live `GET /api/core/v4/stations/165718` response (2026-07-05), zero-fee pricing entries kept to prove they read as "no fee":
 
@@ -1403,7 +1403,7 @@ git commit -m "feat: match:virta — stamp Virta station ids onto Ísorka statio
 }
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/lib/server/scrapers/isorka.test.ts`:
 
@@ -1448,14 +1448,14 @@ describe('parseVirtaStation', () => {
 });
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/scrapers/isorka.test.ts
 ```
 Expected: FAIL — `./isorka` does not exist.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 `src/lib/server/scrapers/isorka.ts`:
 
@@ -1560,14 +1560,14 @@ export const isorkaScraper: Scraper = {
 };
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 npx vitest run src/lib/server/scrapers/isorka.test.ts
 ```
 Expected: PASS (4 tests).
 
-- [ ] **Step 6: Enable + live smoke**
+- [x] **Step 6: Enable + live smoke**
 
 Add to `src/lib/server/scrapers/index.ts`:
 
@@ -1583,7 +1583,7 @@ npm run seed:networks && npm run scrape
 ```
 Expected: `isorka: changed — N inserted, 0 verified` (first run inserts one or two readings per matched station; warnings about disagreeing or fee-less stations are fine). Sanity-check: `psql $DATABASE_URL -c "SELECT s.name, p.tariff_key, p.price_isk_per_kwh, p.minute_fee_isk, p.minute_fee_after_min FROM prices p JOIN stations s ON s.id = p.station_id ORDER BY p.id DESC LIMIT 10"` — DC prices should sit in the 45–75 kr range seen in research.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tests/fixtures/virta-station-*.json src/lib/server/scrapers/isorka.ts src/lib/server/scrapers/isorka.test.ts src/lib/server/scrapers/index.ts seeds/networks.json
