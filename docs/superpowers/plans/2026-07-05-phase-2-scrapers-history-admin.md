@@ -1194,7 +1194,7 @@ Virta's station-list endpoint (verified 2026-07-05) returns items shaped
 `{"id":10360,"latitude":64.14592,"longitude":-21.92096,"name":"RVK-Borg Vitatorg","address":"Vitatorg/Lindargata","provider":"Virta","evses":[...],"isRemoved":false}`.
 It rejects a whole-Iceland bounding box ("distance too large"), so the script tiles Iceland into four 2°×6° boxes.
 
-- [ ] **Step 1: Write the script**
+- [x] **Step 1: Write the script**
 
 `scripts/match-virta.ts`:
 
@@ -1281,14 +1281,14 @@ Add to `package.json` scripts:
 		"match:virta": "tsx scripts/match-virta.ts",
 ```
 
-- [ ] **Step 2: Run it live**
+- [x] **Step 2: Run it live**
 
 ```bash
 npm run match:virta
 ```
 Expected: a match line per station, `Stamped externalIds.virta on N/27` with N ≥ 15. UNMATCHED lines are fine (OCM-only sites, stale OCM coordinates) — those stations simply keep "verð óþekkt". If N is far lower (< 10), stop and investigate coordinates before continuing.
 
-- [ ] **Step 3: Idempotency check + commit**
+- [x] **Step 3: Idempotency check + commit**
 
 ```bash
 npm run match:virta   # second run must produce the same result, no errors
