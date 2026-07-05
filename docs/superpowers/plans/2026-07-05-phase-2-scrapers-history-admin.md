@@ -547,7 +547,7 @@ git commit -m "feat: per-station price resolution — station rows override netw
 - Modify: `src/lib/server/db/queries.ts`
 - Test: `src/lib/server/db/queries.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add at the end of the describe block in `queries.test.ts` (import `trendSeries` alongside the other query imports):
 
@@ -585,14 +585,14 @@ Add at the end of the describe block in `queries.test.ts` (import `trendSeries` 
 	});
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/db/queries.test.ts
 ```
 Expected: FAIL — `trendSeries` not exported.
 
-- [ ] **Step 3: Implement `trendSeries` at the end of `queries.ts`**
+- [x] **Step 3: Implement `trendSeries` at the end of `queries.ts`**
 
 ```ts
 export interface TrendSeries {
@@ -632,14 +632,14 @@ export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSerie
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 ```bash
 npx vitest run src/lib/server/db/queries.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/server/db/queries.ts src/lib/server/db/queries.test.ts
