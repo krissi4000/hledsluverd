@@ -2240,7 +2240,7 @@ git commit -m "feat: display frá-prices, conditional minute fees, and amber sta
 - Modify: `messages/is.json`, `messages/en.json`, `src/routes/+layout.svelte`
 - Test: `e2e/homepage.test.ts` (new tests)
 
-- [ ] **Step 1: Messages**
+- [x] **Step 1: Messages**
 
 `messages/is.json` (before `"lang_switch"`):
 
@@ -2264,7 +2264,7 @@ git commit -m "feat: display frá-prices, conditional minute fees, and amber sta
 	"trends_since": "since {date}",
 ```
 
-- [ ] **Step 2: Nav link**
+- [x] **Step 2: Nav link**
 
 In `src/routes/+layout.svelte`, insert between the tagline and the lang link:
 
@@ -2282,7 +2282,7 @@ and add to the header styles:
 	}
 ```
 
-- [ ] **Step 3: Server load**
+- [x] **Step 3: Server load**
 
 `src/routes/verdthroun/+page.server.ts`:
 
@@ -2297,7 +2297,7 @@ export const load: PageServerLoad = async ({ url }) => {
 };
 ```
 
-- [ ] **Step 4: Page**
+- [x] **Step 4: Page**
 
 `src/routes/verdthroun/+page.svelte`:
 
@@ -2436,7 +2436,7 @@ export const load: PageServerLoad = async ({ url }) => {
 </style>
 ```
 
-- [ ] **Step 5: E2E tests**
+- [x] **Step 5: E2E tests**
 
 Add to `e2e/homepage.test.ts`:
 
@@ -2454,14 +2454,14 @@ test('trend page draws the chart and offers a no-JS table', async ({ page, brows
 });
 ```
 
-- [ ] **Step 6: Verify**
+- [x] **Step 6: Verify**
 
 ```bash
 npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json && npx playwright test
 ```
 Expected: all E2E pass (7 now). The dev DB has real scraped history by this point, so the chart has data.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add messages/ src/routes/+layout.svelte src/routes/verdthroun/ e2e/homepage.test.ts src/lib/paraglide/
