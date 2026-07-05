@@ -1601,7 +1601,7 @@ git commit -m "feat: Ísorka scraper — per-station tariffs from the Virta API"
 The locations list lives escaped inside the raw HTML of `https://n1.is/is/verdtafla`:
 `\"locations\":[{\"value\":\"40_service\",\"label\":\"N1 Borgartúni - Borgartún 39 - 105 Reykjavík\"},...]` (verified 2026-07-05). Labels decline place names (Blönduós → "N1 Blönduósi"), so matching uses a 6-character lowercase stem of the first word of our station name (or of the address, for generic names like "N1"). Ambiguous stations are reported, not guessed.
 
-- [ ] **Step 1: Write the script**
+- [x] **Step 1: Write the script**
 
 `scripts/match-n1.ts`:
 
@@ -1667,14 +1667,14 @@ Add to `package.json` scripts:
 		"match:n1": "tsx scripts/match-n1.ts",
 ```
 
-- [ ] **Step 2: Run it live and review**
+- [x] **Step 2: Run it live and review**
 
 ```bash
 npm run match:n1
 ```
 Expected: matches for Blönduós, Egilsstaðir, Hvolsvöllur (both OCM duplicates), Ísafjörður (both), Sauðárkrókur, Staðarskáli (both); UNMATCHED/AMBIGUOUS for the rest is fine. **Read every `←→` line** — a wrong match here would put a wrong price on a station, which is the failure this site must never commit. Correct any bad stamp via `psql` before continuing, and re-run to confirm idempotency.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/match-n1.ts package.json
