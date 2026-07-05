@@ -1905,7 +1905,7 @@ git commit -m "feat: N1 scraper — Listaverð from RSC blob + per-station price
 - Test: `src/lib/server/scrapers/orkan.test.ts`
 - Modify: `src/lib/server/scrapers/index.ts`, `seeds/networks.json`
 
-- [ ] **Step 1: Fixture**
+- [x] **Step 1: Fixture**
 
 `tests/fixtures/orkan-orkustodvar.html` — the rendered `.prices__list` DOM (header card + Baula verbatim from the live site 2026-07-05, SVG elided; plus a shape-faithful fuel-only "Húsavík" card proving `-` rows are skipped). Blazor's `<!--!-->` comment nodes are part of the real markup — keep them:
 
@@ -1948,7 +1948,7 @@ git commit -m "feat: N1 scraper — Listaverð from RSC blob + per-station price
                                 <div class="prices__price-value">-</div></div></div></div></div>
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/lib/server/scrapers/orkan.test.ts`:
 
@@ -1979,14 +1979,14 @@ describe('parseOrkanPrices', () => {
 });
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 ```bash
 npx vitest run src/lib/server/scrapers/orkan.test.ts
 ```
 Expected: FAIL — `./orkan` does not exist.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 `src/lib/server/scrapers/orkan.ts`:
 
@@ -2088,14 +2088,14 @@ export const orkanScraper: Scraper = {
 };
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 npx vitest run src/lib/server/scrapers/orkan.test.ts
 ```
 Expected: PASS (3 tests).
 
-- [ ] **Step 6: Enable + live smoke (needs the Chromium E2E browser)**
+- [x] **Step 6: Enable + live smoke (needs the Chromium E2E browser)**
 
 Add `orkanScraper` to `src/lib/server/scrapers/index.ts`; add `"scraperId": "orkan"` to the Orkan entry in `seeds/networks.json`. Then:
 
@@ -2104,7 +2104,7 @@ npm run seed:networks && npm run scrape
 ```
 Expected: `orkan: changed — N inserted` with warnings for price-table stations not in our DB (Baula, Hella, …) and for our fuel-only stations — both expected. Verify matched prices land in the 49–61 kr band. If playwright complains about a missing browser: `npx playwright install chromium`.
 
-- [ ] **Step 7: Full suite + commit**
+- [x] **Step 7: Full suite + commit**
 
 ```bash
 npx vitest run
