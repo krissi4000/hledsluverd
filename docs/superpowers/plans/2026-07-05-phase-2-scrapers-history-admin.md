@@ -2121,7 +2121,7 @@ git commit -m "feat: Orkan scraper — headless-rendered Blazor price table, nam
 - Modify: `src/lib/format.ts` + Test: `src/lib/format.test.ts`
 - Modify: `src/lib/components/RateCard.svelte`, `src/lib/components/StationTable.svelte`
 
-- [ ] **Step 1: Messages**
+- [x] **Step 1: Messages**
 
 Add to `messages/is.json` (before `"lang_switch"`):
 
@@ -2137,7 +2137,7 @@ Add to `messages/en.json` (same position):
 	"price_from": "from {price}",
 ```
 
-- [ ] **Step 2: Staleness helper (TDD)**
+- [x] **Step 2: Staleness helper (TDD)**
 
 Add to `src/lib/format.test.ts`:
 
@@ -2167,7 +2167,7 @@ export function isStale(verifiedAt: Date, now = new Date()): boolean {
 
 Run again — expect PASS.
 
-- [ ] **Step 3: StationTable — fee-after variant + stale class**
+- [x] **Step 3: StationTable — fee-after variant + stale class**
 
 In `src/lib/components/StationTable.svelte`, extend the format import:
 
@@ -2200,7 +2200,7 @@ Add to the component's `<style>` block:
 	}
 ```
 
-- [ ] **Step 4: RateCard — "frá" prefix**
+- [x] **Step 4: RateCard — "frá" prefix**
 
 In `src/lib/components/RateCard.svelte`, replace the dc/ac spans:
 
@@ -2217,14 +2217,14 @@ In `src/lib/components/RateCard.svelte`, replace the dc/ac spans:
 				</span>
 ```
 
-- [ ] **Step 5: Verify everything**
+- [x] **Step 5: Verify everything**
 
 ```bash
 npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json && npx vitest run && npx playwright test
 ```
 Expected: all green. The homepage E2E tests already tolerate the "frá" prefix (their `parsePrice` strips non-digits) and per-station price variance (server-side sort). If the connector-filter or ordering tests fail, that's a real regression — investigate, don't loosen the test.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add messages/ src/lib/format.ts src/lib/format.test.ts src/lib/components/ src/lib/paraglide/
