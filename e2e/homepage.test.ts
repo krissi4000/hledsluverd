@@ -95,3 +95,12 @@ test('trend page draws the chart and offers a no-JS table', async ({ page, brows
 	expect(await noJs.locator('[data-testid="trend-row"]').count()).toBeGreaterThan(0);
 	await ctx.close();
 });
+
+test('admin page renders health, prices and forms', async ({ page }) => {
+	await page.goto('/admin');
+	await expect(page.locator('[data-testid="admin-health"]')).toBeVisible();
+	await expect(page.locator('[data-testid="admin-prices"] tr').first()).toBeVisible();
+	await expect(page.locator('[data-testid="admin-price-form"]')).toBeVisible();
+	// never let the admin page leak into search results
+	await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+});
