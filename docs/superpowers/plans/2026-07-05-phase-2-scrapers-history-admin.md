@@ -3037,7 +3037,7 @@ git commit -m "feat: /admin — scraper health, manual prices, verified-at bump,
 - Modify: `README.md`
 - Vault (outside repo): `Hleðsluverð.md` status + risk updates — done by the session owner at completion, never committed to the repo.
 
-- [ ] **Step 1: README — add a Scrapers section after "Tests"**
+- [x] **Step 1: README — add a Scrapers section after "Tests"**
 
 ```markdown
 ## Scrapers
@@ -3060,21 +3060,21 @@ git commit -m "feat: /admin — scraper health, manual prices, verified-at bump,
   MUST front `/admin` with Caddy basic-auth.
 ```
 
-- [ ] **Step 2: Full verification**
+- [x] **Step 2: Full verification**
 
 ```bash
 npm run lint && npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json && npx vitest run && npx playwright test
 ```
 Expected: prettier clean, 0 svelte-check errors, all unit + 8 E2E pass. Fix any prettier drift with `npm run format` before committing.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md
 git commit -m "docs: README — scraper architecture, match scripts, ntfy, fail-loud policy"
 ```
 
-- [ ] **Step 4: Process wrap-up (session owner)**
+- [x] **Step 4: Process wrap-up (session owner)**
 
 1. Run the final whole-branch review (superpowers:code-reviewer) before merging `phase-2-scrapers` → `main`.
 2. Update the Obsidian vault (`Hleðsluverð.md`): tick Fasi 2 with date + summary; update risk register — e1 prices are app-only (no scraper possible, verified 2026-07-05), Orkan requires headless Chromium (Blazor), per-station pricing is the norm for Ísorka/N1/Orkan, N1's Rafmagn VSK status inferred not stated (periodic manual check).
