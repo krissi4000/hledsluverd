@@ -94,6 +94,33 @@ describe.skipIf(!TEST_DB_URL)('admin logic', () => {
 		expect(await db.select().from(prices)).toHaveLength(0);
 	});
 
+	it('submitManualPrice rejects stationId from a different network', async () => {
+		const [other] = await db.insert(networks).values({ name: 'N1', slug: 'n1' }).returning();
+		// stationId belongs to ON network, but networkId is the new N1 network
+		const res = await submitManualPrice(
+			db,
+			form({
+				networkId: String(other.id),
+				stationId: String(stationId),
+				tariffKey: 'DC',
+				price: '50'
+			})
+		);
+		expect(res.ok).toBe(false);
+		expect(res.error).toMatch(/tilheyrir/);
+		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+
+	it('submitManualPrice rejects a non-integer stationId', async () => {
+		const res = await submitManualPrice(
+			db,
+			form({ networkId: String(onId), stationId: '1.5', tariffKey: 'DC', price: '50' })
+		);
+		expect(res.ok).toBe(false);
+		expect(res.error).toBe('ógilt form');
+		expect(await db.select().from(prices)).toHaveLength(0);
+	});
+
 	it('bumpVerified touches only the targeted row', async () => {
 		await insertPriceIfChanged(db, {
 			networkId: onId,

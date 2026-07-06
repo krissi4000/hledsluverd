@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, isNull, or } from 'drizzle-orm';
 import type { ConnectorType, TariffKey } from '$lib/types';
 import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
@@ -22,7 +22,12 @@ export interface CurrentPrice {
  * the prices table stays small (a few rows per network/station per year).
  */
 export async function currentPrices(db: Db): Promise<CurrentPrice[]> {
-	const all = await db.select().from(prices);
+	const rawAll = await db
+		.select()
+		.from(prices)
+		.leftJoin(stations, eq(prices.stationId, stations.id))
+		.where(or(isNull(prices.stationId), eq(stations.isActive, true)));
+	const all = rawAll.map((r) => r.prices);
 	const best = new Map<string, (typeof all)[number]>();
 	for (const p of all) {
 		const key = `${p.networkId}:${p.stationId ?? 'net'}:${p.tariffKey}`;
@@ -174,7 +179,15 @@ export interface TrendSeries {
  */
 export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSeries[]> {
 	const keys: TariffKey[] = mode === 'AC' ? ['AC'] : ['DC', 'DC_150'];
-	const [nets, all] = await Promise.all([db.select().from(networks), db.select().from(prices)]);
+	const [nets, rawAll] = await Promise.all([
+		db.select().from(networks),
+		db
+			.select()
+			.from(prices)
+			.leftJoin(stations, eq(prices.stationId, stations.id))
+			.where(or(isNull(prices.stationId), eq(stations.isActive, true)))
+	]);
+	const all = rawAll.map((r) => r.prices);
 	const rows = all
 		.filter((p) => (keys as string[]).includes(p.tariffKey))
 		.sort((a, b) => a.validFrom.getTime() - b.validFrom.getTime() || a.id - b.id);

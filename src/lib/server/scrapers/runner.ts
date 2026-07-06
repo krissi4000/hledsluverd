@@ -18,7 +18,11 @@ export interface RunSummary {
 }
 
 async function ntfy(topic: string, message: string): Promise<void> {
-	await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, { method: 'POST', body: message });
+	const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+		method: 'POST',
+		body: message
+	});
+	if (!res.ok) console.error(`ntfy delivery failed: HTTP ${res.status}`);
 }
 
 /**

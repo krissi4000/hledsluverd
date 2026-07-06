@@ -35,4 +35,23 @@ describe('parseVirtaStation', () => {
 		expect(readings).toEqual([]);
 		expect(warnings[0]).toMatch(/price_per_kwh/);
 	});
+
+	it('skips a station mode with implausible kWh price (0) and warns', () => {
+		const st = load('virta-station-dc.json');
+		// set price_per_kwh to 0 cents → 0 ISK (below plausible floor)
+		const kwh = st.evses[0].pricing?.find((p) => p.name === 'price_per_kwh');
+		if (kwh) kwh.priceCents = 0;
+		const { readings, warnings } = parseVirtaStation(st);
+		expect(readings).toEqual([]);
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0]).toMatch(/implausible/);
+	});
+
+	it('plausible station still parses unchanged after implausible-check is added', () => {
+		const { readings, warnings } = parseVirtaStation(load('virta-station-dc.json'));
+		expect(warnings).toEqual([]);
+		expect(readings).toEqual([
+			{ tariffKey: 'DC', priceIskPerKwh: 73, minuteFeeIsk: 60, minuteFeeAfterMin: 60 }
+		]);
+	});
 });

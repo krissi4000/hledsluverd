@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
 import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
 import { connectors, networks, prices, stations } from './schema';
@@ -279,6 +280,69 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		const ac = await trendSeries(db, 'AC');
 		expect(ac.find((s) => s.networkSlug === 'on')!.points.map((p) => p.y)).toEqual([39]);
 		expect(ac.find((s) => s.networkSlug === 'n1')).toBeUndefined();
+	});
+
+	it('currentPrices excludes rows scoped to inactive stations', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		// insert a station-scoped price for the active station
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 55,
+			source: 'scraper'
+		});
+		// deactivate the station — its row must disappear from currentPrices
+		await db.update(stations).set({ isActive: false }).where(eq(stations.id, stadarskali.id));
+		const cp = await currentPrices(db);
+		expect(cp.find((p) => p.stationId === stadarskali.id)).toBeUndefined();
+		// network-wide rows (stationId = null) remain
+		const nwRows = cp.filter((p) => p.stationId === null);
+		expect(nwRows.length).toBeGreaterThan(0);
+	});
+
+	it('rateCard: deactivating the station removes its frá-minimum', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		// station-scoped DC 50 (network-wide is 70) → card shows 50 with frá
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+		const before = await rateCard(db);
+		const n1Before = before.find((c) => c.networkSlug === 'n1')!;
+		expect(n1Before.dc).toBe(50);
+		expect(n1Before.dcFrom).toBe(true);
+
+		// deactivate station — card should revert to network-wide 70, no variance
+		await db.update(stations).set({ isActive: false }).where(eq(stations.id, stadarskali.id));
+		const after = await rateCard(db);
+		const n1After = after.find((c) => c.networkSlug === 'n1')!;
+		expect(n1After.dc).toBe(70);
+		expect(n1After.dcFrom).toBe(false);
+	});
+
+	it('trendSeries ignores rows from inactive stations', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+		// with station active: series is [70, 50]
+		const before = await trendSeries(db, 'DC');
+		expect(before.find((s) => s.networkSlug === 'n1')!.points.map((p) => p.y)).toEqual([70, 50]);
+		// deactivate station: series reverts to [70]
+		await db.update(stations).set({ isActive: false }).where(eq(stations.id, stadarskali.id));
+		const after = await trendSeries(db, 'DC');
+		expect(after.find((s) => s.networkSlug === 'n1')!.points.map((p) => p.y)).toEqual([70]);
 	});
 
 	it('rateCard: per-station variance yields the minimum price and a frá flag', async () => {

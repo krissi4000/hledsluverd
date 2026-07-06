@@ -22,6 +22,10 @@ export interface PriceReading {
 const MIN_PLAUSIBLE = 10;
 const MAX_PLAUSIBLE = 200;
 
+export function isPlausibleKwhPrice(n: number): boolean {
+	return Number.isFinite(n) && n >= MIN_PLAUSIBLE && n <= MAX_PLAUSIBLE;
+}
+
 /**
  * The single price-write path (Phase 2 scrapers call this exact function).
  * Changed value → new history row; unchanged → bump verified_at only.

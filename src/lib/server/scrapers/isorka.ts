@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { isPlausibleKwhPrice } from '../db/prices';
 import { networks, stations } from '../db/schema';
 import type { ScrapedReading, Scraper } from './types';
 
@@ -52,6 +53,10 @@ export function parseVirtaStation(st: VirtaStation): {
 		const price = [...kwh][0];
 		if (price == null) {
 			warnings.push(`${st.name}: no price_per_kwh for ${mode} — skipped`);
+			continue;
+		}
+		if (!isPlausibleKwhPrice(price)) {
+			warnings.push(`${st.name}: implausible kWh price ${price} — skipped`);
 			continue;
 		}
 		const minuteFee = [...fee][0];

@@ -90,7 +90,7 @@ export const n1Scraper: Scraper = {
 				}
 				const price = parseN1ActionResponse(await post.text());
 				if (price === null) {
-					warnings.push(`${s.name}: no Rafmagn published — falls back to list price`);
+					warnings.push(`${s.name}: no Rafmagn price published`);
 					continue;
 				}
 				readings.push({ stationId: s.id, tariffKey: 'DC', priceIskPerKwh: price });

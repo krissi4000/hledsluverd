@@ -25,11 +25,18 @@ export async function submitManualPrice(db: Db, form: FormData): Promise<AdminRe
 	if (
 		networkId === null ||
 		!Number.isInteger(networkId) ||
+		(stationId !== null && !Number.isInteger(stationId)) ||
 		!(TARIFF_KEYS as readonly string[]).includes(tariffKey) ||
 		price === null ||
 		Number.isNaN(price)
 	) {
 		return { ok: false, error: 'ógilt form' };
+	}
+	if (stationId !== null) {
+		const [st] = await db.select().from(stations).where(eq(stations.id, stationId));
+		if (!st || st.networkId !== networkId) {
+			return { ok: false, error: 'stöð tilheyrir ekki fyrirtækinu' };
+		}
 	}
 	try {
 		await insertPriceIfChanged(db, {
