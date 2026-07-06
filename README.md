@@ -24,6 +24,25 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
     npx playwright install chromium   # one-time browser download, before the first E2E run
     npx playwright test               # E2E against a production build (needs seeded dev DB)
 
+## Scrapers
+
+    npm run match:virta   # one-time: stamp Virta ids onto Ísorka stations (coordinates)
+    npm run match:n1      # one-time: stamp N1 location ids onto N1 stations (review output!)
+    npm run scrape        # run all price scrapers once against DATABASE_URL
+
+- One module per network in `src/lib/server/scrapers/`; every parser is tested
+  against fixtures in `tests/fixtures/` (snapshots of the real pages/APIs).
+  Site redesign → save a new fixture, fix the parser; old fixtures guard regressions.
+- Fail loud, never guess: a scraper that cannot parse throws; the run is logged
+  as `failed` in `scrape_runs` and yesterday's price stays. Set `NTFY_TOPIC` in
+  `.env` to get a push via ntfy.sh after 3 consecutive failures per network.
+- The Orkan scraper drives headless Chromium (Blazor site) — it reuses the
+  browser from `npx playwright install chromium`.
+- e1 and Tesla publish prices only in their apps — no scraper; `/admin` has a
+  manual-price form.
+- Production (Phase 4) runs `npm run scrape` from an hourly systemd timer and
+  MUST front `/admin` with Caddy basic-auth.
+
 ## Data notes
 
 - `prices` is append-only — it doubles as the price-history/trend dataset. All price
@@ -31,4 +50,4 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 - Station data seeds from Open Charge Map; re-running `seed:ocm` is idempotent and
   prints unmatched operators for review.
 - Initial prices in `seeds/prices-initial.json` were verified by hand against operator
-  websites on the date in git history. Scrapers arrive in Phase 2.
+  websites on the date in git history. The scrapers above keep prices current.
