@@ -36,11 +36,7 @@ export async function insertPriceIfChanged(
 	db: Db,
 	reading: PriceReading
 ): Promise<'inserted' | 'verified'> {
-	if (
-		!Number.isFinite(reading.priceIskPerKwh) ||
-		reading.priceIskPerKwh < MIN_PLAUSIBLE ||
-		reading.priceIskPerKwh > MAX_PLAUSIBLE
-	) {
+	if (!isPlausibleKwhPrice(reading.priceIskPerKwh)) {
 		throw new Error(
 			`Implausible price ${reading.priceIskPerKwh} ISK/kWh for network ${reading.networkId} ${reading.tariffKey} — treated as a parse error, not stored`
 		);
