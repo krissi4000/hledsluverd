@@ -2480,7 +2480,7 @@ git commit -m "feat: /verdthroun — stepped price-history chart per network wit
 
 **Security note:** per the architecture note, auth stays out of app code — production puts Caddy basic-auth in front of `/admin` (Phase 4 checklist item). The page ships `noindex` and must never go live unprotected.
 
-- [ ] **Step 1: Failing tests for the admin logic**
+- [x] **Step 1: Failing tests for the admin logic**
 
 `src/lib/server/admin.test.ts`:
 
@@ -2590,7 +2590,7 @@ describe.skipIf(!TEST_DB_URL)('admin logic', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure, then implement**
+- [x] **Step 2: Run to verify failure, then implement**
 
 ```bash
 npx vitest run src/lib/server/admin.test.ts
@@ -2707,7 +2707,7 @@ npx vitest run src/lib/server/admin.test.ts
 ```
 Expected: PASS (6 tests).
 
-- [ ] **Step 3: Messages**
+- [x] **Step 3: Messages**
 
 `messages/is.json` (before `"lang_switch"`):
 
@@ -2757,7 +2757,7 @@ Expected: PASS (6 tests).
 	"admin_network_wide": "network-wide",
 ```
 
-- [ ] **Step 4: Route**
+- [x] **Step 4: Route**
 
 `src/routes/admin/+page.server.ts`:
 
@@ -3000,7 +3000,7 @@ export const actions: Actions = {
 </style>
 ```
 
-- [ ] **Step 5: Render-only E2E test** (admin actions are covered by the DB tests; E2E must not mutate the dev DB)
+- [x] **Step 5: Render-only E2E test** (admin actions are covered by the DB tests; E2E must not mutate the dev DB)
 
 Add to `e2e/homepage.test.ts`:
 
@@ -3015,14 +3015,14 @@ test('admin page renders health, prices and forms', async ({ page }) => {
 });
 ```
 
-- [ ] **Step 6: Verify**
+- [x] **Step 6: Verify**
 
 ```bash
 npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json && npx vitest run && npx playwright test
 ```
 Expected: all green (8 E2E).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/server/admin.ts src/lib/server/admin.test.ts src/routes/admin/ messages/ e2e/homepage.test.ts src/lib/paraglide/
