@@ -31,7 +31,7 @@ describe('N1 parsers', () => {
 	});
 
 	it('extracts the server-action id from a JS chunk', () => {
-		expect(extractActionId(fx('n1-chunk-snippet.js'))).toBe(
+		expect(extractActionId(fx('n1-chunk-snippet.js.txt'))).toBe(
 			'4051f8163eecdb5165ae60c3c94541d4e3cb624d2b'
 		);
 		expect(extractActionId('var x = 1;')).toBeNull();
