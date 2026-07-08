@@ -43,6 +43,21 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 - Production (Phase 4) runs `npm run scrape` from an hourly systemd timer and
   MUST front `/admin` with Caddy basic-auth.
 
+## Cars & availability
+
+    npm run seed:cars      # import EV specs from OpenEV Data (pinned release, upserts by slug)
+    npm run match:tomtom   # one-time: stamp TomTom availability ids onto stations (needs TOMTOM_API_KEY)
+
+- Car data: [OpenEV Data](https://github.com/open-ev-data/open-ev-data-dataset)
+  (CDLA-Permissive-2.0). European-market normalization is applied at import
+  (`nacs` → CCS2, `type1` → Type2) because the dataset models US builds.
+- Availability comes from TomTom's EV Charging Stations Availability API,
+  best-effort: a 5-minute cache in the `availability` table, refreshed on page
+  loads within a daily request budget. Unknown availability renders as "—",
+  never 0. Set `TOMTOM_API_KEY` in `.env` (free tier, hard-capped).
+- Map tiles: [OpenFreeMap](https://openfreemap.org) (keyless; attribution is
+  rendered on the map by MapLibre).
+
 ## Data notes
 
 - `prices` is append-only — it doubles as the price-history/trend dataset. All price
