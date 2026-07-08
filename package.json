@@ -19,6 +19,7 @@
 		"seed:networks": "tsx scripts/seed-networks.ts",
 		"seed:ocm": "tsx scripts/seed-ocm.ts",
 		"seed:prices": "tsx scripts/seed-prices.ts",
+		"seed:cars": "tsx scripts/seed-cars.ts",
 		"scrape": "tsx scripts/scrape.ts",
 		"match:virta": "tsx scripts/match-virta.ts",
 		"match:n1": "tsx scripts/match-n1.ts"

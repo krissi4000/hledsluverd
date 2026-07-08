@@ -1,0 +1,68 @@
+{
+	"schema_version": "1.0.0",
+	"vehicle_count": 4,
+	"vehicles": [
+		{
+			"make": { "slug": "audi", "name": "Audi" },
+			"model": { "slug": "a6_e_tron", "name": "A6 e-tron" },
+			"year": 2024,
+			"trim": { "slug": "base", "name": "Base" },
+			"variant": { "slug": "sportback", "name": "Sportback", "kind": "body_style" },
+			"vehicle_type": "passenger_car",
+			"charge_ports": [{ "kind": "combo", "connector": "ccs2" }],
+			"charging": {
+				"ac": { "max_power_kw": 11, "phases": 3 },
+				"dc": { "max_power_kw": 270, "architecture_voltage_class": "800v" }
+			},
+			"markets": ["US", "BR", "DE", "GB", "FR", "PT", "IT", "CN", "JP"],
+			"unique_code": "audi:a6_e_tron:2024:a6_e_tron"
+		},
+		{
+			"make": { "slug": "tesla", "name": "Tesla" },
+			"model": { "slug": "model_3", "name": "Model 3" },
+			"year": 2024,
+			"trim": { "slug": "long_range", "name": "Long Range" },
+			"variant": { "slug": "long_range", "name": "Long Range", "kind": "extended_range" },
+			"vehicle_type": "passenger_car",
+			"charge_ports": [{ "kind": "combo", "connector": "nacs" }],
+			"charging": {
+				"ac": { "max_power_kw": 11, "phases": 3 },
+				"dc": { "max_power_kw": 250, "architecture_voltage_class": "400v" }
+			},
+			"markets": ["US", "CN", "DE", "GB", "FR", "JP"],
+			"unique_code": "tesla:model_3:2024:model_3_long_range"
+		},
+		{
+			"make": { "slug": "nissan", "name": "Nissan" },
+			"model": { "slug": "leaf", "name": "Leaf" },
+			"year": 2024,
+			"trim": { "slug": "base", "name": "Base" },
+			"vehicle_type": "passenger_car",
+			"charge_ports": [
+				{ "kind": "dc_only", "connector": "chademo" },
+				{ "kind": "ac_only", "connector": "type1" }
+			],
+			"charging": {
+				"ac": { "max_power_kw": 6.6, "phases": 1 },
+				"dc": { "max_power_kw": 50, "architecture_voltage_class": "400v" }
+			},
+			"markets": ["US", "BR", "DE", "GB", "FR", "PT", "IT", "CN", "JP"],
+			"unique_code": "nissan:leaf:2024:leaf"
+		},
+		{
+			"make": { "slug": "byd", "name": "BYD" },
+			"model": { "slug": "dolphin_mini", "name": "Dolphin Mini" },
+			"year": 2023,
+			"trim": { "slug": "plus", "name": "Plus" },
+			"variant": { "slug": "plus", "name": "Plus", "kind": "battery_upgrade" },
+			"vehicle_type": "passenger_car",
+			"charge_ports": [{ "kind": "combo", "connector": "gb_t_dc" }],
+			"charging": {
+				"ac": { "max_power_kw": 6.6, "phases": 1 },
+				"dc": { "max_power_kw": 40, "architecture_voltage_class": "400v" }
+			},
+			"markets": ["CN"],
+			"unique_code": "byd:dolphin_mini:2023:dolphin_mini_plus"
+		}
+	]
+}
