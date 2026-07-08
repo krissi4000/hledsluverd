@@ -60,5 +60,17 @@
 	"map_title": "Charging station map",
 	"map_details": "Details",
 	"map_js": "The map needs JavaScript — the station list on the homepage works without it.",
+	"nav_finder": "Car finder",
+	"finder_title": "Where can my car charge?",
+	"finder_pick_car": "Pick your car",
+	"finder_search": "Search for a car…",
+	"finder_no_car": "My car is not in the list",
+	"finder_pick_plug": "Pick a plug type instead",
+	"finder_change": "Change",
+	"finder_use_location": "Use my location",
+	"finder_or_tap": "…or tap the map to set a location",
+	"finder_up_to": "up to {kw} kW",
+	"finder_compatible": "{n} compatible stations",
+	"finder_js": "The car finder needs JavaScript — the station list on the homepage works without it.",
 	"lang_switch": "Íslenska"
 }

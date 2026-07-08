@@ -60,5 +60,17 @@
 	"map_title": "Kort af hleðslustöðvum",
 	"map_details": "Nánar",
 	"map_js": "Kortið þarf JavaScript — stöðvalistinn á forsíðunni virkar án þess.",
+	"nav_finder": "Bílaleit",
+	"finder_title": "Hvar getur minn bíll hlaðið?",
+	"finder_pick_car": "Veldu bíl",
+	"finder_search": "Leita að bíl…",
+	"finder_no_car": "Bíllinn minn er ekki í listanum",
+	"finder_pick_plug": "Veldu tengi í staðinn",
+	"finder_change": "Breyta",
+	"finder_use_location": "Nota staðsetningu mína",
+	"finder_or_tap": "…eða smelltu á kortið til að velja staðsetningu",
+	"finder_up_to": "allt að {kw} kW",
+	"finder_compatible": "{n} samhæfar stöðvar",
+	"finder_js": "Bílaleitin þarf JavaScript — stöðvalistinn á forsíðunni virkar án þess.",
 	"lang_switch": "English"
 }

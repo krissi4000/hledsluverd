@@ -85,6 +85,7 @@
 			const el = document.createElement('div');
 			el.className = 'you';
 			el.dataset.testid = 'user-pin';
+			el.style.zIndex = '10000';
 			userMarker = new maplibregl.Marker({ element: el })
 				.setLngLat([userLocation.lng, userLocation.lat])
 				.addTo(map);

@@ -118,6 +118,29 @@ test('map page renders price pins and a mini-card linking to the station', async
 	await expect(card.locator('[data-testid="card-availability"]')).toHaveText(/—|\d+\/\d+/);
 });
 
+test('finder flow: pick a car, get compatible stations with speed and distance', async ({
+	browser
+}) => {
+	const ctx = await browser.newContext({
+		geolocation: { latitude: 64.1466, longitude: -21.9426 },
+		permissions: ['geolocation'],
+		baseURL: 'http://localhost:4173'
+	});
+	const page = await ctx.newPage();
+	await page.goto('/bilaleit');
+	await page.locator('[data-testid="car-search"]').fill('Leaf');
+	await page.locator('[data-testid="car-hits"] button').first().click();
+	await expect(page.locator('[data-testid="chosen-car"]')).toBeVisible();
+	await expect(page.locator('[data-testid="compatible-count"]')).toBeVisible();
+	const rows = page.locator('[data-testid="finder-results"] li');
+	expect(await rows.count()).toBeGreaterThan(0);
+	await expect(rows.first()).toContainText(/kW/);
+	// distance appears once geolocation is applied
+	await page.getByRole('button', { name: /staðsetningu|location/i }).click();
+	await expect(rows.first()).toContainText(/km/, { timeout: 10000 });
+	await ctx.close();
+});
+
 test('admin page renders health, prices and forms', async ({ page }) => {
 	await page.goto('/admin');
 	await expect(page.locator('[data-testid="admin-health"]')).toBeVisible();

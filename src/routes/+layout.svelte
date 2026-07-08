@@ -17,6 +17,7 @@
 	<p class="tagline">{m.site_tagline()}</p>
 	<nav class="nav">
 		<a href="/kort">{m.nav_map()}</a>
+		<a href="/bilaleit">{m.nav_finder()}</a>
 		<a href="/verdthroun">{m.nav_trends()}</a>
 	</nav>
 	<a
