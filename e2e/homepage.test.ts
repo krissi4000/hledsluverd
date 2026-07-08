@@ -96,6 +96,16 @@ test('trend page draws the chart and offers a no-JS table', async ({ page, brows
 	await ctx.close();
 });
 
+test('station page shows prices, availability honesty and the trend graph', async ({ page }) => {
+	await page.goto('/');
+	await page.locator('[data-testid="station-row"] a').first().click();
+	await expect(page.locator('article h2')).toBeVisible();
+	expect(await page.locator('[data-testid="station-price"]').count()).toBeGreaterThan(0);
+	// availability is best-effort: either n/m or the honest "—", never a bare 0
+	await expect(page.locator('[data-testid="station-availability"]')).toHaveText(/—|\d+\/\d+/);
+	await expect(page.locator('[data-testid="station-trend"]')).toBeVisible();
+});
+
 test('admin page renders health, prices and forms', async ({ page }) => {
 	await page.goto('/admin');
 	await expect(page.locator('[data-testid="admin-health"]')).toBeVisible();

@@ -1,4 +1,4 @@
-import { eq, isNull, or } from 'drizzle-orm';
+import { and, eq, isNull, or } from 'drizzle-orm';
 import type { ConnectorType, TariffKey } from '$lib/types';
 import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
@@ -171,6 +171,86 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 	return rows.sort(
 		(a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name, 'is')
 	);
+}
+
+export interface StationDetail {
+	id: number;
+	slug: string;
+	name: string;
+	address: string | null;
+	lat: number;
+	lng: number;
+	network: { slug: string; name: string; websiteUrl: string | null };
+	connectors: { type: ConnectorType; powerKw: number; count: number }[];
+	prices: {
+		mode: 'DC' | 'AC';
+		tariffKey: TariffKey;
+		priceIskPerKwh: number;
+		minuteFeeIsk: number | null;
+		minuteFeeAfterMin: number | null;
+		verifiedAt: Date;
+	}[];
+	availability: { freeCount: number | null; totalCount: number | null; fetchedAt: Date } | null;
+	tomtomId: string | null;
+}
+
+/** Everything the /stod/[slug] page shows. Inactive or unknown slug → null. */
+export async function stationDetail(db: Db, slug: string): Promise<StationDetail | null> {
+	const [st] = await db
+		.select()
+		.from(stations)
+		.where(and(eq(stations.slug, slug), eq(stations.isActive, true)));
+	if (!st) return null;
+	const [net] = await db.select().from(networks).where(eq(networks.id, st.networkId));
+	const [cons, cp, avail] = await Promise.all([
+		db.select().from(connectors).where(eq(connectors.stationId, st.id)),
+		currentPrices(db),
+		db.select().from(availability).where(eq(availability.stationId, st.id))
+	]);
+	const own = cp.filter((p) => p.stationId === st.id);
+	const netWide = cp.filter((p) => p.networkId === st.networkId && p.stationId === null);
+	const tariffs = new Set<TariffKey>([...own, ...netWide].map((p) => p.tariffKey));
+	const priceRows: StationDetail['prices'] = [];
+	for (const mode of ['DC', 'AC'] as const) {
+		const ofMode = cons.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
+		if (ofMode.length === 0) continue;
+		const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
+		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
+		const price = own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key);
+		if (price) {
+			priceRows.push({
+				mode,
+				tariffKey: key,
+				priceIskPerKwh: price.priceIskPerKwh,
+				minuteFeeIsk: price.minuteFeeIsk,
+				minuteFeeAfterMin: price.minuteFeeAfterMin,
+				verifiedAt: price.verifiedAt
+			});
+		}
+	}
+	return {
+		id: st.id,
+		slug: st.slug,
+		name: st.name,
+		address: st.address,
+		lat: st.location.y,
+		lng: st.location.x,
+		network: { slug: net.slug, name: net.name, websiteUrl: net.websiteUrl },
+		connectors: cons.map((c) => ({
+			type: c.type as ConnectorType,
+			powerKw: c.powerKw,
+			count: c.count
+		})),
+		prices: priceRows,
+		availability: avail[0]
+			? {
+					freeCount: avail[0].freeCount,
+					totalCount: avail[0].totalCount,
+					fetchedAt: avail[0].fetchedAt
+				}
+			: null,
+		tomtomId: st.externalIds.tomtom ?? null
+	};
 }
 
 export interface TrendSeries {

@@ -4,7 +4,7 @@ import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../
 import type { Db } from './client';
 import { availability, connectors, networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
-import { currentPrices, rateCard, stationList, trendSeries } from './queries';
+import { currentPrices, rateCard, stationDetail, stationList, trendSeries } from './queries';
 
 describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	let db: Db;
@@ -364,6 +364,54 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		await db.update(stations).set({ isActive: false }).where(eq(stations.id, stadarskali.id));
 		const after = await trendSeries(db, 'DC');
 		expect(after.find((s) => s.networkSlug === 'n1')!.points.map((p) => p.y)).toEqual([70]);
+	});
+
+	it('stationDetail resolves prices per mode with station-scope override', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+		const detail = (await stationDetail(db, 'stadarskali-n1'))!;
+		expect(detail.network.slug).toBe('n1');
+		expect(detail.lat).toBeCloseTo(65.13, 2);
+		expect(detail.lng).toBeCloseTo(-21.08, 2);
+		expect(detail.connectors).toHaveLength(1);
+		expect(detail.prices).toEqual([
+			expect.objectContaining({ mode: 'DC', tariffKey: 'DC', priceIskPerKwh: 50 })
+		]);
+		expect(detail.availability).toBeNull();
+	});
+
+	it('stationDetail lists both modes for a mixed station and includes availability', async () => {
+		const st = await db.select().from(stations);
+		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		await db
+			.insert(connectors)
+			.values({ stationId: hellisheidi.id, type: 'Type2', powerKw: 22, count: 2 });
+		await db.insert(availability).values({
+			stationId: hellisheidi.id,
+			freeCount: 1,
+			totalCount: 3,
+			perType: null,
+			fetchedAt: new Date('2026-07-06T12:00:00Z'),
+			source: 'tomtom'
+		});
+		const detail = (await stationDetail(db, 'hellisheidi-on'))!;
+		expect(detail.prices.map((p) => p.mode).sort()).toEqual(['AC', 'DC']);
+		const dc = detail.prices.find((p) => p.mode === 'DC')!;
+		expect(dc.tariffKey).toBe('DC_150'); // 200 kW CCS2 → DC_150 tier
+		expect(dc.priceIskPerKwh).toBe(55);
+		expect(detail.availability).toMatchObject({ freeCount: 1, totalCount: 3 });
+	});
+
+	it('stationDetail returns null for unknown slugs and inactive stations', async () => {
+		expect(await stationDetail(db, 'engin-stod')).toBeNull();
+		expect(await stationDetail(db, 'gamla-n1')).toBeNull();
 	});
 
 	it('rateCard: per-station variance yields the minimum price and a frá flag', async () => {

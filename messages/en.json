@@ -49,5 +49,12 @@
 	"age_min": "{n} min ago",
 	"age_h": "{n} h ago",
 	"age_d": "{n} days ago",
+	"station_prices": "Prices",
+	"station_availability": "Free chargers",
+	"station_directions": "Directions (Google Maps)",
+	"station_trend": "{network} price trend",
+	"map_fallback": "The map could not load in this browser.",
+	"mode_label_dc": "DC fast charging",
+	"mode_label_ac": "AC charging",
 	"lang_switch": "Íslenska"
 }

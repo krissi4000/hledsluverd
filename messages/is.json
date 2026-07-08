@@ -49,5 +49,12 @@
 	"age_min": "fyrir {n} mín",
 	"age_h": "fyrir {n} klst",
 	"age_d": "fyrir {n} dögum",
+	"station_prices": "Verð",
+	"station_availability": "Laus hleðslutæki",
+	"station_directions": "Leiðarlýsing (Google Maps)",
+	"station_trend": "Verðþróun {network}",
+	"map_fallback": "Kortið gat ekki hlaðist í þessum vafra.",
+	"mode_label_dc": "DC hraðhleðsla",
+	"mode_label_ac": "AC hleðsla",
 	"lang_switch": "English"
 }

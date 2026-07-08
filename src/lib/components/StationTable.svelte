@@ -100,7 +100,7 @@
 			<tbody>
 				{#each stations as s (s.slug)}
 					<tr data-testid="station-row">
-						<td data-label={m.th_station()}>{s.name}</td>
+						<td data-label={m.th_station()}><a href="/stod/{s.slug}">{s.name}</a></td>
 						<td data-label={m.th_network()}>{s.networkName}</td>
 						<td data-label={m.th_price()}>
 							{#if s.price !== null}
