@@ -7,5 +7,8 @@ export default defineConfig({
 		port: 4173,
 		reuseExistingServer: true
 	},
-	use: { baseURL: 'http://localhost:4173' }
+	use: {
+		baseURL: 'http://localhost:4173',
+		launchOptions: { args: ['--enable-unsafe-swiftshader'] }
+	}
 });

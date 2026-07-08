@@ -61,11 +61,13 @@
 	$effect(() => {
 		if (!map) return;
 		for (const mk of markers) mk.remove();
-		markers = stations.map((s) => {
+		markers = stations.map((s, i) => {
 			const el = document.createElement('button');
 			el.className = 'pin';
 			el.dataset.testid = 'map-pin';
 			el.type = 'button';
+			// Higher z-index for earlier stations so DOM-first is visually on top (Playwright-friendly)
+			el.style.zIndex = String(stations.length - i);
 			el.textContent = s.price === null ? '?' : formatNumber(s.price);
 			el.addEventListener('click', (ev) => {
 				ev.stopPropagation();

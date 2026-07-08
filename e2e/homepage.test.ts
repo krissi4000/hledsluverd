@@ -106,6 +106,18 @@ test('station page shows prices, availability honesty and the trend graph', asyn
 	await expect(page.locator('[data-testid="station-trend"]')).toBeVisible();
 });
 
+test('map page renders price pins and a mini-card linking to the station', async ({ page }) => {
+	await page.goto('/kort');
+	const pins = page.locator('[data-testid="map-pin"]');
+	await expect(pins.first()).toBeVisible({ timeout: 15000 });
+	expect(await pins.count()).toBeGreaterThan(10);
+	await pins.first().click();
+	const card = page.locator('[data-testid="map-card"]');
+	await expect(card).toBeVisible();
+	await expect(card.locator('a[href^="/stod/"]').first()).toBeVisible();
+	await expect(card.locator('[data-testid="card-availability"]')).toHaveText(/—|\d+\/\d+/);
+});
+
 test('admin page renders health, prices and forms', async ({ page }) => {
 	await page.goto('/admin');
 	await expect(page.locator('[data-testid="admin-health"]')).toBeVisible();

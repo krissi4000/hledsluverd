@@ -4,7 +4,14 @@ import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../
 import type { Db } from './client';
 import { availability, connectors, networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
-import { currentPrices, rateCard, stationDetail, stationList, trendSeries } from './queries';
+import {
+	currentPrices,
+	mapStations,
+	rateCard,
+	stationDetail,
+	stationList,
+	trendSeries
+} from './queries';
 
 describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	let db: Db;
@@ -412,6 +419,48 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	it('stationDetail returns null for unknown slugs and inactive stations', async () => {
 		expect(await stationDetail(db, 'engin-stod')).toBeNull();
 		expect(await stationDetail(db, 'gamla-n1')).toBeNull();
+	});
+
+	it('mapStations returns every active station with a headline price and coordinates', async () => {
+		const list = await mapStations(db);
+		expect(list.map((s) => s.slug).sort()).toEqual([
+			'hellisheidi-on',
+			'laugardalur-on',
+			'stadarskali-n1'
+		]);
+		const hellisheidi = list.find((s) => s.slug === 'hellisheidi-on')!;
+		expect(hellisheidi.mode).toBe('DC');
+		expect(hellisheidi.price).toBe(55); // 200 kW → DC_150 tier
+		expect(hellisheidi.lat).toBeCloseTo(64.03, 2);
+		expect(hellisheidi.lng).toBeCloseTo(-21.4, 2);
+		const laugardalur = list.find((s) => s.slug === 'laugardalur-on')!;
+		expect(laugardalur.mode).toBe('AC'); // Type2-only station
+		expect(laugardalur.price).toBe(39);
+	});
+
+	it('mapStations joins the availability cache and the tomtom stamp', async () => {
+		const st = await db.select().from(stations);
+		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		await db
+			.update(stations)
+			.set({ externalIds: { tomtom: 'tt-42' } })
+			.where(eq(stations.id, hellisheidi.id));
+		await db.insert(availability).values({
+			stationId: hellisheidi.id,
+			freeCount: 2,
+			totalCount: 3,
+			perType: null,
+			fetchedAt: new Date('2026-07-06T12:00:00Z'),
+			source: 'tomtom'
+		});
+		const list = await mapStations(db);
+		const row = list.find((s) => s.slug === 'hellisheidi-on')!;
+		expect(row.tomtomId).toBe('tt-42');
+		expect(row.freeCount).toBe(2);
+		expect(row.totalCount).toBe(3);
+		const bare = list.find((s) => s.slug === 'stadarskali-n1')!;
+		expect(bare.tomtomId).toBeNull();
+		expect(bare.freeCount).toBeNull();
 	});
 
 	it('rateCard: per-station variance yields the minimum price and a frá flag', async () => {

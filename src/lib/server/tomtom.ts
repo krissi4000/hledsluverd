@@ -65,7 +65,7 @@ export async function fetchChargingAvailability(
 	const url =
 		`${BASE}/chargingAvailability.json?key=${encodeURIComponent(key)}` +
 		`&chargingAvailability=${encodeURIComponent(chargingAvailabilityId)}`;
-	const res = await fetchFn(url);
+	const res = await fetchFn(url, { signal: AbortSignal.timeout(3000) });
 	if (!res.ok) throw new Error(`TomTom availability HTTP ${res.status}`);
 	return parseChargingAvailability((await res.json()) as TomTomAvailabilityResponse);
 }

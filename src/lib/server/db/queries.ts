@@ -253,6 +253,80 @@ export async function stationDetail(db: Db, slug: string): Promise<StationDetail
 	};
 }
 
+export interface MapStation {
+	id: number;
+	slug: string;
+	name: string;
+	networkSlug: string;
+	networkName: string;
+	lat: number;
+	lng: number;
+	/** headline price: the DC price when the station fast-charges, else the AC price */
+	price: number | null;
+	mode: 'DC' | 'AC';
+	connectors: { type: ConnectorType; powerKw: number; count: number }[];
+	freeCount: number | null;
+	totalCount: number | null;
+	availabilityFetchedAt: Date | null;
+	tomtomId: string | null;
+}
+
+/** Every active station, priced for its dominant mode — feeds /kort and /bilaleit. */
+export async function mapStations(db: Db): Promise<MapStation[]> {
+	const [sts, cons, nets, cp, avail] = await Promise.all([
+		db.select().from(stations).where(eq(stations.isActive, true)),
+		db.select().from(connectors),
+		db.select().from(networks),
+		currentPrices(db),
+		db.select().from(availability)
+	]);
+	const netById = new Map(nets.map((n) => [n.id, n]));
+	const availByStation = new Map(avail.map((a) => [a.stationId, a]));
+	const consByStation = new Map<number, (typeof cons)[number][]>();
+	for (const c of cons) {
+		let arr = consByStation.get(c.stationId);
+		if (!arr) consByStation.set(c.stationId, (arr = []));
+		arr.push(c);
+	}
+	const rows: MapStation[] = [];
+	for (const s of sts) {
+		const all = consByStation.get(s.id) ?? [];
+		if (all.length === 0) continue;
+		const mode: 'DC' | 'AC' = all.some((c) => c.type !== 'Type2') ? 'DC' : 'AC';
+		const ofMode = all.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
+		const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
+		const own = cp.filter((p) => p.stationId === s.id);
+		const netWide = cp.filter((p) => p.networkId === s.networkId && p.stationId === null);
+		const tariffs = new Set<TariffKey>([...own, ...netWide].map((p) => p.tariffKey));
+		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
+		const price =
+			own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key) ?? null;
+		const net = netById.get(s.networkId)!;
+		const a = availByStation.get(s.id);
+		rows.push({
+			id: s.id,
+			slug: s.slug,
+			name: s.name,
+			networkSlug: net.slug,
+			networkName: net.name,
+			lat: s.location.y,
+			lng: s.location.x,
+			price: price?.priceIskPerKwh ?? null,
+			mode,
+			connectors: all.map((c) => ({
+				type: c.type as ConnectorType,
+				powerKw: c.powerKw,
+				count: c.count
+			})),
+			freeCount: a?.freeCount ?? null,
+			totalCount: a?.totalCount ?? null,
+			availabilityFetchedAt: a?.fetchedAt ?? null,
+			tomtomId: s.externalIds.tomtom ?? null
+		});
+	}
+	return rows.sort((a, b) => a.name.localeCompare(b.name, 'is'));
+}
+
 export interface TrendSeries {
 	networkSlug: string;
 	networkName: string;

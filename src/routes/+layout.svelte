@@ -16,6 +16,7 @@
 	<h1 class="logo"><a href="/">{m.site_title()}</a></h1>
 	<p class="tagline">{m.site_tagline()}</p>
 	<nav class="nav">
+		<a href="/kort">{m.nav_map()}</a>
 		<a href="/verdthroun">{m.nav_trends()}</a>
 	</nav>
 	<a
@@ -60,6 +61,8 @@
 		font-size: 0.9rem;
 	}
 	.nav {
+		display: inline-flex;
+		gap: 0.75rem;
 		font-size: 0.9rem;
 	}
 	.lang {

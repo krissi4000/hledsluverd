@@ -56,5 +56,9 @@
 	"map_fallback": "The map could not load in this browser.",
 	"mode_label_dc": "DC fast charging",
 	"mode_label_ac": "AC charging",
+	"nav_map": "Map",
+	"map_title": "Charging station map",
+	"map_details": "Details",
+	"map_js": "The map needs JavaScript — the station list on the homepage works without it.",
 	"lang_switch": "Íslenska"
 }

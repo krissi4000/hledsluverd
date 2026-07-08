@@ -56,5 +56,9 @@
 	"map_fallback": "Kortið gat ekki hlaðist í þessum vafra.",
 	"mode_label_dc": "DC hraðhleðsla",
 	"mode_label_ac": "AC hleðsla",
+	"nav_map": "Kort",
+	"map_title": "Kort af hleðslustöðvum",
+	"map_details": "Nánar",
+	"map_js": "Kortið þarf JavaScript — stöðvalistinn á forsíðunni virkar án þess.",
 	"lang_switch": "English"
 }
