@@ -22,7 +22,8 @@
 		"seed:cars": "tsx scripts/seed-cars.ts",
 		"scrape": "tsx scripts/scrape.ts",
 		"match:virta": "tsx scripts/match-virta.ts",
-		"match:n1": "tsx scripts/match-n1.ts"
+		"match:n1": "tsx scripts/match-n1.ts",
+		"match:tomtom": "tsx scripts/match-tomtom.ts"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.20.2",
