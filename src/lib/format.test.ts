@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatIsk, formatDate, formatNumber, isStale } from './format';
+import { formatIsk, formatDate, formatNumber, isStale, ageParts } from './format';
 
 describe('formatNumber', () => {
 	it('formats fractional values with an Icelandic comma', () => {
@@ -30,5 +30,19 @@ describe('isStale', () => {
 		const now = new Date('2026-07-05T12:00:00Z');
 		expect(isStale(new Date('2026-06-01T12:00:00Z'), now)).toBe(true);
 		expect(isStale(new Date('2026-06-20T12:00:00Z'), now)).toBe(false);
+	});
+});
+
+describe('ageParts', () => {
+	it('reports minutes, then hours, then days', () => {
+		const now = new Date('2026-07-06T12:00:00Z');
+		expect(ageParts(new Date('2026-07-06T11:58:00Z'), now)).toEqual({ n: 2, unit: 'min' });
+		expect(ageParts(new Date('2026-07-06T09:00:00Z'), now)).toEqual({ n: 3, unit: 'h' });
+		expect(ageParts(new Date('2026-07-04T12:00:00Z'), now)).toEqual({ n: 2, unit: 'd' });
+	});
+
+	it('clamps future timestamps to zero minutes', () => {
+		const now = new Date('2026-07-06T12:00:00Z');
+		expect(ageParts(new Date('2026-07-06T12:00:30Z'), now)).toEqual({ n: 0, unit: 'min' });
 	});
 });

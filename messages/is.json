@@ -46,5 +46,8 @@
 	"admin_deactivate": "Slökkva",
 	"admin_activate": "Kveikja",
 	"admin_network_wide": "fyrirtækjaverð",
+	"age_min": "fyrir {n} mín",
+	"age_h": "fyrir {n} klst",
+	"age_d": "fyrir {n} dögum",
 	"lang_switch": "English"
 }

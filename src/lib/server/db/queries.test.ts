@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { TEST_DB_URL, closeTestDb, setupTestDb, truncateAll } from '../../../../tests/helpers/db';
 import type { Db } from './client';
-import { connectors, networks, prices, stations } from './schema';
+import { availability, connectors, networks, prices, stations } from './schema';
 import { insertPriceIfChanged } from './prices';
 import { currentPrices, rateCard, stationList, trendSeries } from './queries';
 
@@ -324,6 +324,27 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		const n1After = after.find((c) => c.networkSlug === 'n1')!;
 		expect(n1After.dc).toBe(70);
 		expect(n1After.dcFrom).toBe(false);
+	});
+
+	it('stationList surfaces cached availability and leaves it null when absent', async () => {
+		const st = await db.select().from(stations);
+		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		await db.insert(availability).values({
+			stationId: hellisheidi.id,
+			freeCount: 3,
+			totalCount: 4,
+			perType: null,
+			fetchedAt: new Date('2026-07-06T12:00:00Z'),
+			source: 'tomtom'
+		});
+		const list = await stationList(db, 'DC');
+		const withAvail = list.find((s) => s.slug === 'hellisheidi-on')!;
+		expect(withAvail.freeCount).toBe(3);
+		expect(withAvail.totalCount).toBe(4);
+		expect(withAvail.availabilityFetchedAt?.toISOString()).toBe('2026-07-06T12:00:00.000Z');
+		const without = list.find((s) => s.slug === 'stadarskali-n1')!;
+		expect(without.freeCount).toBeNull();
+		expect(without.availabilityFetchedAt).toBeNull();
 	});
 
 	it('trendSeries ignores rows from inactive stations', async () => {

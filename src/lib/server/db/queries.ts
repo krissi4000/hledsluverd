@@ -2,7 +2,7 @@ import { eq, isNull, or } from 'drizzle-orm';
 import type { ConnectorType, TariffKey } from '$lib/types';
 import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
-import { connectors, networks, prices, stations } from './schema';
+import { availability, connectors, networks, prices, stations } from './schema';
 
 export interface CurrentPrice {
 	/** prices.id of the current row — admin uses it to bump verified_at */
@@ -107,6 +107,9 @@ export interface StationRow {
 	minuteFeeAfterMin: number | null;
 	verifiedAt: Date | null;
 	connectors: { type: ConnectorType; powerKw: number; count: number }[];
+	freeCount: number | null;
+	totalCount: number | null;
+	availabilityFetchedAt: Date | null;
 }
 
 /**
@@ -115,12 +118,14 @@ export interface StationRow {
  * sorted by price asc (unknown price last), then name.
  */
 export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow[]> {
-	const [sts, cons, nets, cp] = await Promise.all([
+	const [sts, cons, nets, cp, avail] = await Promise.all([
 		db.select().from(stations).where(eq(stations.isActive, true)),
 		db.select().from(connectors),
 		db.select().from(networks),
-		currentPrices(db)
+		currentPrices(db),
+		db.select().from(availability)
 	]);
+	const availByStation = new Map(avail.map((a) => [a.stationId, a]));
 	const netById = new Map(nets.map((n) => [n.id, n]));
 	const consByStation = new Map<number, (typeof cons)[number][]>();
 	for (const c of cons) {
@@ -157,7 +162,10 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 				type: c.type as ConnectorType,
 				powerKw: c.powerKw,
 				count: c.count
-			}))
+			})),
+			freeCount: availByStation.get(s.id)?.freeCount ?? null,
+			totalCount: availByStation.get(s.id)?.totalCount ?? null,
+			availabilityFetchedAt: availByStation.get(s.id)?.fetchedAt ?? null
 		});
 	}
 	return rows.sort(

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk, formatDate, formatNumber, isStale } from '$lib/format';
+	import { formatIsk, formatDate, formatNumber, isStale, ageParts } from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import type { StationRow } from '$lib/server/db/queries';
 
@@ -18,6 +18,15 @@
 		network: string | null;
 		networkOptions: { slug: string; name: string }[];
 	} = $props();
+
+	function age(d: Date): string {
+		const p = ageParts(d);
+		return p.unit === 'min'
+			? m.age_min({ n: p.n })
+			: p.unit === 'h'
+				? m.age_h({ n: p.n })
+				: m.age_d({ n: p.n });
+	}
 
 	function href(params: Record<string, string | null>): string {
 		const u = new URL(page.url);
@@ -116,7 +125,14 @@
 								<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
 							{/each}
 						</td>
-						<td data-label={m.th_free()}>—</td>
+						<td data-label={m.th_free()}>
+							{#if s.freeCount !== null && s.totalCount !== null}
+								<span data-testid="free-count">{s.freeCount}/{s.totalCount}</span>
+								{#if s.availabilityFetchedAt}<small class="verified"
+										>{age(s.availabilityFetchedAt)}</small
+									>{/if}
+							{:else}—{/if}
+						</td>
 					</tr>
 				{/each}
 			</tbody>
