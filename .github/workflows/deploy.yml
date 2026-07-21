@@ -1,0 +1,54 @@
+name: CI / Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # never kill a mid-flight deploy
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # build first: it generates the gitignored src/lib/paraglide that
+      # svelte-check/vitest need, and smoke-tests the adapter-node prod build.
+      # The dummy DATABASE_URL only satisfies the import-time guard in
+      # src/lib/server/db/index.ts during SvelteKit's post-build analyse —
+      # nothing ever connects to it (the postgres pool is lazy).
+      - run: npm run build
+        env:
+          DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/ci
+      - run: npm run lint
+      - run: npm run check
+      - run: npm run test:unit -- --run
+      # E2E skipped in CI v1 (needs Postgres+PostGIS and browsers) — future work
+
+  deploy:
+    needs: test
+    # DEPLOY_ENABLED is a repo variable (Settings → Variables): keeps the
+    # workflow green before the VPS exists, and doubles as a pause switch.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts \
+            "$SSH_USER@$SSH_HOST" 'bash /srv/hledsluverd/app/deploy/deploy.sh'
