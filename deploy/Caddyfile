@@ -1,0 +1,26 @@
+# Template for /etc/caddy/Caddyfile. setup-server.sh copies it only when the
+# live config doesn't already mention hledsluverd.is, so a hand-edited hash is
+# never clobbered.
+#
+# Replace REPLACE_WITH_BCRYPT_HASH with the output of: caddy hash-password
+# (edit the file directly — never pass the $2a$... hash through a shell
+# string). Caddy refuses to load the config until it is replaced. That is
+# intentional: /admin has no auth in app code and must never be exposed
+# without basic_auth.
+
+hledsluverd.is {
+	encode zstd gzip
+
+	# Covers /admin and the form actions /admin?/price etc. — query strings
+	# never participate in Caddy path matching.
+	@admin path /admin /admin/*
+	basic_auth @admin {
+		admin REPLACE_WITH_BCRYPT_HASH
+	}
+
+	reverse_proxy 127.0.0.1:3000
+}
+
+www.hledsluverd.is {
+	redir https://hledsluverd.is{uri} permanent
+}

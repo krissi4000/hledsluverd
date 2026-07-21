@@ -1,0 +1,12 @@
+[Unit]
+Description=Hledsluverd - nightly pg_dump backup
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=hledsluverd
+Group=hledsluverd
+WorkingDirectory=/srv/hledsluverd/app
+EnvironmentFile=/srv/hledsluverd/app/.env
+ExecStart=/usr/bin/bash /srv/hledsluverd/app/deploy/bin/backup.sh
+TimeoutStartSec=30min

@@ -1,0 +1,14 @@
+[Unit]
+Description=Hledsluverd - hourly price scrape
+Wants=network-online.target
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+User=hledsluverd
+Group=hledsluverd
+WorkingDirectory=/srv/hledsluverd/app
+EnvironmentFile=/srv/hledsluverd/app/.env
+ExecStart=/usr/bin/bash /srv/hledsluverd/app/deploy/bin/scrape-run.sh
+# The Orkan scraper drives headless Chromium - kill a hung run eventually.
+TimeoutStartSec=20min

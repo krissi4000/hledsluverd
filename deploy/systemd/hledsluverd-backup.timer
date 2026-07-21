@@ -1,0 +1,10 @@
+[Unit]
+Description=Run hledsluverd backup nightly
+
+[Timer]
+OnCalendar=*-*-* 03:05:00
+RandomizedDelaySec=600
+Persistent=true
+
+[Install]
+WantedBy=timers.target

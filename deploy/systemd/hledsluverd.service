@@ -1,0 +1,26 @@
+[Unit]
+Description=Hledsluverd - SvelteKit app
+Wants=network-online.target
+After=network-online.target postgresql.service
+
+[Service]
+Type=simple
+User=hledsluverd
+Group=hledsluverd
+WorkingDirectory=/srv/hledsluverd/app
+# Defaults; .env (EnvironmentFile below) overrides them. ORIGIN is required
+# for admin form actions (CSRF origin check) behind the Caddy proxy.
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+Environment=ORIGIN=https://hledsluverd.is
+# No "-" prefix: hard-fail with a clear journal message until .env exists.
+EnvironmentFile=/srv/hledsluverd/app/.env
+ExecStart=/usr/bin/node build/index.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
