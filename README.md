@@ -40,8 +40,17 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
   browser from `npx playwright install chromium`.
 - e1 and Tesla publish prices only in their apps — no scraper; `/admin` has a
   manual-price form.
-- Production (Phase 4) runs `npm run scrape` from an hourly systemd timer and
-  MUST front `/admin` with Caddy basic-auth.
+- Production runs `npm run scrape` from an hourly systemd timer and fronts
+  `/admin` with Caddy basic-auth (there is no auth in app code) — see below.
+
+## Deployment
+
+Production is a single Hetzner VPS (Debian): Caddy (HTTPS, `/admin` basic-auth)
+→ SvelteKit under systemd → PostgreSQL/PostGIS, plus an hourly scrape timer and
+nightly `pg_dump` backups. Pushing to `main` runs CI and deploys over SSH
+(`.github/workflows/deploy.yml`, gated by the `DEPLOY_ENABLED` repo variable).
+Full runbook — provisioning, DNS, bootstrap, seeding, monitoring, restore — in
+[docs/deploy.md](docs/deploy.md).
 
 ## Cars & availability
 
