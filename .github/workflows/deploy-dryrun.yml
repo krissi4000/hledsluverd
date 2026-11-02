@@ -1,0 +1,338 @@
+# Deploy dry run: executes the docs/deploy.md runbook end to end inside a
+# systemd-booted Debian 13 container standing in for the VPS — bootstrap (x2,
+# idempotence), .env, Caddy basic auth, first deploy, offline seeds, backup and
+# the §10 restore drill. Never touches the real server or any secret.
+#
+# What can't be faithful in CI (and how it's bridged):
+# - GitHub deploy key/clone → setup-server.sh's HLEDSLUVERD_DRYRUN_SRC hook
+#   clones the commit under test from a local copy instead (also what
+#   deploy.sh later fetches from).
+# - Let's Encrypt → the hashed Caddyfile is `caddy validate`d as-is but only
+#   ever loaded with a `local_certs` global block (no real ACME orders from
+#   CI), which is enough to curl the §6 checks over HTTPS.
+# - Network-dependent seeds/scrapes (OCM, Virta, N1, TomTom, open-ev-data
+#   cars, the hourly scrape) are skipped — see the "Seed" step.
+# - Swap: swapon can't use a file on the container's overlayfs, so a real
+#   swapfile made on the runner's disk is bind-mounted at /swapfile.
+name: Deploy dry run
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'deploy/**'
+      - 'docs/deploy.md'
+      - '.github/workflows/deploy-dryrun.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-dryrun-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # ubuntu runners ship shellcheck. Severity warning+: the one info-level
+      # note (SC1091, sourcing /etc/os-release) is expected.
+      - name: shellcheck deploy/**/*.sh
+        run: |
+          shopt -s globstar
+          shellcheck --version
+          shellcheck --severity=warning deploy/**/*.sh
+
+  dryrun:
+    needs: shellcheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history: the container clones from this checkout
+          persist-credentials: false
+
+      # setup-server.sh clones `main` and deploy.sh resets to origin/main, so
+      # make local `main` the commit under test (the PR merge commit, or the
+      # dispatched ref). update-ref also works when main is checked out.
+      - name: Point local main at the commit under test
+        run: |
+          git update-ref refs/heads/main HEAD
+          git log -1 --oneline main
+
+      - name: Build + boot the stand-in VPS (systemd as PID 1)
+        run: |
+          docker build -t hledsluverd-dryrun deploy/dryrun
+
+          # Real swapfile on the runner's ext4 (overlayfs can't hold swap);
+          # setup-server.sh sees /swapfile already exists.
+          SWAPFILE="$RUNNER_TEMP/dryrun-swapfile"
+          sudo fallocate -l 1G "$SWAPFILE"
+          sudo chmod 600 "$SWAPFILE"
+          sudo mkswap "$SWAPFILE"
+          echo "SWAPFILE=$SWAPFILE" >>"$GITHUB_ENV"
+
+          docker run -d --name vps --hostname hledsluverd-dryrun \
+            --privileged --cgroupns=host \
+            -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+            --tmpfs /run --tmpfs /run/lock \
+            -v "$SWAPFILE:/swapfile" \
+            hledsluverd-dryrun
+
+          # `is-system-running --wait` fails fast until systemd's bus is up,
+          # hence the loop. degraded (some unit failed) is fine for a container.
+          state=unknown
+          for _ in $(seq 1 60); do
+            state=$(timeout 60 docker exec vps systemctl is-system-running --wait 2>/dev/null || true)
+            case "$state" in running | degraded) break ;; esac
+            sleep 2
+          done
+          echo "systemd state: $state"
+          docker exec vps systemctl --failed --no-pager || true
+          case "$state" in running | degraded) ;; *) docker logs vps; exit 1 ;; esac
+
+          # helper: run a bash script from stdin as root inside the VPS
+          sudo tee /usr/local/bin/vps >/dev/null <<'EOF'
+          #!/usr/bin/env bash
+          exec docker exec -i vps bash -euo pipefail -s "$@"
+          EOF
+          sudo chmod +x /usr/local/bin/vps
+
+      - name: Copy the repo in (stands in for the GitHub remote)
+        run: |
+          docker cp "$GITHUB_WORKSPACE" vps:/src
+          vps <<'EOF'
+          chown -R root:root /src
+          chmod -R a+rX /src
+          # /src is root-owned but cloned/fetched by the hledsluverd user:
+          # without this, git refuses it as "dubious ownership". git isn't
+          # installed yet (setup-server.sh does that) — write the file directly.
+          printf '[safe]\n\tdirectory = /src\n\tdirectory = /src/.git\n' >>/etc/gitconfig
+          EOF
+
+      # §4 — the runbook scp's the script to root's home and runs it there.
+      - name: '§4 setup-server.sh (first run)'
+        run: |
+          docker cp deploy/setup-server.sh vps:/root/setup-server.sh
+          docker exec -w /root -e HLEDSLUVERD_DRYRUN_SRC=/src vps bash setup-server.sh
+
+      - name: '§4 setup-server.sh (re-run: must be idempotent)'
+        run: |
+          docker exec -w /root -e HLEDSLUVERD_DRYRUN_SRC=/src vps bash setup-server.sh
+          vps <<'EOF'
+          # the re-run must not have duplicated anything
+          test "$(grep -c '^/swapfile ' /etc/fstab || true)" -le 1
+          test "$(sort /srv/hledsluverd/.ssh/known_hosts | uniq -d | wc -l)" -eq 0
+          test "$(sudo -u postgres psql -tAc "SELECT count(*) FROM pg_roles WHERE rolname='hledsluverd'")" -eq 1
+          test "$(stat -c %U /srv/hledsluverd/app/.git)" = hledsluverd
+          systemctl is-enabled hledsluverd.service hledsluverd-scrape.timer hledsluverd-backup.timer
+          visudo -c
+          node --version; psql --version; caddy version
+          # The real hourly scrape needs the internet's charging networks and
+          # could hold deploy.lock for up to 15 min mid-run — keep it out.
+          systemctl stop hledsluverd-scrape.timer
+          EOF
+
+      - name: '§5 DB password + .env (dummy keys)'
+        run: |
+          vps <<'EOF'
+          DBPASS=$(openssl rand -hex 24)
+          sudo -u postgres psql -c "ALTER ROLE hledsluverd PASSWORD '$DBPASS'"
+          cat >/srv/hledsluverd/app/.env <<ENV
+          DATABASE_URL=postgres://hledsluverd:$DBPASS@127.0.0.1:5432/hledsluverd
+          OCM_API_KEY=dryrun0not0a0real0key
+          NTFY_TOPIC=hledsluverd-dryrun-unused
+          TOMTOM_API_KEY=dryrun0not0a0real0key
+          ENV
+          chown hledsluverd:hledsluverd /srv/hledsluverd/app/.env
+          chmod 600 /srv/hledsluverd/app/.env
+          EOF
+
+      - name: '§6 Caddy basic-auth hash'
+        run: |
+          vps <<'EOF'
+          # The runbook promises Caddy refuses the template until the hash is set.
+          if caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+            echo "::warning::caddy validate ACCEPTED the REPLACE_WITH_BCRYPT_HASH placeholder — docs/deploy.md §6 claims it refuses"
+          fi
+          # The runbook pastes with an editor. sed is equivalent here: $HASH is
+          # expanded exactly once, its $2a$... content is never re-parsed.
+          HASH=$(caddy hash-password --plaintext dryrun-admin-pw)
+          sed -i "s|REPLACE_WITH_BCRYPT_HASH|$HASH|" /etc/caddy/Caddyfile
+          if grep -q REPLACE_WITH_BCRYPT_HASH /etc/caddy/Caddyfile; then exit 1; fi
+          caddy validate --config /etc/caddy/Caddyfile
+          # NOT `systemctl reload caddy` with this config: it would start real
+          # Let's Encrypt/ZeroSSL orders for hledsluverd.is from a CI runner.
+          # The §6 verify step below loads it with Caddy's local CA instead.
+          systemctl is-active caddy # still on the package's default config
+          EOF
+
+      - name: '§7 first deploy (deploy.sh as hledsluverd, health check inside)'
+        run: |
+          vps <<'EOF'
+          sudo -u hledsluverd bash /srv/hledsluverd/app/deploy/deploy.sh
+          systemctl is-active hledsluverd.service
+          code=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)
+          echo "GET / → $code"
+          test "$code" = 200
+          EOF
+
+      - name: '§7 deploy.sh again (no-op redeploy)'
+        run: |
+          vps <<'EOF'
+          sudo -u hledsluverd bash /srv/hledsluverd/app/deploy/deploy.sh
+          EOF
+
+      # §7 order: networks, ocm, prices, cars, virta, n1, tomtom. Only the
+      # offline ones run here. SKIPPED (network/API keys): seed:ocm (OCM key),
+      # seed:cars (downloads open-ev-data from GitHub), match:virta, match:n1,
+      # match:tomtom (TomTom key) — and the hourly scrape.
+      - name: '§7 seed (offline subset)'
+        run: |
+          vps <<'EOF'
+          as_app() { sudo -u hledsluverd bash -lc "cd /srv/hledsluverd/app && $1"; }
+          as_app 'npm run seed:networks'
+          as_app 'npm run seed:prices'
+          # re-runs must be safe (upserts / insert-if-changed)
+          as_app 'npm run seed:networks'
+          as_app 'npm run seed:prices'
+          # runbook: psql as hledsluverd = peer auth, no password
+          test "$(sudo -u hledsluverd psql -d hledsluverd -tAc 'SELECT count(*) FROM networks')" -gt 0
+          test "$(sudo -u hledsluverd psql -d hledsluverd -tAc 'SELECT count(*) FROM prices')" -gt 0
+          code=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)
+          echo "GET / (seeded) → $code"
+          test "$code" = 200
+          EOF
+
+      # Same checks as §6 "Verify", but over Caddy's internal CA instead of
+      # Let's Encrypt: the live Caddyfile plus a `local_certs` global block.
+      - name: '§6 verify through Caddy (local CA)'
+        run: |
+          vps <<'EOF'
+          { printf '{\n\tlocal_certs\n\tskip_install_trust\n}\n\n'; cat /etc/caddy/Caddyfile; } \
+            >/etc/caddy/Caddyfile.dryrun-local
+          caddy validate --config /etc/caddy/Caddyfile.dryrun-local --adapter caddyfile
+          # same mechanism as the unit's ExecReload (admin API on :2019)
+          caddy reload --config /etc/caddy/Caddyfile.dryrun-local --adapter caddyfile
+          systemctl is-active caddy
+          R=(--resolve hledsluverd.is:443:127.0.0.1 --resolve www.hledsluverd.is:443:127.0.0.1)
+          code() { curl -sk -o /dev/null -w '%{http_code}' "${R[@]}" "$@" || true; }
+          # certs are issued asynchronously after the reload
+          for _ in $(seq 1 30); do
+            [ "$(code https://hledsluverd.is/)" = 200 ] &&
+              [ "$(code https://www.hledsluverd.is/)" != 000 ] && break
+            sleep 1
+          done
+          check() { # expected, curl args...
+            local want=$1 got
+            shift
+            got=$(code "$@")
+            echo "$* → $got (want $want)"
+            [ "$got" = "$want" ]
+          }
+          check 200 https://hledsluverd.is/
+          check 401 https://hledsluverd.is/admin
+          check 401 -u admin:wrong https://hledsluverd.is/admin
+          check 200 -u admin:dryrun-admin-pw https://hledsluverd.is/admin
+          # www → apex. Runbook §6 says 308, but Caddy's `redir ... permanent`
+          # is a 301 — accept both, flag the mismatch.
+          www=$(code https://www.hledsluverd.is/some/path?x=1)
+          loc=$(curl -sk -o /dev/null -w '%{redirect_url}' "${R[@]}" 'https://www.hledsluverd.is/some/path?x=1' || true)
+          echo "www → $www $loc"
+          case "$www" in 301 | 308) ;; *) exit 1 ;; esac
+          [ "$loc" = 'https://hledsluverd.is/some/path?x=1' ]
+          [ "$www" = 308 ] ||
+            echo "::warning::www redirect is $www, docs/deploy.md §6 says 308 (Caddy 'permanent' = 301)"
+          EOF
+
+      - name: '§10 backup (hledsluverd-backup.service)'
+        run: |
+          vps <<'EOF'
+          systemctl start hledsluverd-backup.service # oneshot: blocks, fails on error
+          ls -l /srv/hledsluverd/backups/
+          DUMP=$(ls -1t /srv/hledsluverd/backups/hledsluverd_*.dump | head -n 1)
+          test -s "$DUMP"
+          if ls /srv/hledsluverd/backups/*.tmp 2>/dev/null; then exit 1; fi
+          echo "$DUMP" >/root/dryrun-dump-path
+          EOF
+
+      - name: '§10 restore drill'
+        run: |
+          vps <<'EOF'
+          DUMP=$(cat /root/dryrun-dump-path)
+          q() { sudo -u hledsluverd psql -d hledsluverd -tAc "$1"; }
+
+          # sanity check without touching the db
+          sudo -u hledsluverd pg_restore --list "$DUMP" >/tmp/toc
+          grep -q 'TABLE DATA public networks' /tmp/toc
+          grep -q 'TABLE DATA public prices' /tmp/toc
+
+          nets=$(q 'SELECT count(*) FROM networks')
+          prices=$(q 'SELECT count(*) FROM prices')
+          echo "before: networks=$nets prices=$prices"
+          # simulated disaster, so the restore has to actually restore
+          q 'TRUNCATE networks, prices CASCADE'
+          test "$(q 'SELECT count(*) FROM networks')" -eq 0
+
+          # --- the runbook sequence, verbatim ---
+          systemctl stop hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer
+          rc=0
+          sudo -u hledsluverd pg_restore --clean --if-exists -d hledsluverd "$DUMP" 2>/tmp/restore.err || rc=$?
+          systemctl start hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer
+          # --------------------------------------
+
+          cat /tmp/restore.err
+          if [ "$rc" -ne 0 ]; then
+            # Expected: the postgis extension belongs to postgres (setup-server
+            # creates it as superuser), so the hledsluverd user can't DROP or
+            # COMMENT ON it. Anything else is a real restore failure.
+            if grep 'ERROR:' /tmp/restore.err | grep -v 'must be owner of extension postgis'; then
+              echo "::error::pg_restore failed with unexpected errors (above)"
+              exit 1
+            fi
+            echo "::warning::§10 pg_restore exits $rc: only 'must be owner of extension postgis' errors (harmless, but the drill looks like a failure)"
+          fi
+
+          test "$(q 'SELECT count(*) FROM networks')" -eq "$nets"
+          test "$(q 'SELECT count(*) FROM prices')" -eq "$prices"
+          echo "after: networks=$nets prices=$prices — restored"
+
+          code=000
+          for _ in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/ || true)
+            [ "$code" = 200 ] && break
+            sleep 1
+          done
+          echo "GET / after restore → $code"
+          test "$code" = 200
+          systemctl is-active hledsluverd.service hledsluverd-scrape.timer hledsluverd-backup.timer
+          EOF
+
+      - name: Unit states
+        if: always()
+        run: |
+          docker exec vps systemctl --failed --no-pager || true
+          docker exec vps systemctl list-timers 'hledsluverd*' --no-pager || true
+
+      - name: Journal of all hledsluverd units (on failure)
+        if: failure()
+        run: |
+          docker exec vps journalctl -u 'hledsluverd*' --no-pager -n 500 || true
+          docker exec vps journalctl -u caddy -u 'postgresql*' --no-pager -n 200 || true
+          docker exec vps journalctl -p warning -b --no-pager -n 200 || true
+          docker logs vps 2>&1 | tail -n 100 || true
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker rm -f vps || true
+          # the container's swapon used the runner kernel
+          [ -z "${SWAPFILE:-}" ] || sudo swapoff "$SWAPFILE" 2>/dev/null || true

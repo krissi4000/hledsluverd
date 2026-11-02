@@ -82,6 +82,14 @@ sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" 
 sudo -u postgres psql -d $DB_NAME -c "CREATE EXTENSION IF NOT EXISTS postgis"
 
 echo "== deploy key + clone"
+# DRY RUN ONLY (.github/workflows/deploy-dryrun.yml, no GitHub deploy key in
+# CI): HLEDSLUVERD_DRYRUN_SRC=<local git repo> clones its `main` from that path
+# instead, so the deploy-key stop below never triggers (deploy.sh then fetches
+# from the same path). Never set it on a real server — unset = unchanged.
+if [ -n "${HLEDSLUVERD_DRYRUN_SRC:-}" ] && [ ! -d $APP_DIR/.git ]; then
+	echo "DRY RUN: cloning $HLEDSLUVERD_DRYRUN_SRC instead of $REPO"
+	sudo -u $APP_USER git clone --branch main "$HLEDSLUVERD_DRYRUN_SRC" $APP_DIR
+fi
 sudo -u $APP_USER install -d -m 700 $HOME_DIR/.ssh
 if [ ! -f $HOME_DIR/.ssh/id_ed25519 ]; then
 	sudo -u $APP_USER ssh-keygen -t ed25519 -N '' -f $HOME_DIR/.ssh/id_ed25519 -C hledsluverd-deploy

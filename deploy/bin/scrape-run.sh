@@ -4,7 +4,7 @@
 # node_modules out from under a running scrape. Optional healthchecks.io
 # pings when HEALTHCHECKS_URL is set (comes via the unit's EnvironmentFile).
 set -u
-cd /srv/hledsluverd/app
+cd /srv/hledsluverd/app || exit 1
 
 hc() { # $1: "" (success) | /start | /fail
 	[ -n "${HEALTHCHECKS_URL:-}" ] || return 0
