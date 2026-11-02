@@ -45,7 +45,7 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 
 ## Deployment
 
-Production is a single Hetzner VPS (Debian): Caddy (HTTPS, `/admin` basic-auth)
+Production is a single netcup VPS (Debian, nftables host firewall): Caddy (HTTPS, `/admin` basic-auth)
 → SvelteKit under systemd → PostgreSQL/PostGIS, plus an hourly scrape timer and
 nightly `pg_dump` backups. Pushing to `main` runs CI and deploys over SSH
 (`.github/workflows/deploy.yml`, gated by the `DEPLOY_ENABLED` repo variable).

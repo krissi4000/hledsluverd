@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # One-time (but re-runnable) server bootstrap for hledsluverd.is.
-# Run as root on a fresh Debian 12/13 Hetzner VPS:
+# Run as root on a fresh Debian 13 (or 12) netcup VPS (x86):
+#   ssh-copy-id root@<ip>   # FIRST — the script disables SSH password auth
 #   scp deploy/setup-server.sh root@<ip>: && ssh root@<ip> bash setup-server.sh
+#
+# netcup has no cloud firewall in front of the box, so this script sets up a
+# host firewall (nftables: inbound 22/80/443 only) and SSH key-only login.
 #
 # The FIRST run stops after printing the GitHub deploy key — add it to the
 # repo (Settings → Deploy keys, read-only) and re-run to completion. Every
@@ -27,16 +31,99 @@ DB_NAME=hledsluverd
 echo "== base packages"
 apt-get update
 apt-get install -y curl git gnupg ca-certificates apt-transport-https \
-	debian-keyring debian-archive-keyring
+	debian-keyring debian-archive-keyring nftables
 
-echo "== 2G swapfile (vite-build insurance on a 4 GB box)"
+echo "== host firewall (nftables: inbound 22/80/443 only, IPv4 + IPv6)"
+# netcup offers no cloud firewall we rely on, so the box filters itself.
+# Lockout safety: the ruleset is loaded atomically (nft -f), and the same
+# transaction that sets policy drop also accepts established/related traffic
+# (= this SSH session) and every port sshd actually listens on (22 unless
+# changed). It is validated with nft -c before loading. Postgres listens on
+# localhost only, so it is unreachable from outside regardless. `flush ruleset`
+# owns the whole ruleset — fine on this single-purpose box (no Docker etc.).
+# udp/443 is HTTP/3, which Caddy serves by default.
+SSH_PORTS=$({ sshd -T 2>/dev/null || true; } | awk '$1 == "port" { print $2 }' | sort -un | paste -sd, -)
+SSH_PORTS=${SSH_PORTS:-22}
+case ",$SSH_PORTS," in *,22,*) ;; *) SSH_PORTS="22,$SSH_PORTS" ;; esac
+NFT_TMP=$(mktemp)
+cat >"$NFT_TMP" <<EOF
+#!/usr/sbin/nft -f
+# Managed by hledsluverd deploy/setup-server.sh — re-running it overwrites this.
+flush ruleset
+
+table inet filter {
+	chain input {
+		type filter hook input priority filter; policy drop;
+		ct state established,related accept
+		ct state invalid drop
+		iif lo accept
+		meta l4proto icmp accept
+		meta l4proto ipv6-icmp accept
+		tcp dport { $SSH_PORTS, 80, 443 } accept
+		udp dport 443 accept comment "HTTP/3 (Caddy)"
+	}
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+	}
+	chain output {
+		type filter hook output priority filter; policy accept;
+	}
+}
+EOF
+nft -c -f "$NFT_TMP"
+if ! cmp -s "$NFT_TMP" /etc/nftables.conf || ! nft list table inet filter >/dev/null 2>&1; then
+	install -m 755 "$NFT_TMP" /etc/nftables.conf
+	nft -f /etc/nftables.conf
+fi
+rm -f "$NFT_TMP"
+systemctl enable nftables.service
+if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep 'Status: active' >/dev/null; then
+	echo "WARN: ufw is also active — disable it (ufw disable) so only nftables.conf applies"
+fi
+
+echo "== SSH: key-only login (only if root has an authorized key)"
+# netcup mails a root password; once your key is installed (ssh-copy-id,
+# runbook §4) password logins are just a brute-force target. 00- sorts before
+# any image/cloud-init drop-in, and sshd keeps the first value it reads.
+SSHD_DROPIN=/etc/ssh/sshd_config.d/00-hledsluverd.conf
+if grep -qE '^[[:space:]]*(ssh-|ecdsa-|sk-)' /root/.ssh/authorized_keys 2>/dev/null; then
+	SSHD_TMP=$(mktemp)
+	printf '%s\n' \
+		'# Managed by hledsluverd deploy/setup-server.sh' \
+		'PasswordAuthentication no' \
+		'KbdInteractiveAuthentication no' \
+		'PermitRootLogin prohibit-password' >"$SSHD_TMP"
+	if ! cmp -s "$SSHD_TMP" "$SSHD_DROPIN"; then
+		install -m 644 "$SSHD_TMP" "$SSHD_DROPIN"
+		if sshd -t; then
+			# reload keeps existing sessions; only new logins see the change
+			# (try-: with socket activation each login reads the config anew)
+			systemctl try-reload-or-restart ssh.service
+		else
+			echo "WARN: sshd -t failed — removing $SSHD_DROPIN, SSH config unchanged" >&2
+			rm -f "$SSHD_DROPIN"
+		fi
+	fi
+	rm -f "$SSHD_TMP"
+else
+	echo "WARN: /root/.ssh/authorized_keys has no key — NOT disabling password"
+	echo "      auth. Run ssh-copy-id root@<ip> from your machine, then re-run."
+fi
+
+# vite build + Playwright Chromium + Postgres can spike past RAM on small
+# boxes; swap is OOM insurance, not working memory. ≤4 GB RAM (MemTotal reads
+# a bit under nominal, hence the 5 GiB cutoff) → 2G; bigger boxes have the
+# headroom already, so 1G just catches spikes without eating much disk.
+MEM_KB=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
+if [ "$MEM_KB" -le $((5 * 1024 * 1024)) ]; then SWAP_SIZE=2G; else SWAP_SIZE=1G; fi
+echo "== swapfile ($SWAP_SIZE for $((MEM_KB / 1024)) MiB RAM; kept as-is if it exists)"
 if [ ! -f /swapfile ]; then
-	fallocate -l 2G /swapfile
+	fallocate -l $SWAP_SIZE /swapfile
 	chmod 600 /swapfile
 	mkswap /swapfile
-	swapon /swapfile
-	echo '/swapfile none swap sw 0 0' >>/etc/fstab
 fi
+swapon --show=NAME --noheadings | grep -x /swapfile >/dev/null || swapon /swapfile
+grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >>/etc/fstab
 
 echo "== PostgreSQL 17 + PostGIS (PGDG repo — Debian 12 only ships pg15)"
 PGDG_KEY=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc

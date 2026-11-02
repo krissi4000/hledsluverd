@@ -10,8 +10,9 @@ treat the database (and its backups) accordingly.
 ISNIC (hledsluverd.is) → Cloudflare DNS (grey-cloud, DNS only)
                               │ A @ → VPS IP, CNAME www → @
                               ▼
-                 Hetzner VPS (Debian, 4 GB)
+                 netcup VPS (Debian 13, x86)
   ┌─────────────────────────────────────────────────────┐
+  │ nftables    — inbound 22/80/443 only, ssh key-only  │
   │ Caddy :443  — auto-HTTPS, basic_auth /admin*,       │
   │               www → bare-domain redirect            │
   │    └─→ node build/index.js :3000  (systemd:         │
@@ -30,11 +31,22 @@ Playwright browsers at `/srv/hledsluverd/.cache/ms-playwright`.
 
 ## 2. Provision the VPS
 
-- Hetzner Cloud → **CX22** (2 vCPU, 4 GB, x86 — avoid Arm/CAX so Playwright
-  Chromium stays boring), image **Debian 13** (12 also works).
-- Add your personal SSH key at creation.
-- Attach a **Hetzner Cloud Firewall**: inbound TCP 22, 80, 443 only. (No ufw
-  on the box — one less way to lock yourself out; Postgres binds localhost.)
+- netcup → a **VPS** (x86 — avoid the ARM plans so Playwright Chromium stays
+  boring; 4 GB RAM or more is comfortable, `setup-server.sh` sizes swap from
+  the detected RAM).
+- netcup has two panels: the **CCP** (customercontrolpanel.de — contracts,
+  billing) and the **SCP** (servercontrolpanel.de — the server itself:
+  images, power, rescue, console, rDNS). Server work happens in the SCP;
+  its login is mailed with the order.
+- SCP → Media → Images: install **Debian 13** (12 also works), minimal is
+  fine. netcup mails a **root password**; SSH keys are installed in §4.
+- Reverse DNS (optional, SCP → Network): set the PTR of the IPv4/IPv6 to
+  `hledsluverd.is`. Nothing here sends mail, so it is cosmetic.
+- There is no cloud firewall to rely on: `setup-server.sh` installs a host
+  **nftables** firewall (inbound TCP 22/80/443 + UDP 443 for HTTP/3, ICMP,
+  IPv4 and IPv6; everything else dropped). Postgres binds localhost anyway.
+  If you ever lock yourself out, the SCP has a browser console and a rescue
+  system.
 
 ## 3. DNS (ISNIC → Cloudflare)
 
@@ -49,6 +61,16 @@ Playwright browsers at `/srv/hledsluverd/.cache/ms-playwright`.
 
 ## 4. Bootstrap the server
 
+First install your personal SSH key with the mailed root password, and check
+that key login works — the script turns password login off:
+
+```sh
+ssh-copy-id root@<ip>          # asks for the mailed root password once
+ssh root@<ip> true             # must NOT prompt for a password
+```
+
+Then bootstrap:
+
 ```sh
 scp deploy/setup-server.sh root@<ip>:
 ssh root@<ip> bash setup-server.sh
@@ -59,7 +81,17 @@ it on GitHub → repo Settings → Deploy keys → "Add deploy key" (read-only,
 name it `hledsluverd-vps`), then **re-run the script** — it continues where it
 left off (every step is guarded; the script is safe to re-run any time).
 
-The script installs PGDG PostgreSQL 17 + PostGIS, NodeSource Node 24, Caddy,
+The script first locks the box down: an nftables firewall
+(`/etc/nftables.conf`, loaded atomically with established connections and
+the SSH port allowed, so the running session survives) and — only if
+`/root/.ssh/authorized_keys` holds a key — an sshd drop-in
+(`/etc/ssh/sshd_config.d/00-hledsluverd.conf`: `PasswordAuthentication no`,
+`PermitRootLogin prohibit-password`, validated with `sshd -t` before reload).
+Without a key it warns and leaves password login on; run `ssh-copy-id` and
+re-run. It adds a swapfile (2G on ≤4 GB RAM, 1G above) as vite-build
+insurance.
+
+It then installs PGDG PostgreSQL 17 + PostGIS, NodeSource Node 24, Caddy,
 creates the `hledsluverd` user/db/role, clones the repo, installs deps +
 Chromium, installs the systemd units and enables the timers, and copies the
 Caddyfile template. It does **not** start the app (nothing is built yet) and
