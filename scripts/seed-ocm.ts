@@ -6,16 +6,23 @@ import { connectors, networks, stations } from '../src/lib/server/db/schema';
 import { parseOcm, type NetworkMatcher } from '../src/lib/server/ocm';
 import { slugify } from '../src/lib/server/slug';
 
-const key = process.env.OCM_API_KEY;
-if (!key) throw new Error('OCM_API_KEY missing — register free at openchargemap.org');
+// Optional local POI dump (`npm run seed:ocm -- path/to/pois.json`): CI seeds the E2E
+// database from e2e/fixtures/ocm-pois.json so it never depends on the live OCM API.
+async function loadPois(): Promise<unknown> {
+	const localPath = process.argv[2];
+	if (localPath) return JSON.parse(readFileSync(localPath, 'utf8'));
+	const key = process.env.OCM_API_KEY;
+	if (!key) throw new Error('OCM_API_KEY missing — register free at openchargemap.org');
+	// compact=false: compact mode strips nested OperatorInfo (only a top-level OperatorID
+	// remains), which breaks operator matching and the matched/skipped review reports.
+	const res = await fetch(
+		`https://api.openchargemap.io/v3/poi?countrycode=IS&maxresults=2000&compact=false&verbose=false&key=${key}`
+	);
+	if (!res.ok) throw new Error(`OCM request failed: ${res.status}`);
+	return res.json();
+}
 
-// compact=false: compact mode strips nested OperatorInfo (only a top-level OperatorID
-// remains), which breaks operator matching and the matched/skipped review reports.
-const res = await fetch(
-	`https://api.openchargemap.io/v3/poi?countrycode=IS&maxresults=2000&compact=false&verbose=false&key=${key}`
-);
-if (!res.ok) throw new Error(`OCM request failed: ${res.status}`);
-const pois = await res.json();
+const pois = await loadPois();
 if (!Array.isArray(pois))
 	throw new Error(`OCM response is not a POI array: ${JSON.stringify(pois).slice(0, 200)}`);
 if (pois.length >= 2000)

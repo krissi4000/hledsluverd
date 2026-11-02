@@ -26,6 +26,7 @@ src/lib/paraglide/
 
 # Playwright
 test-results/
+playwright-report/
 
 # Local scratch / tooling
 .superpowers/

@@ -30,10 +30,93 @@ jobs:
       - run: npm run lint
       - run: npm run check
       - run: npm run test:unit -- --run
-      # E2E skipped in CI v1 (needs Postgres+PostGIS and browsers) — future work
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        # PG 17 + PostGIS 3, matching production (deploy/setup-server.sh)
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_USER: hledsluverd
+          POSTGRES_PASSWORD: hledsluverd
+          POSTGRES_DB: hledsluverd
+        ports:
+          - 5432:5432
+        # -h 127.0.0.1: the entrypoint's temporary init server (which creates the
+        # postgis extension) listens on the unix socket only — probing TCP waits
+        # for the real server instead of reporting ready mid-init.
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U hledsluverd -d hledsluverd"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://hledsluverd:hledsluverd@localhost:5432/hledsluverd
+      # External services stay OFF. These must be EMPTY, not dummy: the app gates
+      # TomTom availability refreshes on `if (env.TOMTOM_API_KEY)`, so any non-empty
+      # value would make /kort, /bilaleit and /stod call api.tomtom.com.
+      TOMTOM_API_KEY: ''
+      OCM_API_KEY: ''
+      NTFY_TOPIC: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('./node_modules/playwright-core/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.pw.outputs.version }}-chromium
+      - name: Install Chromium + system deps
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Chromium system deps (browser cached)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # Same schema path as production (deploy/setup-server.sh creates the extension
+      # as superuser, deploy/deploy.sh runs drizzle-kit migrate). The postgis image
+      # already creates it in POSTGRES_DB; this keeps the step explicit and idempotent.
+      - name: Ensure PostGIS extension
+        run: node --input-type=module -e 'import postgres from "postgres"; const sql = postgres(process.env.DATABASE_URL); await sql.unsafe("CREATE EXTENSION IF NOT EXISTS postgis"); await sql.end();'
+      - run: npm run db:migrate
+
+      # Seed through the real seed scripts, fully offline: networks + prices come from
+      # the committed seeds/, stations from a fixed OCM POI fixture (instead of the live
+      # OCM API), cars from the committed OpenEV Data sample (instead of the GitHub
+      # release download).
+      - name: Seed database (offline fixtures)
+        run: |
+          npm run seed:networks
+          npm run seed:ocm -- e2e/fixtures/ocm-pois.json
+          npm run seed:prices
+          npm run seed:cars -- tests/fixtures/open-ev-data-sample.json
+
+      - run: npm run build
+      - run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
   deploy:
-    needs: test
+    needs: [test, e2e]
     # DEPLOY_ENABLED is a repo variable (Settings → Variables): keeps the
     # workflow green before the VPS exists, and doubles as a pause switch.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
