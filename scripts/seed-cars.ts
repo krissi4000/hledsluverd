@@ -35,7 +35,9 @@ async function main() {
 			// throw is the (make, model, variant) unique violation (SQLSTATE 23505) —
 			// a duplicate across distinct unique_codes. Skip those, keep the first.
 			// Anything else is a real failure: fail loud rather than exit 0 silently.
-			if ((e as { code?: string }).code !== '23505') throw e;
+			// drizzle wraps driver errors (DrizzleQueryError), so the SQLSTATE sits on .cause
+			const err = e as { code?: string; cause?: { code?: string } };
+			if ((err.code ?? err.cause?.code) !== '23505') throw e;
 			conflicts++;
 			console.warn(`SKIP ${c.slug}: duplicate (make, model, variant)`);
 		}
