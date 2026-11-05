@@ -2,11 +2,11 @@
 	import Chart from 'chart.js/auto';
 	import * as m from '$lib/paraglide/messages';
 	import { formatDate, formatIsk } from '$lib/format';
+	import { networkColor } from '$lib/networks';
+	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 
 	let { data } = $props();
 	let canvas = $state<HTMLCanvasElement | undefined>();
-
-	const PALETTE = ['#2e7d32', '#1565c0', '#e65100', '#6a1b9a', '#c62828', '#00838f'];
 
 	$effect(() => {
 		if (!canvas || data.series.length === 0) return;
@@ -21,12 +21,17 @@
 						y: p.y
 					})),
 					stepped: true,
-					borderColor: PALETTE[i % PALETTE.length],
-					backgroundColor: PALETTE[i % PALETTE.length],
+					borderColor: networkColor(s.networkSlug, i),
+					backgroundColor: networkColor(s.networkSlug, i),
+					borderWidth: 2.5,
 					pointRadius: 2
 				}))
 			},
 			options: {
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { position: 'bottom', labels: { usePointStyle: true, boxHeight: 8 } }
+				},
 				scales: {
 					x: {
 						type: 'linear',
@@ -54,18 +59,30 @@
 	<p class="note">{m.trends_note()}</p>
 
 	<nav class="filters">
-		<span class="group" role="group" aria-label={m.filter_mode()}>
-			<a href="/verdthroun" class:active={data.mode === 'DC'}>{m.mode_dc()}</a>
-			<a href="/verdthroun?afl=AC" class:active={data.mode === 'AC'}>{m.mode_ac()}</a>
+		<span class="pills" role="group" aria-label={m.filter_mode()}>
+			<a
+				class="pill"
+				href="/verdthroun"
+				class:active={data.mode === 'DC'}
+				aria-current={data.mode === 'DC' ? 'page' : undefined}>{m.mode_dc()}</a
+			>
+			<a
+				class="pill"
+				href="/verdthroun?afl=AC"
+				class:active={data.mode === 'AC'}
+				aria-current={data.mode === 'AC' ? 'page' : undefined}>{m.mode_ac()}</a
+			>
 		</span>
 	</nav>
 
 	{#if data.series.length === 0}
-		<p class="empty">{m.trends_no_data()}</p>
+		<p class="empty surface">{m.trends_no_data()}</p>
 	{:else}
-		<div class="chart"><canvas bind:this={canvas} data-testid="trend-chart"></canvas></div>
+		<div class="panel surface">
+			<div class="chart"><canvas bind:this={canvas} data-testid="trend-chart"></canvas></div>
+		</div>
 		<noscript>
-			<table>
+			<table class="surface">
 				<thead>
 					<tr><th>{m.th_network()}</th><th>{m.trends_current()}</th><th></th></tr>
 				</thead>
@@ -73,8 +90,16 @@
 					{#each data.series as s (s.networkSlug)}
 						{@const last = s.points[s.points.length - 1]}
 						<tr data-testid="trend-row">
-							<td>{s.networkName}</td>
-							<td>{formatIsk(last.y)}</td>
+							<td
+								><span class="netcell"
+									><NetworkLogo
+										slug={s.networkSlug}
+										name={s.networkName}
+										size={24}
+									/>{s.networkName}</span
+								></td
+							>
+							<td class="num">{formatIsk(last.y)}</td>
 							<td>{m.trends_since({ date: formatDate(new Date(last.t)) })}</td>
 						</tr>
 					{/each}
@@ -86,47 +111,51 @@
 
 <style>
 	.note {
-		opacity: 0.7;
+		color: var(--muted);
 		font-size: 0.9rem;
+		margin-top: -0.25rem;
+		max-width: 44rem;
 	}
 	.filters {
-		display: flex;
-		gap: 0.75rem;
-		margin-bottom: 0.75rem;
+		margin-bottom: 1rem;
 	}
-	.group {
-		display: inline-flex;
-		gap: 0.25rem;
-	}
-	.group a {
-		border: 1px solid var(--border, #ccc);
-		border-radius: 1rem;
-		padding: 0.15rem 0.7rem;
-		text-decoration: none;
-		color: inherit;
-		font-size: 0.9rem;
-	}
-	.group a.active {
-		background: var(--accent, #2e7d32);
-		border-color: var(--accent, #2e7d32);
-		color: #fff;
+	.panel {
+		padding: 1rem;
 	}
 	.chart {
 		position: relative;
-		min-height: 20rem;
+		height: min(26rem, 60vh);
+		min-height: 18rem;
 	}
 	.empty {
-		opacity: 0.7;
-		padding: 1rem 0;
+		color: var(--muted);
+		padding: 2rem 1rem;
+		text-align: center;
 	}
 	table {
 		width: 100%;
-		border-collapse: collapse;
+		border-collapse: separate;
+		border-spacing: 0;
+		overflow: hidden;
+		margin-top: 1rem;
 	}
 	th,
 	td {
 		text-align: left;
-		padding: 0.4rem 0.5rem;
-		border-bottom: 1px solid var(--border, #e2e2e2);
+		padding: 0.6rem 1rem;
+		border-bottom: 1px solid var(--border);
+	}
+	th {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--muted);
+		background: var(--surface-2);
+	}
+	.netcell {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-weight: 600;
 	}
 </style>

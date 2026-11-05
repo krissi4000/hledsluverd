@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
 	import StationMap from '$lib/components/StationMap.svelte';
+	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { carMatchesStation, effectiveKw, type CarSpec } from '$lib/ev';
 	import { formatKm, haversineKm, type LatLng } from '$lib/geo';
 	import { formatIsk } from '$lib/format';
@@ -123,40 +124,77 @@
 	<noscript><p>{m.finder_js()}</p></noscript>
 
 	{#if car === null}
-		<h3>{m.finder_pick_car()}</h3>
-		<input
-			type="search"
-			placeholder={m.finder_search()}
-			bind:value={search}
-			data-testid="car-search"
-		/>
-		{#if hits.length > 0}
-			<ul class="hits" data-testid="car-hits">
-				{#each hits as c (c.slug)}
-					<li>
-						<button type="button" onclick={() => chooseCar(c.slug)}
-							>{c.make} {c.model} {c.variant ?? ''}</button
-						>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		<p class="fallback-plug">
-			{m.finder_no_car()} — {m.finder_pick_plug()}:
-			{#each CONNECTOR_TYPES as t (t)}
-				<button type="button" class="plug" onclick={() => choosePlug(t)}>{t}</button>
-			{/each}
-		</p>
+		<div class="picker surface">
+			<h3>{m.finder_pick_car()}</h3>
+			<div class="search">
+				<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+					><path
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						d="m21 21-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"
+					/></svg
+				>
+				<input
+					type="search"
+					placeholder={m.finder_search()}
+					bind:value={search}
+					data-testid="car-search"
+				/>
+			</div>
+			{#if hits.length > 0}
+				<ul class="hits" data-testid="car-hits">
+					{#each hits as c (c.slug)}
+						<li>
+							<button type="button" onclick={() => chooseCar(c.slug)}
+								><strong>{c.make}</strong>
+								{c.model} <span class="muted">{c.variant ?? ''}</span></button
+							>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+			<div class="fallback-plug">
+				<span class="muted">{m.finder_no_car()} — {m.finder_pick_plug()}:</span>
+				<span class="pills">
+					{#each CONNECTOR_TYPES as t (t)}
+						<button type="button" class="pill" onclick={() => choosePlug(t)}>{t}</button>
+					{/each}
+				</span>
+			</div>
+		</div>
 	{:else}
-		<p class="chosen" data-testid="chosen-car">
-			<strong>{carLabel}</strong>
-			<button type="button" onclick={reset}>{m.finder_change()}</button>
-			<button type="button" onclick={locate}>{m.finder_use_location()}</button>
-			<small>{m.finder_or_tap()}</small>
-		</p>
-		<p data-testid="compatible-count">{m.finder_compatible({ n: compatible.length })}</p>
+		<div class="chosen surface" data-testid="chosen-car">
+			<div class="car">
+				<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
+					><path
+						fill="currentColor"
+						d="M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11a2 2 0 0 1 2 2v4a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4a2 2 0 0 1 2-2Zm2.1 0h9.8l-1.2-3.6a.6.6 0 0 0-.5-.4H8.8a.6.6 0 0 0-.5.4L7.1 11ZM7 15.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+					/></svg
+				>
+				<div>
+					<strong>{carLabel}</strong>
+					<span class="count muted" data-testid="compatible-count"
+						>{m.finder_compatible({ n: compatible.length })}</span
+					>
+				</div>
+			</div>
+			<div class="actions">
+				<button type="button" class="btn" onclick={reset}>{m.finder_change()}</button>
+				<button type="button" class="btn btn-primary" onclick={locate}
+					><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+						><path
+							fill="currentColor"
+							d="M12 2a1 1 0 0 1 1 1v1.06A8 8 0 0 1 19.94 11H21a1 1 0 1 1 0 2h-1.06A8 8 0 0 1 13 19.94V21a1 1 0 1 1-2 0v-1.06A8 8 0 0 1 4.06 13H3a1 1 0 1 1 0-2h1.06A8 8 0 0 1 11 4.06V3a1 1 0 0 1 1-1Zm0 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"
+						/></svg
+					>{m.finder_use_location()}</button
+				>
+			</div>
+			<small class="hint muted">{m.finder_or_tap()}</small>
+		</div>
 
-		<div class="maparea">
+		<div class="maparea surface">
 			<StationMap
 				stations={sorted}
 				bind:selectedId
@@ -166,28 +204,39 @@
 			/>
 			{#if selected}
 				<aside class="card" data-testid="finder-card">
-					<h3><a href="/stod/{selected.slug}">{selected.name}</a></h3>
-					<p class="net">{selected.networkName}</p>
-					<p>
-						{#if selected.price !== null}<strong>{formatIsk(selected.price)}</strong>
-							{selected.mode}{:else}<em>{m.price_unknown()}</em>{/if}
-						{#if selected.kw !== null}
-							· {m.finder_up_to({ kw: Math.round(selected.kw) })}{/if}
-						{#if selected.km !== null}
-							· {formatKm(selected.km)}{/if}
-					</p>
+					<NetworkLogo slug={selected.networkSlug} name={selected.networkName} size={36} />
+					<div>
+						<h3><a href="/stod/{selected.slug}">{selected.name}</a></h3>
+						<p class="net">{selected.networkName}</p>
+						<p class="facts">
+							{#if selected.price !== null}<strong class="num">{formatIsk(selected.price)}</strong>
+								{selected.mode}{:else}<em>{m.price_unknown()}</em>{/if}
+							{#if selected.kw !== null}
+								· {m.finder_up_to({ kw: Math.round(selected.kw) })}{/if}
+							{#if selected.km !== null}
+								· {formatKm(selected.km)}{/if}
+						</p>
+					</div>
 				</aside>
 			{/if}
 		</div>
 
-		<ol class="results" data-testid="finder-results">
+		<ol class="results surface" data-testid="finder-results">
 			{#each sorted.slice(0, 25) as s (s.id)}
 				<li>
-					<a href="/stod/{s.slug}">{s.name}</a>
-					<span class="net">{s.networkName}</span>
-					{#if s.price !== null}<strong>{formatIsk(s.price)}</strong>{/if}
-					{#if s.kw !== null}<span>{m.finder_up_to({ kw: Math.round(s.kw) })}</span>{/if}
-					{#if s.km !== null}<span>{formatKm(s.km)}</span>{/if}
+					<NetworkLogo slug={s.networkSlug} name={s.networkName} size={32} />
+					<div class="r-main">
+						<a href="/stod/{s.slug}">{s.name}</a>
+						<span class="net">
+							{s.networkName}{#if s.kw !== null}{' · '}{m.finder_up_to({
+									kw: Math.round(s.kw)
+								})}{/if}
+						</span>
+					</div>
+					<div class="r-side">
+						{#if s.price !== null}<strong class="num">{formatIsk(s.price)}</strong>{/if}
+						{#if s.km !== null}<span class="km num">{formatKm(s.km)}</span>{/if}
+					</div>
 				</li>
 			{/each}
 		</ol>
@@ -195,19 +244,38 @@
 </section>
 
 <style>
+	.picker {
+		padding: 1.15rem;
+		max-width: 36rem;
+	}
+	.picker h3 {
+		margin-top: 0;
+	}
+	.search {
+		position: relative;
+		color: var(--muted);
+	}
+	.search svg {
+		position: absolute;
+		left: 0.75rem;
+		top: 50%;
+		transform: translateY(-50%);
+		pointer-events: none;
+	}
 	input[type='search'] {
 		width: 100%;
-		max-width: 24rem;
-		padding: 0.4rem 0.6rem;
+		padding-left: 2.4rem;
+		min-height: 2.75rem;
 		font-size: 1rem;
-		border: 1px solid var(--border, #ccc);
-		border-radius: 0.4rem;
 	}
 	.hits {
 		list-style: none;
-		margin: 0.5rem 0;
-		padding: 0;
-		max-width: 24rem;
+		margin: 0.5rem 0 0;
+		padding: 0.25rem;
+		max-height: 20rem;
+		overflow-y: auto;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
 	}
 	.hits button {
 		display: block;
@@ -215,62 +283,146 @@
 		text-align: left;
 		background: none;
 		border: none;
-		border-bottom: 1px solid var(--border, #e2e2e2);
-		padding: 0.4rem 0.25rem;
+		border-radius: 6px;
+		padding: 0.5rem 0.6rem;
+		font: inherit;
 		font-size: 0.95rem;
+		color: var(--text);
 		cursor: pointer;
 	}
 	.hits button:hover {
-		background: #f4f4f4;
+		background: var(--accent-soft);
 	}
-	.plug {
-		margin-left: 0.4rem;
-		border: 1px solid var(--border, #ccc);
-		border-radius: 1rem;
-		background: none;
-		padding: 0.15rem 0.7rem;
-		cursor: pointer;
+	.fallback-plug {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+		margin-top: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--border);
+		font-size: 0.9rem;
 	}
-	.chosen button {
-		margin-left: 0.5rem;
+
+	.chosen {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1rem;
+		padding: 0.85rem 1rem;
 	}
+	.car {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+	.car svg {
+		flex: none;
+		padding: 0.45rem;
+		width: 2.4rem;
+		height: 2.4rem;
+		border-radius: 50%;
+		background: var(--accent-soft);
+		color: var(--accent);
+	}
+	.car strong {
+		display: block;
+	}
+	.count {
+		font-size: 0.85rem;
+	}
+	.actions {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.hint {
+		flex: 1 0 100%;
+		font-size: 0.8rem;
+	}
+
 	.maparea {
 		position: relative;
 		height: 55vh;
 		min-height: 20rem;
-		margin: 0.75rem 0;
+		margin: 1rem 0;
+		overflow: hidden;
 	}
 	.card {
 		position: absolute;
 		left: 0.75rem;
 		bottom: 0.75rem;
 		z-index: 10;
-		background: #fff;
-		border: 1px solid var(--border, #ccc);
-		border-radius: 0.5rem;
-		box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
-		padding: 0.6rem 0.9rem;
-		max-width: 20rem;
+		display: flex;
+		gap: 0.7rem;
+		align-items: flex-start;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-lg);
+		padding: 0.8rem 1rem;
+		max-width: min(22rem, calc(100% - 1.5rem));
 	}
 	.card h3 {
-		margin: 0 0 0.25rem;
+		margin: 0;
+		font-size: 1rem;
+	}
+	.card h3 a {
+		color: var(--text);
 	}
 	.card p {
-		margin: 0.25rem 0;
+		margin: 0.15rem 0 0;
+	}
+	.facts {
+		font-size: 0.9rem;
 	}
 	.net {
-		opacity: 0.7;
-		font-size: 0.9rem;
-		margin-right: 0.4rem;
+		color: var(--muted);
+		font-size: 0.85rem;
 	}
+
 	.results {
-		padding-left: 1.25rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
 	}
 	.results li {
-		padding: 0.25rem 0;
 		display: flex;
-		gap: 0.6rem;
-		flex-wrap: wrap;
-		align-items: baseline;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.7rem 1rem;
+		border-top: 1px solid var(--border);
+	}
+	.results li:first-child {
+		border-top: none;
+	}
+	.r-main {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		line-height: 1.3;
+	}
+	.r-main a {
+		color: var(--text);
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.r-main a:hover {
+		text-decoration: underline;
+	}
+	.r-side {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		line-height: 1.3;
+		white-space: nowrap;
+	}
+	.km {
+		color: var(--muted);
+		font-size: 0.82rem;
 	}
 </style>
