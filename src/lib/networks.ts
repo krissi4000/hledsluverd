@@ -19,7 +19,7 @@ const COLORS: Record<string, string> = {
 	isorka: '#3565d2',
 	n1: '#ee313a',
 	e1: '#009345',
-	orkan: '#eb008c',
+	orkan: '#f4058e',
 	tesla: '#3e4047'
 };
 

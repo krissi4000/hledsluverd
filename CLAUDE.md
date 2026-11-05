@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Hleðsluverð (hledsluverd.is) compares the prices of EV charging in Iceland. It is built with SvelteKit (Svelte 5 runes, adapter-node), Drizzle ORM and PostgreSQL/PostGIS. The UI is Icelandic first: the routes are Icelandic words (`/kort` map, `/stod/[slug]` station, `/bilaleit` car finder, `/verdthroun` price history, `/admin`).
+Hleðsluverð (hledsluverd.is) compares the prices of EV charging in Iceland. It is built with SvelteKit (Svelte 5 runes, adapter-node), Drizzle ORM and PostgreSQL/PostGIS. The UI is Icelandic first: the routes are Icelandic words (`/kort` map, `/stod/[slug]` station, `/verdthroun` price history, `/admin`). The car finder is a filter on the homepage (`?bill=<car slug>`); the old `/bilaleit` page redirects there.
 
 ## Commands
 

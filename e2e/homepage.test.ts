@@ -57,6 +57,19 @@ test('language toggle switches to English and back, without JavaScript', async (
 	await ctx.close();
 });
 
+test('language toggle switches to English and back, with JavaScript', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await page.locator('[data-testid="lang-toggle"]').click();
+	await expect(page.locator('header .tagline')).toContainText('in one place');
+	// client-side navigation must keep English (the hydrated runtime reads the cookie)
+	await page.locator('header nav a[href="/kort"]').click();
+	await expect(page).toHaveURL(/\/kort/);
+	await expect(page.locator('header .tagline')).toContainText('in one place');
+	await page.locator('[data-testid="lang-toggle"]').click();
+	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+});
+
 test('language redirect refuses to leave the site', async ({ request }) => {
 	// %09 = tab: browsers strip tab/CR/LF from Location, turning '/\t/evil.com'
 	// into protocol-relative '//evil.com' — the guard must parse like a browser
@@ -118,27 +131,41 @@ test('map page renders price pins and a mini-card linking to the station', async
 	await expect(card.locator('[data-testid="card-availability"]')).toHaveText(/—|\d+\/\d+/);
 });
 
-test('finder flow: pick a car, get compatible stations with speed and distance', async ({
-	browser
+test('car filter: pick a car, the list narrows to stations it fits, and the car is remembered', async ({
+	page
 }) => {
-	const ctx = await browser.newContext({
-		geolocation: { latitude: 64.1466, longitude: -21.9426 },
-		permissions: ['geolocation'],
-		baseURL: 'http://localhost:4173'
-	});
-	const page = await ctx.newPage();
-	await page.goto('/bilaleit');
+	await page.goto('/');
+	const rows = page.locator('[data-testid="station-row"]');
+	const before = await rows.count();
+
 	await page.locator('[data-testid="car-search"]').fill('Leaf');
-	await page.locator('[data-testid="car-hits"] button').first().click();
+	await page.locator('[data-testid="car-hits"] a').first().click();
 	await expect(page.locator('[data-testid="chosen-car"]')).toBeVisible();
-	await expect(page.locator('[data-testid="compatible-count"]')).toBeVisible();
-	const rows = page.locator('[data-testid="finder-results"] li');
-	expect(await rows.count()).toBeGreaterThan(0);
-	await expect(rows.first()).toContainText(/kW/);
-	// distance appears once geolocation is applied
-	await page.getByRole('button', { name: /staðsetningu|location/i }).click();
-	await expect(rows.first()).toContainText(/km/, { timeout: 10000 });
-	await ctx.close();
+	await expect(page).toHaveURL(/[?&]bill=/);
+	const after = await rows.count();
+	expect(after).toBeGreaterThan(0);
+	expect(after).toBeLessThanOrEqual(before);
+	// a Leaf fast-charges over CHAdeMO only, and each row says what speed it gets there
+	for (let i = 0; i < Math.min(after, 5); i++) {
+		await expect(rows.nth(i)).toContainText('CHAdeMO');
+		await expect(rows.nth(i)).toContainText(/allt að \d+ kW|up to \d+ kW/);
+	}
+
+	// remembered on the next visit…
+	await page.goto('/');
+	await expect(page).toHaveURL(/[?&]bill=/);
+	await expect(page.locator('[data-testid="chosen-car"]')).toBeVisible();
+	// …until it is removed from the filter
+	await page.locator('[data-testid="chosen-car"]').click();
+	await expect(page.locator('[data-testid="car-search"]')).toBeVisible();
+	await page.goto('/');
+	await expect(page.locator('[data-testid="car-search"]')).toBeVisible();
+	await expect(page).not.toHaveURL(/[?&]bill=/);
+});
+
+test('the old car finder URL redirects to the homepage', async ({ page }) => {
+	await page.goto('/bilaleit');
+	await expect(page).toHaveURL(/\/$/);
 });
 
 test('admin page renders health, prices and forms', async ({ page }) => {

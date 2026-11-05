@@ -3,6 +3,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import StationMap from '$lib/components/StationMap.svelte';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
+	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
 	import { networkColor } from '$lib/networks';
 	import { ageParts, formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
 
@@ -71,19 +72,7 @@
 					<span class="dot" aria-hidden="true">·</span> {st.address}{/if}
 			</p>
 		</div>
-		<a
-			class="btn btn-primary directions"
-			href="https://www.google.com/maps/dir/?api=1&destination={st.lat},{st.lng}"
-			rel="noopener external"
-		>
-			<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
-				><path
-					fill="currentColor"
-					d="M21.7 11.3 12.7 2.3a1 1 0 0 0-1.4 0l-9 9a1 1 0 0 0 0 1.4l9 9a1 1 0 0 0 1.4 0l9-9a1 1 0 0 0 0-1.4ZM14 14.5V12h-4v3H8v-4a1 1 0 0 1 1-1h5V7.5l3.5 3.5-3.5 3.5Z"
-				/></svg
-			>
-			{m.station_directions()}
-		</a>
+		<DirectionsLink lat={st.lat} lng={st.lng} primary class="directions" />
 	</header>
 
 	<div class="cols">
@@ -203,7 +192,7 @@
 		.cols {
 			grid-template-columns: 1fr;
 		}
-		.directions {
+		.head :global(.directions) {
 			flex: 1 0 100%;
 		}
 		.minimap {

@@ -271,7 +271,7 @@ export interface MapStation {
 	tomtomId: string | null;
 }
 
-/** Every active station, priced for its dominant mode — feeds /kort and /bilaleit. */
+/** Every active station, priced for its dominant mode — feeds /kort. */
 export async function mapStations(db: Db): Promise<MapStation[]> {
 	const [sts, cons, nets, cp, avail] = await Promise.all([
 		db.select().from(stations).where(eq(stations.isActive, true)),

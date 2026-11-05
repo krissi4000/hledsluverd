@@ -1,18 +1,44 @@
 <script lang="ts">
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { formatNumber } from '$lib/format';
+	import * as m from '$lib/paraglide/messages';
+	import { ageParts, formatNumber } from '$lib/format';
 	import type { LatLng } from '$lib/geo';
 	import { networkColor, networkInitials, networkLogo } from '$lib/networks';
+	import { priceRanks, rankColors } from '$lib/price-scale';
 
 	interface PinStation {
 		id: number;
 		lat: number;
 		lng: number;
 		price: number | null;
+		/** ranks prices within AC or DC only, when given */
+		mode?: 'AC' | 'DC';
 		networkSlug: string;
 		networkName: string;
 		name?: string;
+		freeCount?: number | null;
+		totalCount?: number | null;
+		availabilityFetchedAt?: Date | null;
+	}
+
+	// Pins have no room for an age label, so they only carry availability that is
+	// near-live; older readings stay on the station card, where the age is shown.
+	// The tooltip always states the age (honesty rule: shown availability has an age).
+	const PIN_AVAILABILITY_MAX_AGE_MS = 30 * 60 * 1000;
+
+	function pinAvailability(s: PinStation): { free: number; total: number; age: string } | null {
+		const { freeCount: free, totalCount: total, availabilityFetchedAt: at } = s;
+		if (free == null || total == null || total === 0 || !at) return null;
+		if (Date.now() - at.getTime() > PIN_AVAILABILITY_MAX_AGE_MS) return null;
+		const p = ageParts(at);
+		const age =
+			p.unit === 'min'
+				? m.age_min({ n: p.n })
+				: p.unit === 'h'
+					? m.age_h({ n: p.n })
+					: m.age_d({ n: p.n });
+		return { free, total, age };
 	}
 
 	let {
@@ -67,6 +93,7 @@
 		if (!map) return;
 		for (const mk of markers) mk.remove();
 		pinEls = new Map();
+		const ranks = priceRanks(stations);
 		markers = stations.map((s, i) => {
 			// MapLibre owns the marker element's transform, so the visible pin is a child
 			const wrap = document.createElement('div');
@@ -77,7 +104,17 @@
 			el.className = 'pin';
 			el.dataset.testid = 'map-pin';
 			el.type = 'button';
-			el.title = s.name ? `${s.name} · ${s.networkName}` : s.networkName;
+			const rank = ranks.get(s.id);
+			if (rank !== undefined) {
+				const c = rankColors(rank);
+				el.style.setProperty('--pin-bg', c.background);
+				el.style.setProperty('--pin-border', c.border);
+			}
+			const avail = pinAvailability(s);
+			const title = s.name ? `${s.name} · ${s.networkName}` : s.networkName;
+			el.title = avail
+				? `${title} · ${m.pin_free({ free: avail.free, total: avail.total })} (${avail.age})`
+				: title;
 			const logoUrl = networkLogo(s.networkSlug);
 			if (logoUrl) {
 				const img = document.createElement('img');
@@ -93,8 +130,24 @@
 				el.append(mono);
 			}
 			const label = document.createElement('span');
-			label.textContent = s.price === null ? '?' : formatNumber(s.price);
+			label.className = 'pin-price';
+			if (s.price === null) {
+				label.textContent = '?';
+			} else {
+				label.textContent = formatNumber(s.price);
+				const unit = document.createElement('span');
+				unit.className = 'pin-unit';
+				unit.textContent = 'kr';
+				label.append(unit);
+			}
 			el.append(label);
+			if (avail) {
+				const free = document.createElement('span');
+				free.className = avail.free > 0 ? 'pin-avail' : 'pin-avail pin-avail-none';
+				free.dataset.testid = 'map-pin-availability';
+				free.textContent = `${avail.free}/${avail.total}`;
+				el.append(free);
+			}
 			wrap.append(el);
 			pinEls.set(s.id, wrap);
 			el.addEventListener('click', (ev) => {
@@ -169,9 +222,9 @@
 		align-items: center;
 		gap: 0.25rem;
 		padding: 2px 0.45rem 2px 2px;
-		background: #fff;
+		background: var(--pin-bg, #fff);
 		color: var(--text, #111a15);
-		border: 1px solid rgb(0 0 0 / 12%);
+		border: 1px solid var(--pin-border, rgb(0 0 0 / 12%));
 		border-radius: 999px;
 		font: inherit;
 		font-size: 0.78rem;
@@ -184,16 +237,46 @@
 			transform 0.12s,
 			background-color 0.12s;
 	}
+	:global(.pin-unit) {
+		margin-left: 1px;
+		font-size: 0.55rem;
+		font-weight: 600;
+		opacity: 0.7;
+	}
+	:global(.pin-avail) {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		margin-left: 0.15rem;
+		padding-left: 0.35rem;
+		border-left: 1px solid rgb(0 0 0 / 15%);
+		font-size: 0.7rem;
+		font-weight: 650;
+	}
+	/* dot: green = a charger is free, grey = all busy (a known 0, not unknown) */
+	:global(.pin-avail)::before {
+		content: '';
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #16a34a;
+		box-shadow: 0 0 0 1px #fff;
+	}
+	:global(.pin-avail-none)::before {
+		background: #9ca3af;
+	}
 	:global(.pin:hover) {
 		transform: scale(1.08);
 	}
 	:global(.pin-wrap.selected) {
 		z-index: 9999 !important;
 	}
+	/* keep the price colour on the selected pin; mark it with a dark ring instead */
 	:global(.pin-wrap.selected .pin) {
-		background: var(--accent, #15803d);
-		border-color: var(--accent, #15803d);
-		color: #fff;
+		border-color: var(--text, #111a15);
+		box-shadow:
+			0 0 0 2px var(--text, #111a15),
+			0 2px 8px rgb(0 0 0 / 35%);
 		transform: scale(1.12);
 	}
 	:global(.pin-logo) {

@@ -13,9 +13,13 @@ export interface StationConnector {
 	powerKw: number;
 }
 
-/** Design rule: match = the station has ≥1 connector equal to the car's AC or DC connector. */
-export function carMatchesStation(car: CarSpec, connectors: StationConnector[]): boolean {
-	return connectors.some((c) => c.type === car.acConnector || c.type === car.dcConnector);
+/**
+ * The car's plug for a charging mode: its AC plug for AC, its DC plug for DC.
+ * The station list shows one price per mode, so a car only "fits" a station through
+ * the plug that price applies to — a Leaf must not match a DC row via its Type2 socket.
+ */
+export function carPlugForMode(car: CarSpec, mode: 'AC' | 'DC'): ConnectorType | null {
+	return mode === 'AC' ? car.acConnector : car.dcConnector;
 }
 
 /**

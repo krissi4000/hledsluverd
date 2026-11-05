@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import StationMap from '$lib/components/StationMap.svelte';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
+	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
 	import { ageParts, formatIsk } from '$lib/format';
 
 	let { data } = $props();
@@ -79,6 +80,7 @@
 					{/each}
 				</p>
 				<a class="btn btn-primary more" href="/stod/{selected.slug}">{m.map_details()} →</a>
+				<DirectionsLink lat={selected.lat} lng={selected.lng} class="more" />
 			</aside>
 		{/if}
 	</div>
@@ -182,8 +184,11 @@
 	.chips {
 		margin: 0 0 0.75rem;
 	}
-	.more {
+	.card :global(.more) {
 		width: 100%;
+	}
+	.card :global(.more + .more) {
+		margin-top: 0.5rem;
 	}
 	.js-note {
 		padding: 1rem;

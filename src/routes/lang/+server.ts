@@ -21,6 +21,13 @@ function safeRedirect(target: string | null): string {
 // varies by this cookie — any future CDN/proxy caching needs Vary: Cookie handling.
 export const GET: RequestHandler = ({ url, cookies }) => {
 	const to = url.searchParams.get('to') === 'en' ? 'en' : 'is';
-	cookies.set('PARAGLIDE_LOCALE', to, { path: '/', maxAge: 60 * 60 * 24 * 365 });
+	// httpOnly must be off: Paraglide's client runtime reads the locale from document.cookie.
+	// With SvelteKit's default (httpOnly: true) the hydrated app falls back to 'is', so the
+	// toggle keeps pointing at ?to=en and client-side navigations render in Icelandic.
+	cookies.set('PARAGLIDE_LOCALE', to, {
+		path: '/',
+		maxAge: 60 * 60 * 24 * 365,
+		httpOnly: false
+	});
 	redirect(303, safeRedirect(url.searchParams.get('redirect')));
 };

@@ -4,6 +4,8 @@
 	import { formatIsk, formatDate, formatNumber, isStale, ageParts } from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
+	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
+	import CarFilter from '$lib/components/CarFilter.svelte';
 	import type { StationRow } from '$lib/server/db/queries';
 
 	let {
@@ -11,13 +13,16 @@
 		mode,
 		connector,
 		network,
-		networkOptions
+		networkOptions,
+		car
 	}: {
-		stations: StationRow[];
+		/** carKw: the speed the chosen car gets at the station (set when a car filters the list) */
+		stations: (StationRow & { carKw?: number | null })[];
 		mode: 'AC' | 'DC';
 		connector: string | null;
 		network: string | null;
 		networkOptions: { slug: string; name: string }[];
+		car: { slug: string; make: string; model: string; variant: string | null } | null;
 	} = $props();
 
 	function age(d: Date): string {
@@ -74,7 +79,8 @@
 						class="pill"
 						href={href({ tengi: t })}
 						class:active={connector === t}
-						aria-current={connector === t ? 'page' : undefined}>{t}</a
+						aria-current={connector === t ? 'page' : undefined}
+						><ConnectorIcon type={t} size={18} />{t}</a
 					>
 				{/each}
 			</span>
@@ -99,6 +105,10 @@
 				{/each}
 			</span>
 		</div>
+		<div class="filter-row">
+			<span class="filter-label" aria-hidden="true">{m.filter_car()}</span>
+			<CarFilter {car} {href} />
+		</div>
 	</nav>
 
 	{#if stations.length === 0}
@@ -122,23 +132,55 @@
 									<NetworkLogo slug={s.networkSlug} name={s.networkName} size={36} />
 									<span class="station-text">
 										<a href="/stod/{s.slug}">{s.name}</a>
-										<span class="net">{s.networkName}</span>
+										<span class="net"
+											>{s.networkName}{#if s.carKw}{' · '}<span class="car-kw"
+													>{m.finder_up_to({ kw: Math.round(s.carKw) })}</span
+												>{/if}</span
+										>
 									</span>
 								</div>
 							</td>
 							<td data-label={m.th_price()} class="price">
 								{#if s.price !== null}
-									<strong class="num" data-testid="price">{formatIsk(s.price)}</strong>
-									{#if s.minuteFeeIsk}<small class="fee"
-											>{s.minuteFeeAfterMin
-												? m.minute_fee_after({
-														fee: formatNumber(s.minuteFeeIsk),
-														min: s.minuteFeeAfterMin
-													})
-												: m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
-										>{/if}
-									{#if s.verifiedAt}<small class="verified" class:stale={isStale(s.verifiedAt)}
-											>{m.verified_on({ date: formatDate(s.verifiedAt) })}</small
+									{@const stale = s.verifiedAt !== null && isStale(s.verifiedAt)}
+									{@const idleFee = s.minuteFeeIsk && s.minuteFeeAfterMin ? s.minuteFeeIsk : null}
+									<span class="price-wrap" class:stale>
+										<button type="button" class="price-info" aria-describedby="price-tip-{s.slug}">
+											<strong class="num" data-testid="price">{formatIsk(s.price)}</strong>
+											<svg
+												class="info-icon"
+												viewBox="0 0 24 24"
+												width="15"
+												height="15"
+												aria-hidden="true"
+												><circle
+													cx="12"
+													cy="12"
+													r="9"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+												/><path
+													fill="currentColor"
+													d="M11 10.5h2V17h-2zM12 6.8a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"
+												/></svg
+											></button
+										>
+										<span class="tip" role="tooltip" id="price-tip-{s.slug}">
+											{#if idleFee}<span class="tip-line"
+													>{m.minute_fee_after({
+														fee: formatNumber(idleFee),
+														min: s.minuteFeeAfterMin!
+													})}</span
+												>{/if}
+											{#if s.verifiedAt}<span class="tip-line tip-verified" class:stale
+													>{m.verified_on({ date: formatDate(s.verifiedAt) })}</span
+												>{/if}
+										</span>
+									</span>
+									<!-- a per-minute fee from minute 0 hits every charge, so it stays visible -->
+									{#if s.minuteFeeIsk && !s.minuteFeeAfterMin}<small class="fee"
+											>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
 										>{/if}
 								{:else}
 									<em class="unknown">{m.price_unknown()}</em>
@@ -237,11 +279,83 @@
 		color: var(--muted);
 		font-size: 0.82rem;
 	}
+	.car-kw {
+		color: var(--accent-text);
+		font-weight: 600;
+	}
 
 	.price strong {
 		font-size: 1.05rem;
 		font-weight: 700;
 		white-space: nowrap;
+	}
+	.price-wrap {
+		position: relative;
+		display: inline-flex;
+	}
+	.price-info {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0;
+		border: none;
+		border-radius: 4px;
+		background: none;
+		color: inherit;
+		font: inherit;
+		cursor: help;
+	}
+	.info-icon {
+		flex: none;
+		color: var(--muted);
+		opacity: 0.75;
+		transition: opacity 0.12s;
+	}
+	.price-wrap:hover .info-icon,
+	.price-info:focus-visible .info-icon {
+		opacity: 1;
+	}
+	/* unverified for 30+ days: the price itself turns amber, not just the hidden date */
+	.price-wrap.stale strong,
+	.price-wrap.stale .info-icon {
+		color: var(--stale);
+	}
+	/* kept in the DOM (not display:none) so screen readers still get the details */
+	.tip {
+		position: absolute;
+		left: calc(100% + 0.5rem);
+		top: 50%;
+		z-index: 20;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.45rem 0.65rem;
+		border-radius: var(--radius-sm);
+		background: var(--text);
+		color: #fff;
+		box-shadow: var(--shadow-lg);
+		font-size: 0.78rem;
+		font-weight: 500;
+		line-height: 1.35;
+		white-space: nowrap;
+		opacity: 0;
+		pointer-events: none;
+		transform: translate(-0.25rem, -50%);
+		transition:
+			opacity 0.12s,
+			transform 0.12s;
+	}
+	.price-wrap:hover .tip,
+	.price-info:focus-visible + .tip {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
+	.tip-verified {
+		opacity: 0.75;
+	}
+	.tip-line.stale {
+		color: #fbbf24;
+		opacity: 1;
 	}
 	small {
 		display: block;

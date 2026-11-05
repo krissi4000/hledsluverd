@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { carMatchesStation, effectiveKw, type CarSpec } from './ev';
+import { carPlugForMode, effectiveKw, type CarSpec } from './ev';
 
 const leaf: CarSpec = { acConnector: 'Type2', maxAcKw: 6.6, dcConnector: 'CHAdeMO', maxDcKw: 50 };
 const id4: CarSpec = { acConnector: 'Type2', maxAcKw: 11, dcConnector: 'CCS2', maxDcKw: 135 };
 
-describe('carMatchesStation', () => {
-	it('rejects a station with no matching connector', () => {
-		expect(carMatchesStation(leaf, [{ type: 'CCS2', powerKw: 150 }])).toBe(false);
+describe('carPlugForMode', () => {
+	it('uses the DC plug for DC and the AC plug for AC', () => {
+		expect(carPlugForMode(leaf, 'DC')).toBe('CHAdeMO');
+		expect(carPlugForMode(leaf, 'AC')).toBe('Type2');
+		expect(carPlugForMode(id4, 'DC')).toBe('CCS2');
 	});
 
-	it('matches on either the AC or the DC connector', () => {
-		expect(carMatchesStation(leaf, [{ type: 'CHAdeMO', powerKw: 50 }])).toBe(true);
-		expect(carMatchesStation(leaf, [{ type: 'Type2', powerKw: 22 }])).toBe(true);
+	it('is null when the car has no plug for that mode', () => {
+		const acOnly: CarSpec = { acConnector: 'Type2', maxAcKw: 7, dcConnector: null, maxDcKw: null };
+		expect(carPlugForMode(acOnly, 'DC')).toBeNull();
 	});
 });
 

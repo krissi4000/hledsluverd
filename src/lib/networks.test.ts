@@ -18,7 +18,7 @@ describe('networkLogo', () => {
 
 describe('networkColor', () => {
 	it('uses the brand colour when known', () => {
-		expect(networkColor('orkan')).toBe('#eb008c');
+		expect(networkColor('orkan')).toBe('#f4058e');
 	});
 
 	it('cycles a fallback palette for unknown networks', () => {

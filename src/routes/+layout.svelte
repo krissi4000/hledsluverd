@@ -10,7 +10,6 @@
 
 	const links = [
 		{ href: '/kort', label: () => m.nav_map() },
-		{ href: '/bilaleit', label: () => m.nav_finder() },
 		{ href: '/verdthroun', label: () => m.nav_trends() }
 	];
 
