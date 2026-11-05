@@ -242,6 +242,10 @@ sudo -u hledsluverd pg_restore --clean --if-exists -d hledsluverd <file>.dump
 systemctl start hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer
 ```
 
+`pg_restore` then exits non-zero with `must be owner of extension postgis`
+errors: harmless (the extension belongs to postgres and already exists), your
+data is restored. Any other `ERROR:` is a real failure.
+
 `pg_restore --list <file>.dump` sanity-checks a dump without touching the db.
 
 ## 11. Ops cheatsheet

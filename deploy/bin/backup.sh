@@ -21,8 +21,10 @@ fail() {
 trap fail ERR
 
 hc /start
-# tmp + mv so the retention sweep never keeps a truncated dump
-pg_dump -Fc --dbname=hledsluverd --file="$OUT.tmp"
+# tmp + mv so the retention sweep never keeps a truncated dump.
+# spatial_ref_sys is PostGIS reference data owned by postgres (CREATE EXTENSION
+# recreates it); dumping it only makes the restore fail with permission denied.
+pg_dump -Fc --exclude-table-data=public.spatial_ref_sys 	--dbname=hledsluverd --file="$OUT.tmp"
 mv "$OUT.tmp" "$OUT"
 find "$BACKUP_DIR" -name 'hledsluverd_*.dump' -type f -mtime +14 -delete
 hc ""
