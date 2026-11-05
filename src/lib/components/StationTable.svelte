@@ -8,6 +8,8 @@
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import CarFilter from '$lib/components/CarFilter.svelte';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
+	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
+	import { unknownStalls } from '$lib/availability';
 	import { NETWORK_PARAM } from '$lib/filter-params';
 	import type { StationRow } from '$lib/server/db/queries';
 
@@ -188,7 +190,10 @@
 								{#if s.freeCount !== null && s.totalCount !== null}
 									<span class="avail num" class:has-free={s.freeCount > 0} data-testid="free-count"
 										>{s.freeCount}/{s.totalCount}</span
-									>
+									><UnknownStalls
+										unknown={unknownStalls(s.stallCount, s.totalCount)}
+										total={s.totalCount}
+									/>
 									{#if s.availabilityFetchedAt}<small class="verified"
 											>{age(s.availabilityFetchedAt)}</small
 										>{/if}

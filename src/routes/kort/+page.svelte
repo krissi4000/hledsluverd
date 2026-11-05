@@ -7,6 +7,8 @@
 	import { ownBrandPriceOnly } from '$lib/networks';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
+	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
+	import { unknownStalls } from '$lib/availability';
 	import { page } from '$app/state';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import {
@@ -224,7 +226,10 @@
 					<div data-testid="card-availability">
 						<span class="label">{m.th_free()}</span>
 						{#if selected.freeCount !== null && selected.totalCount !== null}
-							<strong class="num">{selected.freeCount}/{selected.totalCount}</strong>
+							<strong class="num">{selected.freeCount}/{selected.totalCount}</strong><UnknownStalls
+								unknown={unknownStalls(selected.stallCount, selected.totalCount)}
+								total={selected.totalCount}
+							/>
 							{#if selected.availabilityFetchedAt}<small class="muted"
 									>{age(selected.availabilityFetchedAt)}</small
 								>{/if}

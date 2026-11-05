@@ -63,6 +63,7 @@
 	"mode_label_ac": "AC charging",
 	"nav_map": "Map",
 	"map_title": "Charging station map",
+	"avail_partial": "TomTom reports {total} of {all} stalls — the other {unknown} have no live status",
 	"pin_free": "{free} of {total} free",
 	"map_details": "Details",
 	"map_js": "The map needs JavaScript — the station list on the homepage works without it.",

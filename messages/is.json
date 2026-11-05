@@ -63,6 +63,7 @@
 	"mode_label_ac": "AC hleðsla",
 	"nav_map": "Kort",
 	"map_title": "Kort af hleðslustöðvum",
+	"avail_partial": "TomTom sýnir stöðu {total} af {all} stæðum — staða hinna {unknown} er óþekkt",
 	"pin_free": "{free} af {total} laus",
 	"map_details": "Nánar",
 	"map_js": "Kortið þarf JavaScript — stöðvalistinn á forsíðunni virkar án þess.",
