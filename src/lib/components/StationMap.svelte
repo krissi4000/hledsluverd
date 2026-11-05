@@ -111,7 +111,7 @@
 				el.style.setProperty('--pin-border', c.border);
 			}
 			const avail = pinAvailability(s);
-			const title = s.name ? `${s.name} · ${s.networkName}` : s.networkName;
+			const title = [s.name, s.networkName, s.mode].filter(Boolean).join(' · ');
 			el.title = avail
 				? `${title} · ${m.pin_free({ free: avail.free, total: avail.total })} (${avail.age})`
 				: title;
@@ -141,6 +141,15 @@
 				label.append(unit);
 			}
 			el.append(label);
+			// AC (slow) and DC (fast) prices are not comparable, so every pin says which it is
+			if (s.mode) {
+				const tag = document.createElement('span');
+				tag.className = `pin-mode pin-mode-${s.mode.toLowerCase()}`;
+				tag.dataset.testid = 'map-pin-mode';
+				tag.textContent = s.mode;
+				el.dataset.mode = s.mode;
+				el.append(tag);
+			}
 			if (avail) {
 				const free = document.createElement('span');
 				free.className = avail.free > 0 ? 'pin-avail' : 'pin-avail pin-avail-none';
@@ -215,6 +224,8 @@
 		width: 100%;
 		height: 100%;
 		min-height: 16rem;
+		/* keep the markers' z-indexes inside the map, under overlays drawn over it */
+		isolation: isolate;
 	}
 	.fallback {
 		opacity: 0.7;
@@ -274,6 +285,25 @@
 		font-size: 0.55rem;
 		font-weight: 600;
 		opacity: 0.7;
+	}
+	:global(.pin-mode) {
+		margin-left: 1px;
+		padding: 2px 3px;
+		border-radius: 4px;
+		font-size: 0.55rem;
+		font-weight: 750;
+		letter-spacing: 0.02em;
+		line-height: 1;
+	}
+	:global(.pin-mode-dc) {
+		background: var(--text, #111a15);
+		color: #fff;
+	}
+	/* AC: outlined, so slow-charging pins read differently at a glance */
+	:global(.pin-mode-ac) {
+		padding: 1px 2px;
+		border: 1px solid currentColor;
+		background: rgb(255 255 255 / 70%);
 	}
 	:global(.pin-avail) {
 		display: inline-flex;

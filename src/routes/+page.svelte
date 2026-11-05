@@ -39,7 +39,8 @@
 	stations={data.stations}
 	mode={data.mode}
 	connector={data.connector}
-	network={data.network}
+	networks={data.networks}
+	networkDefaults={data.networkDefaults}
 	networkOptions={data.networkOptions}
 	car={data.car}
 />
