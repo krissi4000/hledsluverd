@@ -2,12 +2,23 @@
 	import { goto } from '$app/navigation';
 	import * as m from '$lib/paraglide/messages';
 	import CarLogo from '$lib/components/CarLogo.svelte';
+	import CarSilhouette from '$lib/components/CarSilhouette.svelte';
+	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
+	import type { CarSearchRow } from '$lib/server/db/cars';
 
 	interface Car {
 		slug: string;
 		make: string;
 		model: string;
 		variant: string | null;
+	}
+
+	/** the car's plugs, fast charging first, each with its top speed when the dataset has it */
+	function plugs(c: CarSearchRow) {
+		const out: { type: NonNullable<CarSearchRow['dcConnector']>; kw: number | null }[] = [];
+		if (c.dcConnector) out.push({ type: c.dcConnector, kw: c.maxDcKw });
+		if (c.acConnector) out.push({ type: c.acConnector, kw: c.maxAcKw });
+		return out;
 	}
 
 	let {
@@ -20,7 +31,7 @@
 		href: (params: Record<string, string | null>) => string;
 	} = $props();
 
-	let cars = $state<Car[] | null>(null);
+	let cars = $state<CarSearchRow[] | null>(null);
 	let loading = false;
 	let search = $state('');
 	let open = $state(false);
@@ -139,10 +150,21 @@
 							data-sveltekit-noscroll
 							onkeydown={onlistkeydown}
 							onclick={() => (open = false)}
-							><CarLogo make={c.make} size={22} /><span
-								><strong>{c.make}</strong>
-								{c.model} <span class="variant">{c.variant ?? ''}</span></span
-							></a
+							><CarLogo make={c.make} size={22} /><span class="hit-text"
+								><span class="hit-name"
+									><strong>{c.make}</strong>
+									{c.model} <span class="variant">{c.variant ?? ''}</span></span
+								>
+								<span class="plugs" data-testid="car-hit-plugs">
+									{#each plugs(c) as p (p.type)}
+										<span class="plug"
+											><ConnectorIcon type={p.type} size={14} />{p.type}{#if p.kw !== null}<span
+													class="kw">{Math.round(p.kw)} kW</span
+												>{/if}</span
+										>
+									{/each}
+								</span></span
+							><CarSilhouette car={c} width={72} /></a
 						>
 					</li>
 				{/each}
@@ -202,6 +224,35 @@
 	.hits a:focus-visible {
 		background: var(--accent-soft);
 		outline: none;
+	}
+	.hit-text {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+	.plugs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.15rem 0.6rem;
+		color: var(--muted);
+		font-size: 0.75rem;
+	}
+	.plug {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		white-space: nowrap;
+	}
+	.kw {
+		font-variant-numeric: tabular-nums;
+	}
+	.kw::before {
+		content: '· ';
+	}
+	.hits :global(.car-silhouette) {
+		margin-left: auto;
 	}
 	.variant {
 		color: var(--muted);

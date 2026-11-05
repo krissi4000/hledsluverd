@@ -14,6 +14,8 @@ export interface OpenEvVehicle {
 		dc?: { max_power_kw?: number } | null;
 	} | null;
 	markets?: string[];
+	body?: { style?: string } | null;
+	dimensions?: { length_mm?: number; height_mm?: number; wheelbase_mm?: number } | null;
 	unique_code: string;
 }
 
@@ -26,6 +28,15 @@ export interface CarSeed {
 	maxAcKw: number | null;
 	dcConnector: ConnectorType | null;
 	maxDcKw: number | null;
+	bodyStyle: string | null;
+	lengthMm: number | null;
+	heightMm: number | null;
+	wheelbaseMm: number | null;
+}
+
+/** A dimension the silhouette can use: a positive whole number of millimetres. */
+function mm(v: number | undefined): number | null {
+	return typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.round(v) : null;
 }
 
 export interface CarsImportResult {
@@ -118,7 +129,11 @@ export function parseOpenEvData(data: { vehicles: OpenEvVehicle[] }): CarsImport
 			acConnector,
 			maxAcKw: acConnector ? (v.charging?.ac?.max_power_kw ?? null) : null,
 			dcConnector,
-			maxDcKw: dcConnector ? (v.charging?.dc?.max_power_kw ?? null) : null
+			maxDcKw: dcConnector ? (v.charging?.dc?.max_power_kw ?? null) : null,
+			bodyStyle: v.body?.style ?? null,
+			lengthMm: mm(v.dimensions?.length_mm),
+			heightMm: mm(v.dimensions?.height_mm),
+			wheelbaseMm: mm(v.dimensions?.wheelbase_mm)
 		});
 	}
 	return out;

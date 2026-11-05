@@ -4,6 +4,7 @@
 	import { formatIsk, formatDate, formatNumber, isStale, ageParts } from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
+	import { ownBrandPriceOnly } from '$lib/networks';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import CarFilter from '$lib/components/CarFilter.svelte';
 	import type { StationRow } from '$lib/server/db/queries';
@@ -181,6 +182,10 @@
 									<!-- a per-minute fee from minute 0 hits every charge, so it stays visible -->
 									{#if s.minuteFeeIsk && !s.minuteFeeAfterMin}<small class="fee"
 											>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
+										>{/if}
+									{#if ownBrandPriceOnly(s.networkSlug)}<small
+											class="brand-only"
+											title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
 										>{/if}
 								{:else}
 									<em class="unknown">{m.price_unknown()}</em>
@@ -363,6 +368,11 @@
 	.fee {
 		font-size: 0.78rem;
 		color: var(--text);
+	}
+	.brand-only {
+		display: block;
+		font-size: 0.75rem;
+		color: var(--muted);
 	}
 	.unknown {
 		color: var(--muted);

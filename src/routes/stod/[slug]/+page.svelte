@@ -4,7 +4,7 @@
 	import StationMap from '$lib/components/StationMap.svelte';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
-	import { networkColor } from '$lib/networks';
+	import { networkColor, ownBrandPriceOnly } from '$lib/networks';
 	import { ageParts, formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
 
 	let { data } = $props();
@@ -94,6 +94,10 @@
 											min: p.minuteFeeAfterMin
 										})
 									: m.minute_fee({ fee: formatNumber(p.minuteFeeIsk) })}</small
+							>{/if}
+						{#if ownBrandPriceOnly(st.network.slug)}<small
+								class="fee brand-only"
+								title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
 							>{/if}
 						<small class="verified" class:stale={isStale(p.verifiedAt)}
 							>{m.verified_on({ date: formatDate(p.verifiedAt) })}</small
@@ -248,6 +252,9 @@
 		margin-left: 0.15rem;
 		color: var(--muted);
 		font-size: 0.85rem;
+	}
+	.brand-only {
+		color: var(--muted);
 	}
 	.fee,
 	.price-row .verified {

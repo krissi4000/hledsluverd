@@ -19,6 +19,8 @@
 	"minute_fee": "+ {fee} kr/min",
 	"minute_fee_after": "+ {fee} kr/min after {min} min",
 	"price_from": "from {price}",
+	"tesla_price_only": "for Tesla cars",
+	"tesla_price_only_title": "This price applies to Tesla cars. Other cars may pay a different price.",
 	"rate_card_title": "Network price list",
 	"stations_title": "All charging stations",
 	"nav_trends": "Price trends",

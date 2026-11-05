@@ -36,7 +36,13 @@ export const stations = pgTable(
 		address: text('address'),
 		location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
 		externalIds: jsonb('external_ids')
-			.$type<{ ocm?: number; tomtom?: string; virta?: number; n1?: string }>()
+			.$type<{
+				ocm?: number;
+				tomtom?: string;
+				virta?: number;
+				n1?: string;
+				supercharge?: number;
+			}>()
 			.notNull()
 			.default({}),
 		isActive: boolean('is_active').notNull().default(true),
@@ -104,7 +110,13 @@ export const cars = pgTable(
 		acConnector: connectorTypeEnum('ac_connector'),
 		maxAcKw: doublePrecision('max_ac_kw'),
 		dcConnector: connectorTypeEnum('dc_connector'),
-		maxDcKw: doublePrecision('max_dc_kw')
+		maxDcKw: doublePrecision('max_dc_kw'),
+		// OpenEV body.style ("sedan", "crossover", "pickup", …) and exterior size, used to
+		// draw the car's side-view silhouette. Null when the dataset doesn't say.
+		bodyStyle: text('body_style'),
+		lengthMm: integer('length_mm'),
+		heightMm: integer('height_mm'),
+		wheelbaseMm: integer('wheelbase_mm')
 	},
 	(t) => [unique('cars_make_model_variant_idx').on(t.make, t.model, t.variant).nullsNotDistinct()]
 );

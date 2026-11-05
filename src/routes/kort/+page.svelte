@@ -4,6 +4,7 @@
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
 	import { ageParts, formatIsk } from '$lib/format';
+	import { ownBrandPriceOnly } from '$lib/networks';
 
 	let { data } = $props();
 	let selectedId = $state<number | null>(null);
@@ -60,6 +61,10 @@
 						{#if selected.price !== null}
 							<strong class="num">{formatIsk(selected.price)}</strong>
 							<span class="mode">{selected.mode}</span>
+							{#if ownBrandPriceOnly(selected.networkSlug)}<small
+									class="brand-only"
+									title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
+								>{/if}
 						{:else}
 							<em class="muted">{m.price_unknown()}</em>
 						{/if}
@@ -171,6 +176,11 @@
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		color: var(--muted);
+	}
+	.brand-only {
+		display: block;
+		color: var(--muted);
+		font-size: 0.75rem;
 	}
 	.mode {
 		color: var(--muted);

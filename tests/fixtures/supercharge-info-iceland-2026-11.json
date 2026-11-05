@@ -1,0 +1,648 @@
+[
+	{
+		"id": 9381,
+		"locationId": "32638",
+		"name": "Kristiansund, Norway",
+		"status": "OPEN",
+		"address": {
+			"street": "Wilhelm Dalls vei 50",
+			"city": "Kristiansund",
+			"state": "Møre og Romsdal",
+			"zip": "6511",
+			"countryId": 105,
+			"country": "Norway",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.121087,
+			"longitude": 7.74136
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 10623,
+		"name": "Bergen, Norway - Hop",
+		"status": "PERMIT",
+		"address": {
+			"street": "Wernersholmvegen 80",
+			"city": "Paradis",
+			"state": "Vestland",
+			"zip": "5232",
+			"countryId": 105,
+			"country": "Norway",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 60.326549,
+			"longitude": 5.340427
+		},
+		"stallCount": 12,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 10324,
+		"locationId": "413965",
+		"name": "Ísafjörður, Iceland",
+		"status": "PLAN",
+		"address": {
+			"street": "Hafnarstræti 21",
+			"city": "Ísafjörður",
+			"state": "Westfjords",
+			"zip": "400",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 66.074592,
+			"longitude": -23.124147
+		},
+		"stallCount": 0,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 10325,
+		"locationId": "407731",
+		"name": "Mývatn, Iceland",
+		"status": "CONSTRUCTION",
+		"address": {
+			"street": "Jarðbaðshólar",
+			"city": "Mývatn",
+			"state": "Northeastern Region",
+			"zip": "660",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.631502,
+			"longitude": -16.847639
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 0,
+		"otherEVs": true
+	},
+	{
+		"id": 10326,
+		"locationId": "34098",
+		"name": "Borgarnes, Iceland",
+		"status": "CONSTRUCTION",
+		"address": {
+			"street": "Brúartorg 1",
+			"city": "Borgarnes",
+			"state": "Western Region",
+			"zip": "310",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.54378,
+			"longitude": -21.909513
+		},
+		"stallCount": 6,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 10699,
+		"locationId": "480352",
+		"name": "Vestmannaeyjabær, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Tangagata 6",
+			"city": "Vestmannaeyjar",
+			"state": "Southern Region",
+			"zip": "900",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.442765,
+			"longitude": -20.27188
+		},
+		"stallCount": 6,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 2316,
+		"locationId": "egilsstadirsupercharger",
+		"name": "Egilsstaðir, Iceland",
+		"status": "CLOSED_PERM",
+		"address": {
+			"street": "Kaupvangur 9",
+			"city": "Egilsstaðir",
+			"state": "Eastern Region",
+			"zip": "700‎",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.259357,
+			"longitude": -14.406456
+		},
+		"stallCount": 2,
+		"counted": true,
+		"powerKilowatt": 130,
+		"otherEVs": true
+	},
+	{
+		"id": 8224,
+		"locationId": "Keflaviksupercharger",
+		"name": "Keflavik, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Flugvellir 25",
+			"city": "Keflavík",
+			"state": "Southern Peninsula",
+			"zip": "230",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.996999,
+			"longitude": -22.584071
+		},
+		"stallCount": 20,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 12192,
+		"locationId": "462756",
+		"name": "Stykkishólmur, Iceland",
+		"status": "CONSTRUCTION",
+		"address": {
+			"street": "Borgarbraut 1",
+			"city": "Stykkishólmur",
+			"state": "Western Region",
+			"zip": "340",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.073731,
+			"longitude": -22.729934
+		},
+		"stallCount": 4,
+		"counted": true,
+		"powerKilowatt": 0,
+		"otherEVs": true
+	},
+	{
+		"id": 11662,
+		"locationId": "438156",
+		"name": "Akureyri, Iceland - Leiruvegur",
+		"status": "OPEN",
+		"address": {
+			"street": "Leiruvegur 0",
+			"city": "Akureyri",
+			"state": "Northeastern Region",
+			"zip": "600",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.669628,
+			"longitude": -18.080414
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 11475,
+		"locationId": "462564",
+		"name": "Borgarnes, Iceland - Snaefellsnes",
+		"status": "CONSTRUCTION",
+		"address": {
+			"street": "Vegamót 54",
+			"city": "Borgarnes",
+			"state": "Western Region",
+			"zip": "311",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.849579,
+			"longitude": -22.732496
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 9045,
+		"locationId": "407732",
+		"name": "Blönduós, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Norðurlandsvegi 3",
+			"city": "Blönduós",
+			"state": "Northwestern Region",
+			"zip": "540",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.660535,
+			"longitude": -20.274964
+		},
+		"stallCount": 12,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 11758,
+		"locationId": "437705",
+		"name": "Kirkjubæjarklaustur, Iceland - Hringvegur",
+		"status": "CONSTRUCTION",
+		"address": {
+			"street": "Hringvegur",
+			"city": "Kirkjubæjarklaustur",
+			"state": "Southern Region",
+			"zip": "880",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.793798,
+			"longitude": -18.040157
+		},
+		"stallCount": 4,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 2425,
+		"locationId": "fossvogursupercharger",
+		"name": "Fossvogur, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Kringlumýrarbraut 100",
+			"city": "Reykjavik",
+			"state": "Capital Region",
+			"zip": "108",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.117613,
+			"longitude": -21.899654
+		},
+		"stallCount": 6,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 11837,
+		"locationId": "493502",
+		"name": "Mosfellsbær, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Háholt 11",
+			"city": "Mosfellsbær",
+			"state": "Capital Region",
+			"zip": "270",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.166207,
+			"longitude": -21.695577
+		},
+		"stallCount": 4,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 9265,
+		"locationId": "29895",
+		"name": "Egilsstaðir, Iceland - Kaupvangur",
+		"status": "OPEN",
+		"address": {
+			"street": "Kaupvangur 4",
+			"city": "Egilsstaðir",
+			"state": "Eastern Region",
+			"zip": "700",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.260834,
+			"longitude": -14.406891
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 9201,
+		"locationId": "34100",
+		"name": "Hólmavik, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Höfðatún 2",
+			"city": "Hólmavík",
+			"state": "Westfjords",
+			"zip": "510",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.701098,
+			"longitude": -21.686054
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 10036,
+		"locationId": "424979",
+		"name": "Hveragerði, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Breiðamörk 1",
+			"city": "Hveragerði",
+			"state": "Southern Region",
+			"zip": "810",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.995797,
+			"longitude": -21.193149
+		},
+		"stallCount": 12,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 8353,
+		"locationId": "439503",
+		"name": "Laugarvatn, Iceland - Efstidalur II",
+		"status": "OPEN",
+		"address": {
+			"street": "Efstidalur II",
+			"city": "Bláskógabyggð",
+			"state": "Southern Region",
+			"zip": "801",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.242485,
+			"longitude": -20.550582
+		},
+		"stallCount": 12,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 2218,
+		"name": "Grafarholt, Iceland",
+		"status": "CLOSED_PERM",
+		"address": {
+			"street": "Krókháls 13",
+			"city": "Reykjavík",
+			"state": "Capital Region",
+			"zip": "110",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.124411,
+			"longitude": -21.776826
+		},
+		"stallCount": 2,
+		"counted": true,
+		"powerKilowatt": 120,
+		"otherEVs": false
+	},
+	{
+		"id": 2558,
+		"locationId": "Kirkjubaejarklausturissupercharger",
+		"name": "Kirkjubæjarklaustur, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Klausturvegur 6",
+			"city": "Kirkjubæjarklaustur",
+			"state": "Southern Region",
+			"zip": "880",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.788994,
+			"longitude": -18.052136
+		},
+		"stallCount": 4,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 4003,
+		"locationId": "26511",
+		"name": "Hvolsvöllur, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Austurvegur 10",
+			"city": "Hvolsvöllur",
+			"state": "Southern Region",
+			"zip": "860",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 63.752315,
+			"longitude": -20.235795
+		},
+		"stallCount": 8,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 3492,
+		"locationId": "Vatnagardarissupercharger",
+		"name": "Vatnagarðar, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Vatnagarðar 24",
+			"city": "Reykjavik",
+			"state": "Capital Region",
+			"zip": "104",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.144969,
+			"longitude": -21.85468
+		},
+		"stallCount": 3,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 3560,
+		"locationId": "akureyrisupercharger",
+		"name": "Akureyri, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Austursíða 2",
+			"city": "Akureyri",
+			"state": "Northeastern Region",
+			"zip": "603",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.697431,
+			"longitude": -18.139386
+		},
+		"stallCount": 12,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 7266,
+		"locationId": "400115",
+		"name": "Álfabakki, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Álfabakki 6",
+			"city": "Reykjavík",
+			"state": "Capital Region",
+			"zip": "109",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.104385,
+			"longitude": -21.861342
+		},
+		"stallCount": 16,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 3763,
+		"locationId": "Hofnissupercharger",
+		"name": "Höfn, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Vikurbraut 1",
+			"city": "Höfn",
+			"state": "Southern Region",
+			"zip": "780",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 64.250138,
+			"longitude": -15.205464
+		},
+		"stallCount": 6,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	},
+	{
+		"id": 2372,
+		"locationId": "stadarskalisupercharger",
+		"name": "Staðarskáli, Iceland",
+		"status": "OPEN",
+		"address": {
+			"street": "Hrútafirði v/Norðurlandsveg",
+			"city": "Staður",
+			"state": "Northwestern Region",
+			"zip": "500",
+			"countryId": 155,
+			"country": "Iceland",
+			"regionId": 101,
+			"region": "Europe"
+		},
+		"gps": {
+			"latitude": 65.144794,
+			"longitude": -21.084857
+		},
+		"stallCount": 16,
+		"counted": true,
+		"powerKilowatt": 250,
+		"otherEVs": true
+	}
+]

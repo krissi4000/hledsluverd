@@ -22,6 +22,26 @@ describe('parseOpenEvData', () => {
 		});
 	});
 
+	it('keeps the body style and exterior size for the silhouette', () => {
+		const audi = result.cars.find((c) => c.slug === 'audi-a6-e-tron-2024-a6-e-tron')!;
+		expect(audi).toMatchObject({
+			bodyStyle: 'sedan',
+			lengthMm: 4960,
+			heightMm: 1440,
+			wheelbaseMm: 2960
+		});
+	});
+
+	it('leaves body style and size null when the record has none', () => {
+		const tesla = result.cars.find((c) => c.slug === 'tesla-model-3-2024-model-3-long-range')!;
+		expect(tesla).toMatchObject({
+			bodyStyle: null,
+			lengthMm: null,
+			heightMm: null,
+			wheelbaseMm: null
+		});
+	});
+
 	it('normalizes nacs to CCS2 for European-market builds (Tesla)', () => {
 		const tesla = result.cars.find((c) => c.slug === 'tesla-model-3-2024-model-3-long-range')!;
 		expect(tesla.dcConnector).toBe('CCS2');

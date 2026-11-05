@@ -139,7 +139,11 @@ test('car filter: pick a car, the list narrows to stations it fits, and the car 
 	const before = await rows.count();
 
 	await page.locator('[data-testid="car-search"]').fill('Leaf');
-	await page.locator('[data-testid="car-hits"] a').first().click();
+	// each result shows the car's plugs and its side view
+	const hit = page.locator('[data-testid="car-hits"] a').first();
+	await expect(hit.locator('[data-testid="car-hit-plugs"]')).toContainText('CHAdeMO');
+	await expect(hit.locator('.car-silhouette')).toBeVisible();
+	await hit.click();
 	await expect(page.locator('[data-testid="chosen-car"]')).toBeVisible();
 	await expect(page).toHaveURL(/[?&]bill=/);
 	const after = await rows.count();

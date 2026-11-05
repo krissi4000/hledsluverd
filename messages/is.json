@@ -19,6 +19,8 @@
 	"minute_fee": "+ {fee} kr/mín",
 	"minute_fee_after": "+ {fee} kr/mín eftir {min} mín",
 	"price_from": "frá {price}",
+	"tesla_price_only": "fyrir Tesla-bíla",
+	"tesla_price_only_title": "Verðið gildir fyrir Tesla-bíla. Aðrir bílar gætu greitt annað verð.",
 	"rate_card_title": "Verðskrá fyrirtækja",
 	"stations_title": "Allar hleðslustöðvar",
 	"nav_trends": "Verðþróun",

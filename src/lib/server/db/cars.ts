@@ -32,17 +32,30 @@ export async function carList(db: Db): Promise<CarRow[]> {
 	}));
 }
 
-/** What the car search needs: just enough to find and label a car. */
-export interface CarSearchRow {
-	slug: string;
-	make: string;
-	model: string;
-	variant: string | null;
+/** What the car search needs: enough to find and label a car, show its plugs and draw it. */
+export interface CarSearchRow extends CarRow {
+	bodyStyle: string | null;
+	lengthMm: number | null;
+	heightMm: number | null;
+	wheelbaseMm: number | null;
 }
 
 export async function carSearchList(db: Db): Promise<CarSearchRow[]> {
 	return db
-		.select({ slug: cars.slug, make: cars.make, model: cars.model, variant: cars.variant })
+		.select({
+			slug: cars.slug,
+			make: cars.make,
+			model: cars.model,
+			variant: cars.variant,
+			acConnector: cars.acConnector,
+			maxAcKw: cars.maxAcKw,
+			dcConnector: cars.dcConnector,
+			maxDcKw: cars.maxDcKw,
+			bodyStyle: cars.bodyStyle,
+			lengthMm: cars.lengthMm,
+			heightMm: cars.heightMm,
+			wheelbaseMm: cars.wheelbaseMm
+		})
 		.from(cars)
 		.orderBy(asc(cars.make), asc(cars.model), asc(cars.variant));
 }

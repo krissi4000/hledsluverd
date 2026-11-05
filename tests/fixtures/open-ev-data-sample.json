@@ -15,6 +15,13 @@
 				"dc": { "max_power_kw": 270, "architecture_voltage_class": "800v" }
 			},
 			"markets": ["US", "BR", "DE", "GB", "FR", "PT", "IT", "CN", "JP"],
+			"body": { "style": "sedan", "doors": 4, "seats": 5, "platform": "PPE" },
+			"dimensions": {
+				"length_mm": 4960,
+				"width_mm": 1960,
+				"height_mm": 1440,
+				"wheelbase_mm": 2960
+			},
 			"unique_code": "audi:a6_e_tron:2024:a6_e_tron"
 		},
 		{

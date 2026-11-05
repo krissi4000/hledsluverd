@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import { formatIsk } from '$lib/format';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
+	import { ownBrandPriceOnly } from '$lib/networks';
 	import type { RateCardEntry } from '$lib/server/db/queries';
 
 	let { cards }: { cards: RateCardEntry[] } = $props();
@@ -26,6 +27,10 @@
 								: formatIsk(card.dc)}</strong
 						>
 						<span class="unit">DC</span>
+						{#if ownBrandPriceOnly(card.networkSlug)}<small
+								class="brand-only"
+								title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
+							>{/if}
 					{:else}
 						<span class="none">—</span>
 					{/if}
@@ -98,6 +103,11 @@
 		color: var(--muted);
 		font-size: 0.8rem;
 		font-weight: 600;
+	}
+	.brand-only {
+		flex-basis: 100%;
+		color: var(--muted);
+		font-size: 0.75rem;
 	}
 	.none {
 		font-size: 1.5rem;

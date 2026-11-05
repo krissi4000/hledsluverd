@@ -40,3 +40,11 @@ export function networkInitials(name: string): string {
 	if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
 	return (words[0][0] + words[1][0]).toUpperCase();
 }
+
+/** Networks whose shown price is the member price for their own brand's cars
+ * (Tesla's app price). Other cars may pay more, so the UI labels it. */
+const OWN_BRAND_PRICED = new Set(['tesla']);
+
+export function ownBrandPriceOnly(slug: string): boolean {
+	return OWN_BRAND_PRICED.has(slug);
+}
