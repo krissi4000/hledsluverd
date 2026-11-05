@@ -72,5 +72,6 @@
 	"finder_up_to": "up to {kw} kW",
 	"finder_compatible": "{n} compatible stations",
 	"finder_js": "The car finder needs JavaScript — the station list on the homepage works without it.",
-	"lang_switch": "Íslenska"
+	"lang_switch": "Íslenska",
+	"close": "Close"
 }

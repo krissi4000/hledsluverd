@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
 	import StationMap from '$lib/components/StationMap.svelte';
+	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { ageParts, formatIsk } from '$lib/format';
 
 	let { data } = $props();
@@ -30,29 +31,54 @@
 		<StationMap stations={data.stations} bind:selectedId fallbackText={m.map_fallback()} />
 		{#if selected}
 			<aside class="card" data-testid="map-card">
-				<h3><a href="/stod/{selected.slug}">{selected.name}</a></h3>
-				<p class="net">{selected.networkName}</p>
-				<p class="price">
-					{#if selected.price !== null}
-						<strong>{formatIsk(selected.price)}</strong> {selected.mode}
-					{:else}
-						<em>{m.price_unknown()}</em>
-					{/if}
-				</p>
-				<p>
-					{#each selected.connectors as c}
+				<div class="card-head">
+					<NetworkLogo slug={selected.networkSlug} name={selected.networkName} size={40} />
+					<div class="card-title">
+						<h3><a href="/stod/{selected.slug}">{selected.name}</a></h3>
+						<p class="net">{selected.networkName}</p>
+					</div>
+					<button
+						type="button"
+						class="close"
+						aria-label={m.close()}
+						onclick={() => (selectedId = null)}
+					>
+						<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+							><path
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								d="M6 6l12 12M18 6 6 18"
+							/></svg
+						>
+					</button>
+				</div>
+				<div class="stats">
+					<div>
+						<span class="label">{m.th_price()}</span>
+						{#if selected.price !== null}
+							<strong class="num">{formatIsk(selected.price)}</strong>
+							<span class="mode">{selected.mode}</span>
+						{:else}
+							<em class="muted">{m.price_unknown()}</em>
+						{/if}
+					</div>
+					<div data-testid="card-availability">
+						<span class="label">{m.th_free()}</span>
+						{#if selected.freeCount !== null && selected.totalCount !== null}
+							<strong class="num">{selected.freeCount}/{selected.totalCount}</strong>
+							{#if selected.availabilityFetchedAt}<small class="muted"
+									>{age(selected.availabilityFetchedAt)}</small
+								>{/if}
+						{:else}—{/if}
+					</div>
+				</div>
+				<p class="chips">
+					{#each selected.connectors as c, ci (ci)}
 						<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
 					{/each}
 				</p>
-				<p data-testid="card-availability">
-					{m.th_free()}:
-					{#if selected.freeCount !== null && selected.totalCount !== null}
-						{selected.freeCount}/{selected.totalCount}
-						{#if selected.availabilityFetchedAt}<small>{age(selected.availabilityFetchedAt)}</small
-							>{/if}
-					{:else}—{/if}
-				</p>
-				<a class="more" href="/stod/{selected.slug}">{m.map_details()} →</a>
+				<a class="btn btn-primary more" href="/stod/{selected.slug}">{m.map_details()} →</a>
 			</aside>
 		{/if}
 	</div>
@@ -61,55 +87,114 @@
 <style>
 	/* break out of main's centered column so the map runs edge to edge */
 	.wrap {
-		margin: -1rem calc(50% - 50vw) 0;
+		margin: -1.25rem calc(50% - 50vw) -3rem;
 	}
 	.maparea {
 		position: relative;
-		height: calc(100vh - 7rem);
+		height: calc(100dvh - var(--header-h));
 		min-height: 24rem;
 	}
 	.card {
 		position: absolute;
-		left: 0.75rem;
-		bottom: 0.75rem;
+		left: 1rem;
+		bottom: 1.5rem;
 		z-index: 10;
-		background: #fff;
-		border: 1px solid var(--border, #ccc);
-		border-radius: 0.5rem;
-		box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
-		padding: 0.75rem 1rem;
-		max-width: 20rem;
+		width: min(22rem, calc(100% - 2rem));
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+		padding: 1rem;
+	}
+	.card-head {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+	}
+	.card-title {
+		flex: 1;
+		min-width: 0;
 	}
 	.card h3 {
-		margin: 0 0 0.25rem;
+		margin: 0;
+		font-size: 1.05rem;
+		line-height: 1.25;
 	}
-	.card p {
-		margin: 0.25rem 0;
+	.card h3 a {
+		color: var(--text);
+		text-decoration: none;
+	}
+	.card h3 a:hover {
+		text-decoration: underline;
 	}
 	.net {
-		opacity: 0.7;
-		font-size: 0.9rem;
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.85rem;
 	}
-	.chip {
-		display: inline-block;
-		border: 1px solid var(--border, #ccc);
-		border-radius: 1rem;
-		padding: 0 0.5rem;
-		margin: 0 0.2rem 0.2rem 0;
+	.close {
+		align-self: flex-start;
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		margin: -0.25rem -0.25rem 0 0;
+		border: none;
+		border-radius: 50%;
+		background: none;
+		color: var(--muted);
+		cursor: pointer;
+	}
+	.close:hover {
+		background: var(--surface-2);
+		color: var(--text);
+	}
+	.stats {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		margin: 0.85rem 0 0.6rem;
+		padding: 0.7rem 0.85rem;
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
+	}
+	.stats strong {
+		font-size: 1.2rem;
+		font-weight: 750;
+	}
+	.label {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.mode {
+		color: var(--muted);
 		font-size: 0.8rem;
-		white-space: nowrap;
+		font-weight: 600;
+	}
+	.stats small {
+		display: block;
+		font-size: 0.72rem;
+	}
+	.chips {
+		margin: 0 0 0.75rem;
 	}
 	.more {
-		font-weight: 600;
+		width: 100%;
 	}
 	.js-note {
 		padding: 1rem;
 	}
-	.visually-hidden {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
+
+	@media (max-width: 640px) {
+		.card {
+			left: 0.5rem;
+			right: 0.5rem;
+			bottom: 0.5rem;
+			width: auto;
+		}
 	}
 </style>

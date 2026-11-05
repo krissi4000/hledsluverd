@@ -18,7 +18,7 @@
 
 <section aria-label={m.admin_scrapers()}>
 	<h3>{m.admin_scrapers()}</h3>
-	<table data-testid="admin-health">
+	<table class="surface" data-testid="admin-health">
 		<tbody>
 			{#each data.health as h (h.networkSlug)}
 				<tr>
@@ -44,7 +44,7 @@
 
 <section aria-label={m.admin_prices()}>
 	<h3>{m.admin_prices()}</h3>
-	<table data-testid="admin-prices">
+	<table class="surface" data-testid="admin-prices">
 		<tbody>
 			{#each data.prices as p (p.id)}
 				<tr>
@@ -60,7 +60,7 @@
 					<td>
 						<form method="POST" action="?/verify">
 							<input type="hidden" name="priceId" value={p.id} />
-							<button>{m.admin_verify()}</button>
+							<button class="btn btn-sm">{m.admin_verify()}</button>
 						</form>
 					</td>
 				</tr>
@@ -69,7 +69,7 @@
 	</table>
 
 	<h3>{m.admin_add_price()}</h3>
-	<form method="POST" action="?/price" class="grid" data-testid="admin-price-form">
+	<form method="POST" action="?/price" class="grid surface" data-testid="admin-price-form">
 		<label
 			>{m.th_network()}
 			<select name="networkId" required>
@@ -93,13 +93,13 @@
 		<label>{m.admin_price_kwh()} <input name="price" required inputmode="decimal" /></label>
 		<label>{m.admin_minute_fee()} <input name="minuteFee" inputmode="decimal" /></label>
 		<label>{m.admin_fee_after()} <input name="minuteFeeAfterMin" inputmode="numeric" /></label>
-		<button>{m.admin_save()}</button>
+		<button class="btn btn-primary">{m.admin_save()}</button>
 	</form>
 </section>
 
 <section aria-label={m.admin_stations()}>
 	<h3>{m.admin_stations()}</h3>
-	<table data-testid="admin-stations">
+	<table class="surface" data-testid="admin-stations">
 		<tbody>
 			{#each data.stations as s (s.id)}
 				<tr class:inactive={!s.isActive}>
@@ -109,7 +109,9 @@
 						<form method="POST" action="?/stationActive">
 							<input type="hidden" name="stationId" value={s.id} />
 							<input type="hidden" name="isActive" value={String(!s.isActive)} />
-							<button>{s.isActive ? m.admin_deactivate() : m.admin_activate()}</button>
+							<button class="btn btn-sm"
+								>{s.isActive ? m.admin_deactivate() : m.admin_activate()}</button
+							>
 						</form>
 					</td>
 				</tr>
@@ -121,20 +123,30 @@
 <style>
 	table {
 		width: 100%;
-		border-collapse: collapse;
+		border-collapse: separate;
+		border-spacing: 0;
+		overflow: hidden;
 		margin-bottom: 1.5rem;
+		font-size: 0.9rem;
 	}
 	td {
-		padding: 0.35rem 0.5rem;
-		border-bottom: 1px solid var(--border, #e2e2e2);
-		vertical-align: top;
+		padding: 0.5rem 0.75rem;
+		border-top: 1px solid var(--border);
+		vertical-align: middle;
+	}
+	tr:first-child td {
+		border-top: none;
+	}
+	form {
+		margin: 0;
 	}
 	.bad {
-		color: #c62828;
+		color: var(--danger);
 		font-weight: 600;
 	}
 	.stale {
-		color: #b26a00;
+		color: var(--stale);
+		font-weight: 600;
 	}
 	.msg {
 		font-size: 0.8rem;
@@ -145,6 +157,7 @@
 		opacity: 0.45;
 	}
 	.grid {
+		padding: 1rem;
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 		gap: 0.75rem;
@@ -157,10 +170,18 @@
 		gap: 0.25rem;
 		font-size: 0.9rem;
 	}
+	.ok,
+	.err {
+		padding: 0.6rem 0.9rem;
+		border-radius: var(--radius-sm);
+		font-weight: 600;
+	}
 	.ok {
-		color: var(--accent, #2e7d32);
+		background: var(--accent-soft);
+		color: var(--accent-text);
 	}
 	.err {
-		color: #c62828;
+		background: #fdecec;
+		color: var(--danger);
 	}
 </style>
