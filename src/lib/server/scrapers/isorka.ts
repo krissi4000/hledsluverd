@@ -71,6 +71,75 @@ export function parseVirtaStation(st: VirtaStation): {
 	return { readings, warnings };
 }
 
+/** An entry of the Virta map list endpoint (`/stations?latMin=…`). */
+export interface VirtaListStation {
+	id: number;
+	latitude: number;
+	longitude: number;
+	name: string;
+	provider: string;
+	isRemoved?: boolean;
+}
+
+/** All verified prod matches (2026-11) sit within 7 m; 30 m leaves room for OCM pin drift. */
+export const VIRTA_NEAR_M = 30;
+/** Further out, a match also needs a shared distinctive name word (OCM pins can be 200+ m off). */
+export const VIRTA_NAMED_M = 400;
+// decommissioned posts stay listed, zero-priced: "Olís Álfheimar - Gamla stöð tekinn niður"
+const DECOMMISSIONED = /tekin\w*\s+niður/i;
+// brand words every Ísorka station shares — they say nothing about *which* station
+const GENERIC_WORDS = new Set(['ísorka', 'isorka', 'olís', 'olis', 'hleðsla', 'hleðslustöð']);
+
+function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+	const toRad = (d: number) => (d * Math.PI) / 180;
+	const a =
+		Math.sin(toRad(lat2 - lat1) / 2) ** 2 +
+		Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(toRad(lon2 - lon1) / 2) ** 2;
+	return 2 * 6371000 * Math.asin(Math.sqrt(a));
+}
+
+const nameWords = (s: string) =>
+	new Set(
+		s
+			.toLowerCase()
+			.normalize('NFC')
+			.split(/[^\p{L}\p{N}]+/u)
+			.filter((w) => w.length >= 4 && !GENERIC_WORDS.has(w))
+	);
+
+export type VirtaMatch =
+	| { kind: 'match'; station: VirtaListStation; distanceM: number; via: 'distance' | 'name' }
+	| { kind: 'unmatched'; nearby: { station: VirtaListStation; distanceM: number }[] };
+
+/**
+ * Pairs one of our (OCM-seeded) Ísorka stations with a Virta station. Only
+ * Ísorka's own (provider "Virta") live posts count: roaming partners return
+ * zeroed pricing and decommissioned posts linger in the list at 0 kr.
+ * Nearest post within VIRTA_NEAR_M wins outright; otherwise the nearest one
+ * within VIRTA_NAMED_M that shares a distinctive name word. Anything else is
+ * left for a human, with what is nearby.
+ */
+export function matchVirtaStation(
+	ours: { name: string; lat: number; lng: number },
+	list: VirtaListStation[]
+): VirtaMatch {
+	const near = list
+		.filter((v) => v.provider === 'Virta' && !v.isRemoved && !DECOMMISSIONED.test(v.name))
+		.map((v) => ({
+			station: v,
+			distanceM: haversineM(ours.lat, ours.lng, v.latitude, v.longitude)
+		}))
+		.filter((c) => c.distanceM <= VIRTA_NAMED_M)
+		.sort((a, b) => a.distanceM - b.distanceM);
+	if (near[0] && near[0].distanceM <= VIRTA_NEAR_M) {
+		return { kind: 'match', ...near[0], via: 'distance' };
+	}
+	const ourWords = nameWords(ours.name);
+	const named = near.find((c) => [...nameWords(c.station.name)].some((w) => ourWords.has(w)));
+	if (named) return { kind: 'match', ...named, via: 'name' };
+	return { kind: 'unmatched', nearby: near.slice(0, 3) };
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const isorkaScraper: Scraper = {
