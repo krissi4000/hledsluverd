@@ -47,6 +47,9 @@ export const stations = pgTable(
 			.notNull()
 			.default({}),
 		isActive: boolean('is_active').notNull().default(true),
+		// The site's owner (hotel, shop, landlord) sets this station's price, not the network.
+		// Its prices show on the station but stay out of the network's rate card and trend.
+		hostPriced: boolean('host_priced').notNull().default(false),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true })
 			.notNull()

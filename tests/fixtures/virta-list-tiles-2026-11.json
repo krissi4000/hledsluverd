@@ -1,0 +1,628 @@
+[
+	[
+		{
+			"id": 163966,
+			"latitude": 64.13221719,
+			"longitude": -21.8667619,
+			"icon": 0,
+			"name": "Ísorka - Olís Álfheimar",
+			"city": "Reykjavík",
+			"country": "IS",
+			"address": "Álfheimar 49",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 163966,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 135
+						}
+					]
+				},
+				{
+					"id": 163967,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 135
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 225652,
+			"latitude": 64.10037241,
+			"longitude": -21.88407264,
+			"icon": 0,
+			"name": "Heimar - Smáralind - Hraðhleðsla",
+			"city": "Kópavogur",
+			"country": "IS",
+			"address": "Hagasmári 1",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 225652,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CHAdeMO",
+							"maxKw": 50
+						},
+						{
+							"type": "CCS",
+							"maxKw": 200
+						}
+					]
+				},
+				{
+					"id": 225653,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 225654,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 225655,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302212,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302213,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302214,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302215,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 45432,
+			"latitude": 64.1011,
+			"longitude": -21.87993501,
+			"icon": 0,
+			"name": "Heimar - Smáralind",
+			"city": "Kópavogur",
+			"country": "IS",
+			"address": "Hagasmára 1",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 45939,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 108013,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 108014,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118136,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118137,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118138,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118139,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118152,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118153,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118154,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118155,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118156,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118157,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 168344,
+			"latitude": 64.08926,
+			"longitude": -21.81406,
+			"icon": 0,
+			"name": "Akurhvarf 5 (18)",
+			"city": "Kópavogur",
+			"country": "IS",
+			"address": "Akurhvarf",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 168344,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 301029642,
+			"latitude": 64.163925,
+			"longitude": -21.69038,
+			"icon": 0,
+			"name": "Atlantsolía Mosfellsbær",
+			"city": "Mosfellsbær",
+			"country": null,
+			"address": "5875+HR9 --",
+			"provider": "Hubject",
+			"evses": [
+				{
+					"id": 301029642,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 260
+						}
+					]
+				},
+				{
+					"id": 301029643,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 260
+						}
+					]
+				},
+				{
+					"id": 301029644,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 260
+						}
+					]
+				},
+				{
+					"id": 301029645,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 260
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 11103,
+			"latitude": 64.13222,
+			"longitude": -21.866584,
+			"icon": 0,
+			"name": "Olís Álfheimar - Gamla stöð tekinn niður",
+			"city": "Reykjavík",
+			"country": "IS",
+			"address": "Álfheimar",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 11103,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 37.5
+						},
+						{
+							"type": "CHAdeMO",
+							"maxKw": 37.5
+						}
+					]
+				},
+				{
+					"id": 11104,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		}
+	],
+	[
+		{
+			"id": 257803,
+			"latitude": 65.64153093,
+			"longitude": -16.91089849,
+			"icon": 0,
+			"name": "Krambúðin  - Mývatni",
+			"city": "Mývatni",
+			"country": "IS",
+			"address": "Reykjahlíð",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 257803,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 150
+						}
+					]
+				},
+				{
+					"id": 257804,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CHAdeMO",
+							"maxKw": 50
+						}
+					]
+				},
+				{
+					"id": 257805,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 150
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 118164,
+			"latitude": 64.0966,
+			"longitude": -21.89141,
+			"icon": 0,
+			"name": "Heimar - Hlíðasmári 6",
+			"city": "N/A",
+			"country": "IS",
+			"address": "Unknown",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 118164,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118165,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118178,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				},
+				{
+					"id": 118179,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 168182,
+			"latitude": 63.939793,
+			"longitude": -21.396257,
+			"icon": 0,
+			"name": "Raufahóll - Lava Tunnel - 7005161210",
+			"city": "",
+			"country": "IS",
+			"address": "Raufarhóll",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 168182,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "Mennekes",
+							"maxKw": 22
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		},
+		{
+			"id": 225652,
+			"latitude": 64.10037241,
+			"longitude": -21.88407264,
+			"icon": 0,
+			"name": "Heimar - Smáralind - Hraðhleðsla",
+			"city": "Kópavogur",
+			"country": "IS",
+			"address": "Hagasmári 1",
+			"provider": "Virta",
+			"evses": [
+				{
+					"id": 225652,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CHAdeMO",
+							"maxKw": 50
+						},
+						{
+							"type": "CCS",
+							"maxKw": 200
+						}
+					]
+				},
+				{
+					"id": 225653,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 225654,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 225655,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302212,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302213,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302214,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				},
+				{
+					"id": 302215,
+					"groupName": "",
+					"connectors": [
+						{
+							"type": "CCS",
+							"maxKw": 240
+						}
+					]
+				}
+			],
+			"isRemoved": false,
+			"isPrivate": false
+		}
+	]
+]

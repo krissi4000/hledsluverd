@@ -161,6 +161,7 @@ npm run seed:ocm        # needs OCM_API_KEY; prints unmatched operators — revi
 npm run seed:prices
 npm run seed:cars
 npm run match:virta
+npm run sync:virta      # add the Virta sites classified in seeds/virta-sites.json
 npm run match:n1        # REVIEW the printed matches before trusting them
 npm run match:tomtom    # needs TOMTOM_API_KEY; prints ~24 AMBIGUOUS stations
 ```

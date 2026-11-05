@@ -1,0 +1,704 @@
+{
+	"sites": [
+		{ "id": 168643, "name": "Amtmannsstígur - Hverfahleðsla", "status": "own" },
+		{ "id": 198102, "name": "Álagrandi - Hverfahleðsla", "status": "own" },
+		{ "id": 219849, "name": "Ásvallalaug DC - Hverfahleðsla", "status": "own" },
+		{ "id": 168383, "name": "Bergstaðastræti - Hverfahleðsla", "status": "own" },
+		{ "id": 168379, "name": "Birkimelur - Hverfahleðsla", "status": "own" },
+		{ "id": 168385, "name": "Bogahlíð - Hverfahleðsla", "status": "own" },
+		{ "id": 231055, "name": "Bragagata - Hverfahleðsla", "status": "own" },
+		{ "id": 168442, "name": "Brávallagata - Hverfahleðsla", "status": "own" },
+		{ "id": 168606, "name": "Dalskóli - Hverfahleðsla", "status": "own" },
+		{ "id": 168548, "name": "Einholt - Hverfahleðsla", "status": "own" },
+		{ "id": 168654, "name": "Fálkagata - Hverfahleðsla", "status": "own" },
+		{ "id": 168526, "name": "Ferjuvogur/Snekkjuvogur - Hverfahleðsla", "status": "own" },
+		{ "id": 168399, "name": "Framnesvegur - Hverfahleðsla", "status": "own" },
+		{ "id": 168663, "name": "Grettisgata - Hverfishleðsla", "status": "own" },
+		{ "id": 168551, "name": "Hallgrímskirkja - Hverfahleðsla", "status": "own" },
+		{ "id": 168435, "name": "Háaleitisbraut - Hverfahleðsla", "status": "own" },
+		{ "id": 168378, "name": "Hverfahleðsla - Fylksvegur", "status": "own" },
+		{ "id": 168390, "name": "Hverfahleðsla - Ægisíða", "status": "own" },
+		{ "id": 229167, "name": "Hverfahleðsla Hafnarfjörður - Álfaskeið", "status": "own" },
+		{ "id": 229208, "name": "Hverfahleðsla Hafnarfjörður - Áshamar", "status": "own" },
+		{ "id": 229295, "name": "Hverfahleðsla Hafnarfjörður - Bjarkarhús", "status": "own" },
+		{ "id": 229176, "name": "Hverfahleðsla Hafnarfjörður - Engidalsskóli", "status": "own" },
+		{ "id": 229336, "name": "Hverfahleðsla Hafnarfjörður - Engjavellir", "status": "own" },
+		{ "id": 228461, "name": "Hverfahleðsla Hafnarfjörður - Hlíðarberg", "status": "own" },
+		{ "id": 228525, "name": "Hverfahleðsla Hafnarfjörður - Hlíðarendi", "status": "own" },
+		{ "id": 228518, "name": "Hverfahleðsla Hafnarfjörður - Hvaleyraskóli", "status": "own" },
+		{ "id": 229166, "name": "Hverfahleðsla Hafnarfjörður - Lækjarskóli", "status": "own" },
+		{ "id": 229160, "name": "Hverfahleðsla Hafnarfjörður - Skarðshlíðarskóli", "status": "own" },
+		{ "id": 229150, "name": "Hverfahleðsla Hafnarfjörður - Suðurbæjarlaug", "status": "own" },
+		{ "id": 229306, "name": "Hverfahleðsla Hafnarfjörður - Sundhöll", "status": "own" },
+		{ "id": 229168, "name": "Hverfahleðsla Hafnarfjörður - Vesturkot", "status": "own" },
+		{ "id": 229179, "name": "Hverfahleðsla Hafnarfjörður - Öldutúnsskóli", "status": "own" },
+		{ "id": 198113, "name": "Hæðargarður - Hverfahleðsla", "status": "own" },
+		{ "id": 168374, "name": "Höfði - Hverfahleðsla", "status": "own" },
+		{ "id": 54976, "name": "Höfði (DC) - Hverfahleðsla", "status": "own" },
+		{ "id": 152802, "name": "Ísorka - Bláskógarbyggð", "status": "own" },
+		{ "id": 213142, "name": "Ísorka - Blönduósi", "status": "own" },
+		{ "id": 275973, "name": "Ísorka - Byko Selfoss", "status": "own" },
+		{ "id": 54975, "name": "Ísorka - Fjörður", "status": "own" },
+		{ "id": 168419, "name": "Ísorka - Íþróttamiðstöð Fjallabyggð Ólafsfirði", "status": "own" },
+		{ "id": 197285, "name": "Ísorka - Olís Akranes", "status": "own" },
+		{ "id": 163966, "name": "Ísorka - Olís Álfheimar", "status": "own" },
+		{ "id": 165718, "name": "Ísorka - Olís Ánanaustum", "status": "own" },
+		{ "id": 233908, "name": "Ísorka - Olís Borgarnesi", "status": "own" },
+		{ "id": 244156, "name": "Ísorka - Olís Dalvík", "status": "own" },
+		{ "id": 225285, "name": "Ísorka - Olís Fitjar", "status": "own" },
+		{ "id": 235122, "name": "Ísorka - Olís Gullinbrú", "status": "own" },
+		{ "id": 165728, "name": "Ísorka - Olís Hella", "status": "own" },
+		{ "id": 222714, "name": "Ísorka - Olís Húsavík", "status": "own" },
+		{ "id": 165752, "name": "Ísorka - Olís Höfn", "status": "own" },
+		{ "id": 181839, "name": "Ísorka - Olís Kirkjubæjarklaustur", "status": "own" },
+		{ "id": 181340, "name": "Ísorka - Olís Neskaupstað", "status": "own" },
+		{ "id": 251423, "name": "Ísorka - Olís Norðlingaholt", "status": "own" },
+		{ "id": 165785, "name": "Ísorka - Olís Reyðarfjörður", "status": "own" },
+		{ "id": 157790, "name": "Ísorka - Olís Selfoss", "status": "own" },
+		{ "id": 165780, "name": "Ísorka - Olís Siglufjörður", "status": "own" },
+		{ "id": 262888, "name": "Ísorka - Olís Varmahlíð", "status": "own" },
+		{ "id": 239345, "name": "Ísorka - Olís Vík í Mýrdal", "status": "own" },
+		{ "id": 260457, "name": "Ísorka - Ráðhús Árborg", "status": "own" },
+		{ "id": 219812, "name": "Ísorka - Skagaströnd", "status": "own" },
+		{ "id": 7619, "name": "Ísorka Eyrarbakka", "status": "own" },
+		{ "id": 4598, "name": "Ísorka Fmos", "status": "own" },
+		{ "id": 45905, "name": "Ísorka Reykholti", "status": "own" },
+		{ "id": 77506, "name": "Ísorka Stykkishólmur", "status": "own" },
+		{ "id": 4892, "name": "Ísorka Sundhöll Selfossi", "status": "own" },
+		{ "id": 7665, "name": "Ísorka Sundlaugin Stokkseyri", "status": "own" },
+		{ "id": 198159, "name": "Kirkjuteigur - Hverfahleðsla", "status": "own" },
+		{ "id": 168656, "name": "Kirkjutorg - Hverfahleðsla", "status": "own" },
+		{ "id": 168468, "name": "Langholtsvegur - Hverfahleðsla", "status": "own" },
+		{ "id": 212539, "name": "Miðtún 40 - Hverfahleðsla", "status": "own" },
+		{ "id": 198223, "name": "Njálsgata - Hverfahleðsla", "status": "own" },
+		{ "id": 54978, "name": "Rauðarárstígur (DC) - Hverfahleðsla", "status": "own" },
+		{ "id": 168530, "name": "Rauðárstígur - Hverfahleðsla", "status": "own" },
+		{ "id": 168582, "name": "Safamýri - Hverfahleðsla", "status": "own" },
+		{ "id": 168389, "name": "Seljavegur - Hverfahleðsla", "status": "own" },
+		{ "id": 291931, "name": "Suðurbæjarlaug DC - Hverfahleðsla", "status": "own" },
+		{ "id": 198163, "name": "Vesturbrún - Hverfahleðsla", "status": "own" },
+		{ "id": 168464, "name": "Víðimelur - Hverfahleðsla", "status": "own" },
+		{ "id": 21379, "name": "66 North", "status": "host" },
+		{ "id": 228230, "name": "Austurey Gisting", "status": "host" },
+		{ "id": 5106, "name": "Áfram Selfoss", "status": "host" },
+		{ "id": 54895, "name": "Áfram Víkingur", "status": "host" },
+		{ "id": 168380, "name": "Bjargsteinn - Mathús", "status": "host" },
+		{ "id": 30466, "name": "Borgarholtsskóli", "status": "host" },
+		{ "id": 168485, "name": "Brú Guesthouse", "status": "host" },
+		{ "id": 63205, "name": "Byko Selhella", "status": "host" },
+		{ "id": 32300, "name": "Efstidalur", "status": "host" },
+		{ "id": 63209, "name": "Eik - Glerártorg", "status": "host" },
+		{ "id": 16459, "name": "Eik - Glæsibæ", "status": "host" },
+		{ "id": 30455, "name": "Eik - Smáratorg 1", "status": "host" },
+		{ "id": 38465, "name": "EIK - Smáraturn", "status": "host" },
+		{ "id": 30396, "name": "EIK - Sóltún 26", "status": "host" },
+		{ "id": 16119, "name": "EIK - Suðurlandsbraut", "status": "host" },
+		{ "id": 231053, "name": "Einivellir 7 - Opin", "status": "host" },
+		{ "id": 63253, "name": "Eyvindartunga", "status": "host" },
+		{ "id": 45462, "name": "Fjölbrautarskóli Vesturlands", "status": "host" },
+		{ "id": 107963, "name": "Fjölbrautarskólinn í Breiðholti - Aðalbygging", "status": "host" },
+		{ "id": 45516, "name": "Fjölbrautaskóli Snæfellinga", "status": "host" },
+		{ "id": 38476, "name": "Fjölbrautaskóli Suðurlands", "status": "host" },
+		{ "id": 228738, "name": "Flúðir", "status": "host" },
+		{ "id": 79490, "name": "Framhaldsskólinn í Vestmannaeyjar", "status": "host" },
+		{ "id": 212597, "name": "Garðyrkjuskólinn Reykjum", "status": "host" },
+		{ "id": 281811, "name": "Gistiheimilið Hóll", "status": "host" },
+		{ "id": 30467, "name": "Háskólinn á Bifröst", "status": "host" },
+		{ "id": 166361, "name": "Heimar - Ármúli 6", "status": "host" },
+		{ "id": 166415, "name": "Heimar - Áslandsskóli", "status": "host" },
+		{ "id": 63215, "name": "Heimar - Hlíðasmári 1", "status": "host" },
+		{ "id": 118164, "name": "Heimar - Hlíðasmári 6", "status": "host" },
+		{ "id": 31130, "name": "Heimar - Höfðatorg", "status": "host" },
+		{ "id": 118086, "name": "Heimar - Lágmúli 6", "status": "host" },
+		{ "id": 268754, "name": "Heimar - Litlatún", "status": "host" },
+		{ "id": 118150, "name": "Heimar - Lóuhólar", "status": "host" },
+		{ "id": 118092, "name": "Heimar - Miðhraun 4", "status": "host" },
+		{ "id": 45432, "name": "Heimar - Smáralind", "status": "host" },
+		{ "id": 225652, "name": "Heimar - Smáralind - Hraðhleðsla", "status": "host" },
+		{ "id": 166355, "name": "Heimar - Smáralind - Suður", "status": "host" },
+		{ "id": 118088, "name": "Heimar - Sunnuhlíð - Verslunarmiðstöð", "status": "host" },
+		{ "id": 18691, "name": "Hotel Gullfoss", "status": "host" },
+		{ "id": 30171, "name": "Hotel Klaustur", "status": "host" },
+		{ "id": 263097, "name": "Hotel Lotus", "status": "host" },
+		{ "id": 18656, "name": "Hótel Berg", "status": "host" },
+		{ "id": 15029, "name": "Hótel Húsafell", "status": "host" },
+		{ "id": 118118, "name": "Hótel Katla - Vík", "status": "host" },
+		{ "id": 63221, "name": "Hótel Kjarnalundur", "status": "host" },
+		{ "id": 63283, "name": "Hótel Kría", "status": "host" },
+		{ "id": 63195, "name": "Hótel Laugarvatn", "status": "host" },
+		{ "id": 66912, "name": "Hótel Sel", "status": "host" },
+		{ "id": 66452, "name": "Hótel Selfoss", "status": "host" },
+		{ "id": 127787, "name": "Hótel Siglunes", "status": "host" },
+		{ "id": 63189, "name": "Hótel Smyrlabjörg", "status": "host" },
+		{ "id": 30245, "name": "Hvalfjarðarsveit - Heiðarskóli", "status": "host" },
+		{ "id": 30248, "name": "Hvalfjarðarsveit - Innrimelur 3", "status": "host" },
+		{ "id": 229159, "name": "Hverfahleðsla Hafnarfjörður - Arnarhraun 50", "status": "host" },
+		{ "id": 229206, "name": "Hverfahleðsla Hafnarfjörður - Ásvallarlaug", "status": "host" },
+		{ "id": 229203, "name": "Hverfahleðsla Hafnarfjörður - Öldugata 45", "status": "host" },
+		{ "id": 118126, "name": "Hverinn/Drop inn", "status": "host" },
+		{ "id": 168519, "name": "Íþaka - Dalvegur 30", "status": "host" },
+		{ "id": 168650, "name": "Íþaka - Dalvegur 30A", "status": "host" },
+		{ "id": 168172, "name": "Íþaka - Katrínartún 6", "status": "host" },
+		{ "id": 168323, "name": "Íþaka - Lyngháls 4", "status": "host" },
+		{ "id": 278774, "name": "KFC - Hafnarfjörður", "status": "host" },
+		{ "id": 232787, "name": "KFC - Kópavogur", "status": "host" },
+		{ "id": 167661, "name": "KFC - Mosó", "status": "host" },
+		{ "id": 293973, "name": "KFC - Njarðvík", "status": "host" },
+		{ "id": 288078, "name": "KFC - Selfoss", "status": "host" },
+		{ "id": 178092, "name": "Kjörbúðin - Búðardal", "status": "host" },
+		{ "id": 62966, "name": "Kjörbúðin - Seyðisfirði", "status": "host" },
+		{ "id": 118122, "name": "Kópasker", "status": "host" },
+		{ "id": 257803, "name": "Krambúðin - Mývatni", "status": "host" },
+		{ "id": 36854, "name": "Landbúnaðar Háskólinn - Hvanneyri", "status": "host" },
+		{ "id": 11032, "name": "Landbúnaðar Háskólinn - Keldnaholti", "status": "host" },
+		{ "id": 38544, "name": "Menntaskólinn á Laugarvatni", "status": "host" },
+		{ "id": 45943, "name": "Midgard Base Camp (Hvolsvöllur)", "status": "host" },
+		{ "id": 18994, "name": "N.L.F.Í.", "status": "host" },
+		{ "id": 18721, "name": "Nes Ferðaþjónusta", "status": "host" },
+		{ "id": 203021, "name": "Nettó - Borgarnes", "status": "host" },
+		{ "id": 118098, "name": "Norðurþing - Raufarhöfn", "status": "host" },
+		{ "id": 168182, "name": "Raufahóll - Lava Tunnel - 7005161210", "status": "host" },
+		{ "id": 46270, "name": "Ráðhús Þorlákshafnar", "status": "host" },
+		{ "id": 198054, "name": "Reitir - Sunnumörk", "status": "host" },
+		{ "id": 269977, "name": "Reitir - Sunnumörk - Hraðhleðsla", "status": "host" },
+		{ "id": 229503, "name": "Reitir - Vínlandsleið 12-16", "status": "host" },
+		{ "id": 261857, "name": "RVK-Borg Kalkofnsvegur", "status": "host" },
+		{ "id": 15768, "name": "RVK-Borg Ráðhús", "status": "host" },
+		{ "id": 10749, "name": "RVK-Borg Stjörnuport", "status": "host" },
+		{ "id": 261750, "name": "RVK-Borg Traðarkot", "status": "host" },
+		{ "id": 5174, "name": "RVK-Borg Vesturgata", "status": "host" },
+		{ "id": 10360, "name": "RVK-Borg Vitatorg", "status": "host" },
+		{ "id": 147594, "name": "Samkaup - Ólafsfjörður", "status": "host" },
+		{ "id": 30383, "name": "Skálholt", "status": "host" },
+		{ "id": 168480, "name": "Skógræktin - Hallormsstað", "status": "host" },
+		{ "id": 168527, "name": "Skógræktin Vaglaskógi", "status": "host" },
+		{ "id": 63277, "name": "Smáragarður - Vallakór 4", "status": "host" },
+		{ "id": 228745, "name": "Sólheimar", "status": "host" },
+		{ "id": 18529, "name": "Tjaldsvæði Reykjamörk", "status": "host" },
+		{ "id": 63185, "name": "UMI Hótel", "status": "host" },
+		{ "id": 45801, "name": "Verkmenntaskóli Austurlands", "status": "host" },
+		{ "id": 152840, "name": "Við Hafið", "status": "host" },
+		{ "id": 228873, "name": "Welcome Iceland ehf.", "status": "host" },
+		{ "id": 45942, "name": "Þórbergssetur - Hali Country Hotel", "status": "host" },
+		{ "id": 127732, "name": "Ögur Travel", "status": "host" },
+		{ "id": 229940, "name": "Aðaltjörn 7", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 21366, "name": "Akralundur 2", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 168344, "name": "Akurhvarf 5 (18)", "status": "skip", "note": "residential" },
+		{ "id": 127703, "name": "Andrésbrunni 16 - Útistöð", "status": "skip", "note": "residential" },
+		{ "id": 228310, "name": "Austurbrú 10-18 - (59)", "status": "skip", "note": "residential" },
+		{ "id": 228718, "name": "Austurvegur 6-10", "status": "skip", "note": "residential" },
+		{
+			"id": 87451,
+			"name": "Avis - ALP Akureyri",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 131607, "name": "Avis - Egilsstaðir", "status": "skip", "note": "rental fleet" },
+		{
+			"id": 131596,
+			"name": "Avis - Hraðhleðsla - Ísafjörður",
+			"status": "skip",
+			"note": "rental fleet"
+		},
+		{
+			"id": 139398,
+			"name": "Avis - Hraðhleðsla - Keflavík",
+			"status": "skip",
+			"note": "rental fleet"
+		},
+		{
+			"id": 87697,
+			"name": "Avis /Akureyri- Hraðhleðsla",
+			"status": "skip",
+			"note": "rental fleet"
+		},
+		{
+			"id": 45768,
+			"name": "AVIS bílaleiga - Vatnagarðar",
+			"status": "skip",
+			"note": "rental fleet"
+		},
+		{ "id": 10487, "name": "Álalækur 17", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 228666, "name": "Árhvammur", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{
+			"id": 228674,
+			"name": "Ásholt 36 (20) stýrim",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 26768,
+			"name": "Bandalag Háskólamanna",
+			"status": "skip",
+			"note": "members only (union holiday homes)"
+		},
+		{
+			"id": 229429,
+			"name": "Baugakór 15-17 (302)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 229826,
+			"name": "Berlin Spandau Altstädter Ring WB09",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{ "id": 168299, "name": "Bifvélavirkinn", "status": "skip", "note": "workplace" },
+		{ "id": 229204, "name": "Birkiflöt 18", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 262166, "name": "BL - Sævarhöfði", "status": "skip", "note": "workplace" },
+		{ "id": 229783, "name": "Blómalundur 5", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 127849, "name": "Blönduhlíð 2 - Stöð 2", "status": "skip", "note": "residential" },
+		{
+			"id": 38485,
+			"name": "Boðagrandi 2-2a (2) (ON tók yfir)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 58003,
+			"name": "Created 2021-04-21 11:52 con: 1",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{ "id": 229080, "name": "Dalbær", "status": "skip", "note": "care home" },
+		{
+			"id": 127870,
+			"name": "Dvalarheimili aldraðra Húsavík",
+			"status": "skip",
+			"note": "care home"
+		},
+		{ "id": 107953, "name": "Efstaleiti B Reitur", "status": "skip", "note": "residential" },
+		{ "id": 229062, "name": "Einivellir 7 (206)", "status": "skip", "note": "residential" },
+		{ "id": 229743, "name": "Erluás 74", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{
+			"id": 63005,
+			"name": "Fallorka - Bókasafn",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 9378,
+			"name": "Fallorka - Rangárvellir",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 63009,
+			"name": "Fallorka - Ráðhúsið",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 63197,
+			"name": "Fallorka - Sundlaugin Akureyri",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{ "id": 93833, "name": "Fiskislóð 73", "status": "skip", "note": "residential" },
+		{ "id": 168398, "name": "Flóahreppur", "status": "skip", "note": "workplace" },
+		{ "id": 229981, "name": "Fornhagi 11-17", "status": "skip", "note": "residential" },
+		{ "id": 30464, "name": "Fossar Markets", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{
+			"id": 63191,
+			"name": "Fosshótel - Barón",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 63003,
+			"name": "Fosshótel - Fáskrúðsfjörður",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 63017,
+			"name": "Fosshótel - Húsavík",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 63001,
+			"name": "Fosshótel - Jökulsárlón",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 63025,
+			"name": "Fosshótel - Núpar",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 63023,
+			"name": "Fosshótel - Patreksfirði",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 228382,
+			"name": "Furulundur 8 (1)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 51750,
+			"name": "Garo LS4 - Proxy Test Lab - Telia - 1",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 228861,
+			"name": "Grandahvarf 4 (10102)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 45538,
+			"name": "Hafnarskrifstofur Vestmannaeyja",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 30471, "name": "Hafnartorg", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 9228, "name": "Happdrætti Háskóla Íslands", "status": "skip", "note": "workplace" },
+		{ "id": 107925, "name": "Háaleitisbraut 68", "status": "skip", "note": "residential" },
+		{
+			"id": 107927,
+			"name": "Heimar - Egilshöll",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 168492, "name": "Hjarðarhagi 60-64", "status": "skip", "note": "residential" },
+		{ "id": 30313, "name": "Hjálpræðisherinn", "status": "skip", "note": "workplace" },
+		{ "id": 63181, "name": "Hjálpræðisherinn", "status": "skip", "note": "workplace" },
+		{ "id": 45926, "name": "Hopp", "status": "skip", "note": "workplace" },
+		{
+			"id": 45470,
+			"name": "Hvassaleiti 28 (14)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 45945, "name": "Hörðukór 3 - Úti", "status": "skip", "note": "residential" },
+		{ "id": 30236, "name": "Hörðukór úti", "status": "skip", "note": "residential" },
+		{
+			"id": 21364,
+			"name": "Ion Hotel - Stöð 1",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 38736, "name": "Íshamrar - Nóatún 17", "status": "skip", "note": "residential" },
+		{
+			"id": 25035,
+			"name": "Kaupfélagið Borganesi",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 231675, "name": "Keilir - BMW", "status": "skip", "note": "workplace" },
+		{ "id": 205903, "name": "Keyrsla", "status": "skip", "note": "workplace" },
+		{ "id": 168647, "name": "Kleppsvegur 40", "status": "skip", "note": "residential" },
+		{ "id": 24316, "name": "Kuklarinn", "status": "skip", "note": "workplace" },
+		{ "id": 33626, "name": "Landgræðslan", "status": "skip", "note": "workplace" },
+		{ "id": 107921, "name": "Landsvirkjun Höfuðstöðvar", "status": "skip", "note": "workplace" },
+		{ "id": 229988, "name": "Laugavegur 7", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{
+			"id": 38696,
+			"name": "Ljósaland 1-25 - Skúr 3 - Hætt í þjónustu",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 38438,
+			"name": "Ljósaland 17 (skúr 9) - Hætt í þjónustu",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 38772,
+			"name": "Ljósaland 3 - Skúr 2 - Hætt í þjónustu",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 45835,
+			"name": "Ljósaland 7 (Skúr 4) - Hætt í þjónustu",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 152720,
+			"name": "Lyngás 1 E (E206)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 229202, "name": "Lyngás 1B (104)", "status": "skip", "note": "not public (Virta 404)" },
+		{
+			"id": 38788,
+			"name": "Lyngás 1E - 106E",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168427,
+			"name": "Lyngás 1E (305)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168400,
+			"name": "Lyngás 1E (E403)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168201,
+			"name": "Lyngás 1F (201)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168423,
+			"name": "Lyngás 1F (303)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 45546,
+			"name": "Lyngás 1G - 209",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 173876,
+			"name": "Lyngás 1G (310)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 198076,
+			"name": "Lyngás 1H - (H101)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 45547,
+			"name": "Lyngás 1H - 103",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 228724, "name": "Lyngbrekka 15", "status": "skip", "note": "not public (Virta 404)" },
+		{
+			"id": 228318,
+			"name": "Mánatún 17 (E037)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 24303,
+			"name": "Menntaskólinn við Hamrahlíð",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 24024,
+			"name": "Menntaskólinn við Sund",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 51130, "name": "Móavegur 2 - 12", "status": "skip", "note": "residential" },
+		{ "id": 173884, "name": "Mývatn", "status": "skip", "note": "no price on Virta (0 kr)" },
+		{ "id": 118170, "name": "N18 (Stöð 2)", "status": "skip", "note": "residential" },
+		{
+			"id": 228608,
+			"name": "Naustavör 11 (102)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168357,
+			"name": "Naustavör 11 (2)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168351,
+			"name": "Naustavör 11 (401)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168362,
+			"name": "Naustavör 11 (7)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 168358,
+			"name": "Naustavör 11 (8)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 38716,
+			"name": "Naustavör 2 - Stæði 4",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 11103,
+			"name": "Olís Álfheimar - Gamla stöð tekinn niður",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 36692,
+			"name": "Olís Höfn (Gamla tekinn niður)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 143327,
+			"name": "Orkubú Vestfjarða - Bjarkalundi (Hætt í þjónustu)",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 35748,
+			"name": "Orkubú Vestfjarða - Flókalundi",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 96397,
+			"name": "Orkubú Vestfjarða - Hólmavík",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 95207,
+			"name": "Orkubú Vestfjarða - Ísafjörður",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 93837,
+			"name": "Orkubú Vestfjarða - Reykjanes",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 45523,
+			"name": "Orkubú Vestfjarðar - Íþróttahúsið við Tálknafjörð",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 4952,
+			"name": "Orkustofnun Grensásvegi",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 38574,
+			"name": "Rekstrafélag Orlofsíbúða Munaðarnes",
+			"status": "skip",
+			"note": "members only (union holiday homes)"
+		},
+		{ "id": 45724, "name": "Reykjavíkurvegur 74", "status": "skip", "note": "residential" },
+		{
+			"id": 228920,
+			"name": "Rjúpnasalir 12 (1103)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 38575,
+			"name": "Sameyki - Vaðnes",
+			"status": "skip",
+			"note": "members only (union holiday homes)"
+		},
+		{ "id": 127758, "name": "Samherji - Dalvík", "status": "skip", "note": "workplace" },
+		{
+			"id": 30185,
+			"name": "Skaftahlíð 12-22",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 229983,
+			"name": "Skeljagrandi 6 (13)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 45742,
+			"name": "Skipalón 16-20 (29)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{ "id": 168180, "name": "Smiðjuvellir 28", "status": "skip", "note": "residential" },
+		{ "id": 229009, "name": "Suðurhvammur 5-9", "status": "skip", "note": "residential" },
+		{
+			"id": 63183,
+			"name": "Sundhöll Vestmannaeyja",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 38483,
+			"name": "Sunnusmári 19-25 (B02)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 229200,
+			"name": "Syðra - Langholt (Jón og Erna)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 229960,
+			"name": "Tangabryggja 4A (310)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{ "id": 127802, "name": "Útgerðafélag Akureyringa ehf", "status": "skip", "note": "workplace" },
+		{
+			"id": 228993,
+			"name": "Vindakór 5-7 (206)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 228911,
+			"name": "Vindakór 5-7 (301)",
+			"status": "skip",
+			"note": "not public (Virta 404)"
+		},
+		{
+			"id": 62999,
+			"name": "VR - Miðhúsaskógur",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{ "id": 269479, "name": "WB Training", "status": "skip", "note": "operator E.ON" },
+		{ "id": 166373, "name": "Þjónustumiðstöð Hfj", "status": "skip", "note": "workplace" },
+		{
+			"id": 45537,
+			"name": "Þjónustumiðstöð Vestmannaeyja",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 25789,
+			"name": "ÖBÍ Réttindasamtök",
+			"status": "skip",
+			"note": "no price on Virta (0 kr)"
+		},
+		{
+			"id": 38531,
+			"name": "Ölfusborgir",
+			"status": "skip",
+			"note": "members only (union holiday homes)"
+		}
+	]
+}

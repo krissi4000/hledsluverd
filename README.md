@@ -27,6 +27,7 @@ Requires Node ≥ 20 and PostgreSQL ≥ 16 with PostGIS.
 ## Scrapers
 
     npm run match:virta   # one-time: stamp Virta ids onto Ísorka stations (coordinates)
+    npm run sync:virta    # add Ísorka/Virta sites classified in seeds/virta-sites.json
     npm run match:n1      # one-time: stamp N1 location ids onto N1 stations (review output!)
     npm run scrape        # run all price scrapers once against DATABASE_URL
 

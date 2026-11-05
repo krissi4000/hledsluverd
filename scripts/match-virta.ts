@@ -5,17 +5,10 @@ import { networks, stations } from '../src/lib/server/db/schema';
 import {
 	VIRTA_BASE as BASE,
 	matchVirtaStation,
+	virtaFetch,
 	type VirtaListStation
 } from '../src/lib/server/scrapers/isorka';
-
-const HEADERS = { Accept: 'application/json', 'X-Brand': 'isorka', 'X-Source': 'isorka-web-map' };
-// the API rejects bboxes much larger than ~2°×6°
-const TILES = [
-	{ latMin: 63.2, latMax: 65.2, longMin: -24.6, longMax: -18.6 },
-	{ latMin: 63.2, latMax: 65.2, longMin: -18.6, longMax: -13.4 },
-	{ latMin: 65.2, latMax: 66.8, longMin: -24.6, longMax: -18.6 },
-	{ latMin: 65.2, latMax: 66.8, longMin: -18.6, longMax: -13.4 }
-];
+import { VIRTA_TILES as TILES } from '../src/lib/server/virta';
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 const db = createDb(process.env.DATABASE_URL);
@@ -23,7 +16,7 @@ const db = createDb(process.env.DATABASE_URL);
 const virta: VirtaListStation[] = [];
 for (const t of TILES) {
 	const url = `${BASE}/stations?latMin=${t.latMin}&latMax=${t.latMax}&longMin=${t.longMin}&longMax=${t.longMax}`;
-	const res = await fetch(url, { headers: HEADERS });
+	const res = await virtaFetch(url);
 	if (!res.ok) throw new Error(`Virta list fetch failed: HTTP ${res.status} for ${url}`);
 	virta.push(...((await res.json()) as VirtaListStation[]));
 }

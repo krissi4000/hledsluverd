@@ -1,5 +1,5 @@
 [Unit]
-Description=Hledsluverd - daily station sync (supercharge.info, e1 map)
+Description=Hledsluverd - daily station sync (supercharge.info, e1 map, Virta)
 Wants=network-online.target
 After=network-online.target postgresql.service
 
