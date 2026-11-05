@@ -20,6 +20,10 @@ RUN apt-get update \
 		systemd systemd-sysv dbus sudo openssh-server \
 	&& rm -rf /var/lib/apt/lists/*
 
+# The Docker image ships a policy-rc.d that stops apt from starting services
+# (exit 101). A real VPS has none: installing postgresql/caddy starts them.
+RUN rm -f /usr/sbin/policy-rc.d
+
 # Units that are pointless (or touch host devices) in a privileged container.
 RUN systemctl mask \
 		systemd-udevd.service systemd-udevd-kernel.socket systemd-udevd-control.socket \
