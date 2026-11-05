@@ -1,0 +1,938 @@
+[
+	{
+		"id": 11103,
+		"latitude": 64.13222,
+		"longitude": -21.866584,
+		"name": "Olís Álfheimar - Gamla stöð tekinn niður",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 152802,
+		"latitude": 64.21432,
+		"longitude": -20.731255,
+		"name": "Ísorka - Bláskógarbyggð",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 152840,
+		"latitude": 64.89381838,
+		"longitude": -23.70372857,
+		"name": "Við Hafið",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 163966,
+		"latitude": 64.13221719,
+		"longitude": -21.8667619,
+		"name": "Ísorka - Olís Álfheimar",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 16459,
+		"latitude": 64.134465,
+		"longitude": -21.869439,
+		"name": "Eik - Glæsibæ",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 165728,
+		"latitude": 63.83496015,
+		"longitude": -20.40165006,
+		"name": "Ísorka - Olís Hella",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 167661,
+		"latitude": 64.16678588,
+		"longitude": -21.69411227,
+		"name": "KFC - Mosó",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 168180,
+		"latitude": 64.325719,
+		"longitude": -22.058973,
+		"name": "Smiðjuvellir 28",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 168526,
+		"latitude": 64.130616,
+		"longitude": -21.857707,
+		"name": "Ferjuvogur/Snekkjuvogur - Hverfahleðsla",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 197285,
+		"latitude": 64.32472233,
+		"longitude": -22.06745874,
+		"name": "Ísorka - Olís Akranes",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 203021,
+		"latitude": 64.54347717,
+		"longitude": -21.91157078,
+		"name": "Nettó - Borgarnes",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 225285,
+		"latitude": 63.97971086,
+		"longitude": -22.54754837,
+		"name": "Ísorka - Olís Fitjar",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 228718,
+		"latitude": 63.93662259,
+		"longitude": -20.99906365,
+		"name": "Austurvegur 6-10",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 229179,
+		"latitude": 64.0622432,
+		"longitude": -21.9484587,
+		"name": "Hverfahleðsla Hafnarfjörður - Öldutúnsskóli",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 233908,
+		"latitude": 64.54473674,
+		"longitude": -21.90740438,
+		"name": "Ísorka - Olís Borgarnesi",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 235122,
+		"latitude": 64.1378268,
+		"longitude": -21.8072665,
+		"name": "Ísorka - Olís Gullinbrú",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 239345,
+		"latitude": 63.41755179,
+		"longitude": -19.0036608,
+		"name": "Ísorka - Olís Vík í Mýrdal",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 24024,
+		"latitude": 64.13046,
+		"longitude": -21.860298,
+		"name": "Menntaskólinn við Sund",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 25035,
+		"latitude": 64.5421154,
+		"longitude": -21.9083982,
+		"name": "Kaupfélagið Borganesi",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 260457,
+		"latitude": 63.93689786,
+		"longitude": -21.00186514,
+		"name": "Ísorka - Ráðhús Árborg",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 288078,
+		"latitude": 63.93679151,
+		"longitude": -20.98855715,
+		"name": "KFC - Selfoss",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 301025722,
+		"latitude": 64.065224,
+		"longitude": -21.951252,
+		"name": "Hleðsla 4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025723,
+		"latitude": 64.065224,
+		"longitude": -21.951252,
+		"name": "Hleðsla 3",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025776,
+		"latitude": 64.065224,
+		"longitude": -21.951252,
+		"name": "Hleðsla 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025777,
+		"latitude": 64.065224,
+		"longitude": -21.951252,
+		"name": "Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025778,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 7",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025779,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025780,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025781,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 9",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025785,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 8",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025786,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 6",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025787,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 10",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025788,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 3",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025789,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025790,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 11",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301025791,
+		"latitude": 64.214944,
+		"longitude": -20.731536,
+		"name": "Hleðsla 5",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026046,
+		"latitude": 63.834462,
+		"longitude": -20.401426,
+		"name": "Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026047,
+		"latitude": 63.834462,
+		"longitude": -20.401426,
+		"name": "Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026048,
+		"latitude": 63.832552,
+		"longitude": -20.399941,
+		"name": "Stracta Hótel - Hleðsla 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026049,
+		"latitude": 63.832552,
+		"longitude": -20.399941,
+		"name": "Stracta Hótel - Hleðsla 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026050,
+		"latitude": 63.832552,
+		"longitude": -20.399941,
+		"name": "Stracta Hótel - Hleðsla 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026051,
+		"latitude": 63.832552,
+		"longitude": -20.399941,
+		"name": "Stracta Hótel - Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026052,
+		"latitude": 63.832552,
+		"longitude": -20.399941,
+		"name": "Stracta Hótel - Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026053,
+		"latitude": 63.832552,
+		"longitude": -20.399941,
+		"name": "Stracta Hótel - Hleðsla 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026122,
+		"latitude": 65.07698,
+		"longitude": -22.725121,
+		"name": "H2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301026123,
+		"latitude": 65.07698,
+		"longitude": -22.725121,
+		"name": "Hleðsla 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301108028,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301108029,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_3",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301108030,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215164,
+		"latitude": 64.894255,
+		"longitude": -23.70456,
+		"name": "Orkan - Ólafsvík",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215173,
+		"latitude": 64.894255,
+		"longitude": -23.70456,
+		"name": "Orkan - Ólafsvík",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215178,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_7",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215179,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_6",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215181,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_5",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215182,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_21 DC",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215183,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_21 DC",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215193,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_20 DC",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301215194,
+		"latitude": 63.936807,
+		"longitude": -21.004338,
+		"name": "MIDS_20 DC",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301354709,
+		"latitude": 63.41713,
+		"longitude": -19.0116,
+		"name": "Orkusalan Vík",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301354710,
+		"latitude": 63.41713,
+		"longitude": -19.0116,
+		"name": "Orkusalan Vík",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301368841,
+		"latitude": 64.133353,
+		"longitude": -21.872258,
+		"name": "Bílorka - Grensàsvegur 1 - DC30",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301368842,
+		"latitude": 64.133353,
+		"longitude": -21.872258,
+		"name": "Bílorka - Grensàsvegur 1 - DC30",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386647,
+		"latitude": 64.543262,
+		"longitude": -21.91152,
+		"name": "Nettó Borgarnesi",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386653,
+		"latitude": 64.543262,
+		"longitude": -21.91152,
+		"name": "Nettó Borgarnesi",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386654,
+		"latitude": 64.543262,
+		"longitude": -21.91152,
+		"name": "Nettó Borgarnesi",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386663,
+		"latitude": 64.170562,
+		"longitude": -21.689121,
+		"name": "Varmá 4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386664,
+		"latitude": 64.170562,
+		"longitude": -21.689121,
+		"name": "Varmá 3",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386669,
+		"latitude": 64.165027,
+		"longitude": -21.724995,
+		"name": "Lágafellslaug 4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386670,
+		"latitude": 64.165027,
+		"longitude": -21.724995,
+		"name": "Lágafellslaug 3",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301386672,
+		"latitude": 64.165027,
+		"longitude": -21.724995,
+		"name": "Lágafellslaug 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301448366,
+		"latitude": 64.134444,
+		"longitude": -21.872887,
+		"name": "Orkureitur_3 HRB 1.3.1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301448367,
+		"latitude": 64.134444,
+		"longitude": -21.872887,
+		"name": "Orkureitur_4 HRB 1.2.3",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301448368,
+		"latitude": 64.134444,
+		"longitude": -21.872887,
+		"name": "Orkureitur_2 HRB 1.2.4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301463809,
+		"latitude": 64.134444,
+		"longitude": -21.872887,
+		"name": "Orkureitur_6 HRB 3.4.1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301463810,
+		"latitude": 64.134444,
+		"longitude": -21.872887,
+		"name": "Orkureitur_5 HRB 3.4.4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301597014,
+		"latitude": 64.215767,
+		"longitude": -20.735341,
+		"name": "H2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301625661,
+		"latitude": 64.894255,
+		"longitude": -23.70456,
+		"name": "Orkan - Ólafsvík",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301664800,
+		"latitude": 65.072092,
+		"longitude": -22.734127,
+		"name": "Orkusalan Stykkishólmur DC",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301669301,
+		"latitude": 64.894255,
+		"longitude": -23.70456,
+		"name": "Orkan - Ólafsvík",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301669306,
+		"latitude": 65.072092,
+		"longitude": -22.734127,
+		"name": "Orkusalan Stykkishólmur 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 38476,
+		"latitude": 63.93287274,
+		"longitude": -20.9972991,
+		"name": "Fjölbrautaskóli Suðurlands",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 38544,
+		"latitude": 64.21220832,
+		"longitude": -20.7378292,
+		"name": "Menntaskólinn á Laugarvatni",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 45462,
+		"latitude": 64.32381026,
+		"longitude": -22.07497857,
+		"name": "Fjölbrautarskóli Vesturlands",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 45905,
+		"latitude": 64.1747466,
+		"longitude": -20.44509648,
+		"name": "Ísorka Reykholti",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 4598,
+		"latitude": 64.165476,
+		"longitude": -21.702983,
+		"name": "Ísorka Fmos",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 4892,
+		"latitude": 63.936041,
+		"longitude": -20.99755,
+		"name": "Ísorka Sundhöll Selfossi",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 4952,
+		"latitude": 64.13185,
+		"longitude": -21.87274,
+		"name": "Orkustofnun Grensásvegi",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 5106,
+		"latitude": 63.933653,
+		"longitude": -20.9943,
+		"name": "Áfram Selfoss",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 54975,
+		"latitude": 64.06813577,
+		"longitude": -21.95771197,
+		"name": "Ísorka - Fjörður",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 63195,
+		"latitude": 64.21810134,
+		"longitude": -20.73318536,
+		"name": "Hótel Laugarvatn",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 66452,
+		"latitude": 63.93732348,
+		"longitude": -21.00566015,
+		"name": "Hótel Selfoss",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 7619,
+		"latitude": 63.86478,
+		"longitude": -21.15754,
+		"name": "Ísorka Eyrarbakka",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 7665,
+		"latitude": 63.83787,
+		"longitude": -21.06358,
+		"name": "Ísorka Sundlaugin Stokkseyri",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 77506,
+		"latitude": 65.0733528,
+		"longitude": -22.7295958,
+		"name": "Ísorka Stykkishólmur",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 165752,
+		"latitude": 64.25555592,
+		"longitude": -15.2088089,
+		"name": "Ísorka - Olís Höfn",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 165785,
+		"latitude": 65.034027,
+		"longitude": -14.231153,
+		"name": "Ísorka - Olís Reyðarfjörður",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 181839,
+		"latitude": 63.79464659,
+		"longitude": -18.0384642,
+		"name": "Ísorka - Olís Kirkjubæjarklaustur",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 301267241,
+		"latitude": 63.790662,
+		"longitude": -18.047018,
+		"name": "Orkusalan Systrakaffi Kirkjubæjarklaustur 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301267242,
+		"latitude": 63.790662,
+		"longitude": -18.047018,
+		"name": "Orkusalan Systrakaffi Kirkjubæjarklaustur 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301267243,
+		"latitude": 63.790662,
+		"longitude": -18.047018,
+		"name": "Orkusalan Systrakaffi Kirkjubæjarklaustur 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301267244,
+		"latitude": 63.790662,
+		"longitude": -18.047018,
+		"name": "Orkusalan Systrakaffi Kirkjubæjarklaustur 1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301267245,
+		"latitude": 63.790662,
+		"longitude": -18.047018,
+		"name": "Orkusalan Systrakaffi Kirkjubæjarklaustur 2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301349721,
+		"latitude": 64.25278,
+		"longitude": -15.21147,
+		"name": "Orkusalan - Höfn",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301349722,
+		"latitude": 64.25278,
+		"longitude": -15.21147,
+		"name": "Orkusalan - Höfn",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301349723,
+		"latitude": 64.25278,
+		"longitude": -15.21147,
+		"name": "Orkusalan - Höfn",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 36692,
+		"latitude": 64.255507,
+		"longitude": -15.208884,
+		"name": "Olís Höfn (Gamla tekinn niður)",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 127787,
+		"latitude": 66.1515463,
+		"longitude": -18.90795342,
+		"name": "Hótel Siglunes",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 147594,
+		"latitude": 66.0735483,
+		"longitude": -18.6453988,
+		"name": "Samkaup - Ólafsfjörður",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 165780,
+		"latitude": 66.14953558,
+		"longitude": -18.9033538,
+		"name": "Ísorka - Olís Siglufjörður",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 168419,
+		"latitude": 66.070455,
+		"longitude": -18.64969,
+		"name": "Ísorka - Íþróttamiðstöð Fjallabyggð Ólafsfirði",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 213142,
+		"latitude": 65.66001782,
+		"longitude": -20.28276617,
+		"name": "Ísorka - Blönduósi",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 269479,
+		"latitude": 65.660092,
+		"longitude": -20.27965,
+		"name": "WB Training",
+		"provider": "Virta",
+		"isRemoved": false
+	},
+	{
+		"id": 301323909,
+		"latitude": 65.658769,
+		"longitude": -20.276746,
+		"name": "H2",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301323929,
+		"latitude": 65.658769,
+		"longitude": -20.276746,
+		"name": "H4",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301323931,
+		"latitude": 65.658769,
+		"longitude": -20.276746,
+		"name": "H1",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 301389036,
+		"latitude": 66.073863,
+		"longitude": -18.644487,
+		"name": "Kjörbúðin Ólafsfjörður",
+		"provider": "Hubject",
+		"isRemoved": false
+	},
+	{
+		"id": 222714,
+		"latitude": 66.03926375,
+		"longitude": -17.34316175,
+		"name": "Ísorka - Olís Húsavík",
+		"provider": "Virta",
+		"isRemoved": false
+	}
+]
