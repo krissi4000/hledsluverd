@@ -26,8 +26,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	const mode = station.connectors.some((c) => c.type !== 'Type2')
 		? ('DC' as const)
 		: ('AC' as const);
-	const series = (await trendSeries(db, mode)).filter(
-		(s) => s.networkSlug === station!.network.slug
-	);
+	// the network's trend says nothing about a price the site's owner sets
+	const series = station.hostPriced
+		? []
+		: (await trendSeries(db, mode)).filter((s) => s.networkSlug === station!.network.slug);
 	return { station, series, now: Date.now() };
 };

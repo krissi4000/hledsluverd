@@ -53,6 +53,7 @@
 	"station_availability": "Laus hleðslutæki",
 	"station_directions": "Leiðarlýsing (Google Maps)",
 	"station_trend": "Verðþróun {network}",
+	"station_host_priced": "Eigandi staðarins ákveður verðið hér, ekki {network}.",
 	"map_fallback": "Kortið gat ekki hlaðist í þessum vafra.",
 	"mode_label_dc": "DC hraðhleðsla",
 	"mode_label_ac": "AC hleðsla",

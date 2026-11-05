@@ -4,7 +4,13 @@ import { networks, stations } from '../db/schema';
 import type { ScrapedReading, Scraper } from './types';
 
 export const VIRTA_BASE = 'https://isorka.poweredbyvirta.com/api/core/v4';
-const HEADERS = { Accept: 'application/json', 'X-Brand': 'isorka', 'X-Source': 'isorka-web-map' };
+export const VIRTA_HEADERS = {
+	Accept: 'application/json',
+	'X-Brand': 'isorka',
+	'X-Source': 'isorka-web-map'
+};
+/** Virta allows 60 requests a minute (X-Ratelimit-Limit); stay just under it. */
+export const VIRTA_REQUEST_GAP_MS = 1100;
 
 export interface VirtaPricingEntry {
 	name: string;
@@ -86,7 +92,7 @@ export const VIRTA_NEAR_M = 30;
 /** Further out, a match also needs a shared distinctive name word (OCM pins can be 200+ m off). */
 export const VIRTA_NAMED_M = 400;
 // decommissioned posts stay listed, zero-priced: "Olís Álfheimar - Gamla stöð tekinn niður"
-const DECOMMISSIONED = /tekin\w*\s+niður/i;
+export const DECOMMISSIONED = /tekin\w*\s+niður/i;
 // brand words every Ísorka station shares — they say nothing about *which* station
 const GENERIC_WORDS = new Set(['ísorka', 'isorka', 'olís', 'olis', 'hleðsla', 'hleðslustöð']);
 
@@ -142,23 +148,38 @@ export function matchVirtaStation(
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * GET a Virta URL, waiting out a 429 (rate limit) up to twice. Virta sends
+ * X-Ratelimit-Reset (epoch seconds) with it; without one, wait a full minute.
+ */
+export async function virtaFetch(url: string): Promise<Response> {
+	for (let attempt = 0; ; attempt++) {
+		const res = await fetch(url, { headers: VIRTA_HEADERS });
+		if (res.status !== 429 || attempt === 2) return res;
+		const reset = Number(res.headers.get('x-ratelimit-reset'));
+		const waitMs = reset > 0 ? reset * 1000 - Date.now() + 1000 : 60_000;
+		await sleep(Math.min(Math.max(waitMs, 1000), 65_000));
+	}
+}
+
 export const isorkaScraper: Scraper = {
 	id: 'isorka',
 	async scrape(db) {
 		const [net] = await db.select().from(networks).where(eq(networks.slug, 'isorka'));
 		if (!net) throw new Error('isorka network missing');
 		const sts = (await db.select().from(stations).where(eq(stations.networkId, net.id))).filter(
-			(s) => s.externalIds.virta != null
+			(s) => s.externalIds.virta != null && s.isActive
 		);
 		if (sts.length === 0)
-			throw new Error('no stations have externalIds.virta — run npm run match:virta');
+			throw new Error('no stations have externalIds.virta — run npm run sync:virta');
 		const readings: ScrapedReading[] = [];
 		const warnings: string[] = [];
 		let fetched = 0;
 		for (const s of sts) {
-			const res = await fetch(`${VIRTA_BASE}/stations/${s.externalIds.virta}`, {
-				headers: HEADERS
-			});
+			const started = Date.now();
+			const res = await virtaFetch(`${VIRTA_BASE}/stations/${s.externalIds.virta}`);
+			// one request per VIRTA_REQUEST_GAP_MS, counting the request's own time
+			await sleep(VIRTA_REQUEST_GAP_MS - (Date.now() - started));
 			if (!res.ok) {
 				warnings.push(`${s.name}: HTTP ${res.status}`);
 				continue;
@@ -167,7 +188,6 @@ export const isorkaScraper: Scraper = {
 			const parsed = parseVirtaStation((await res.json()) as VirtaStation);
 			warnings.push(...parsed.warnings);
 			readings.push(...parsed.readings.map((r) => ({ ...r, stationId: s.id })));
-			await sleep(150);
 		}
 		if (fetched === 0) throw new Error(`all ${sts.length} Virta detail fetches failed`);
 		return { readings, warnings };

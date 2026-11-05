@@ -1,0 +1,1 @@
+ALTER TABLE "stations" ADD COLUMN "host_priced" boolean DEFAULT false NOT NULL;

@@ -483,4 +483,32 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		// n1 now sorts ahead of ON's DC 44? no — 44 < 50, ON stays first
 		expect(cards.map((c) => c.networkSlug)).toEqual(['on', 'n1']);
 	});
+
+	it('host-priced stations stay out of the rate card and trend but keep their own price', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		await db.update(stations).set({ hostPriced: true }).where(eq(stations.id, stadarskali.id));
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 50,
+			source: 'scraper'
+		});
+
+		const n1Card = (await rateCard(db)).find((c) => c.networkSlug === 'n1')!;
+		expect(n1Card.dc).toBe(70); // the network's own price, not the host's 50
+		expect(n1Card.dcFrom).toBe(false);
+		const series = await trendSeries(db, 'DC');
+		expect(series.find((s) => s.networkSlug === 'n1')!.points.map((p) => p.y)).toEqual([70]);
+
+		const row = (await stationList(db, 'DC')).find((s) => s.slug === 'stadarskali-n1')!;
+		expect(row.price).toBe(50);
+		const detail = (await stationDetail(db, 'stadarskali-n1'))!;
+		expect(detail.hostPriced).toBe(true);
+		expect(detail.prices.find((p) => p.mode === 'DC')!.priceIskPerKwh).toBe(50);
+		expect((await currentPrices(db)).find((p) => p.stationId === stadarskali.id)!.hostPriced).toBe(
+			true
+		);
+	});
 });

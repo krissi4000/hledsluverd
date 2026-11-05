@@ -106,6 +106,11 @@
 				{:else}
 					<p class="muted"><em>{m.price_unknown()}</em></p>
 				{/each}
+				{#if st.hostPriced}
+					<p class="muted host-priced" data-testid="station-host-priced">
+						<small>{m.station_host_priced({ network: st.network.name })}</small>
+					</p>
+				{/if}
 			</div>
 
 			<div class="panel surface split">

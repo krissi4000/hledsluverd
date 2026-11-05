@@ -53,6 +53,7 @@
 	"station_availability": "Free chargers",
 	"station_directions": "Directions (Google Maps)",
 	"station_trend": "{network} price trend",
+	"station_host_priced": "The site owner sets the price here, not {network}.",
 	"map_fallback": "The map could not load in this browser.",
 	"mode_label_dc": "DC fast charging",
 	"mode_label_ac": "AC charging",

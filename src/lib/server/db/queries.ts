@@ -9,6 +9,8 @@ export interface CurrentPrice {
 	id: number;
 	networkId: number;
 	stationId: number | null;
+	/** the station's owner sets this price (stations.host_priced); false for network-wide rows */
+	hostPriced: boolean;
 	tariffKey: TariffKey;
 	priceIskPerKwh: number;
 	minuteFeeIsk: number | null;
@@ -27,6 +29,7 @@ export async function currentPrices(db: Db): Promise<CurrentPrice[]> {
 		.from(prices)
 		.leftJoin(stations, eq(prices.stationId, stations.id))
 		.where(or(isNull(prices.stationId), eq(stations.isActive, true)));
+	const hostPriced = new Set(rawAll.filter((r) => r.stations?.hostPriced).map((r) => r.prices.id));
 	const all = rawAll.map((r) => r.prices);
 	const best = new Map<string, (typeof all)[number]>();
 	for (const p of all) {
@@ -44,6 +47,7 @@ export async function currentPrices(db: Db): Promise<CurrentPrice[]> {
 		id: p.id,
 		networkId: p.networkId,
 		stationId: p.stationId,
+		hostPriced: hostPriced.has(p.id),
 		tariffKey: p.tariffKey as TariffKey,
 		priceIskPerKwh: p.priceIskPerKwh,
 		minuteFeeIsk: p.minuteFeeIsk,
@@ -65,12 +69,15 @@ export interface RateCardEntry {
 	acVerifiedAt: Date | null;
 }
 
-/** One entry per network that has any current price; cheapest (min) per mode, sorted by DC asc. */
+/**
+ * One entry per network that has any current price; cheapest (min) per mode, sorted by DC asc.
+ * Host-priced stations are left out: the card compares what each network itself charges.
+ */
 export async function rateCard(db: Db): Promise<RateCardEntry[]> {
 	const [nets, cp] = await Promise.all([db.select().from(networks), currentPrices(db)]);
 	const entries: RateCardEntry[] = [];
 	for (const n of nets) {
-		const forNet = cp.filter((p) => p.networkId === n.id);
+		const forNet = cp.filter((p) => p.networkId === n.id && !p.hostPriced);
 		if (forNet.length === 0) continue;
 		const pick = (keys: TariffKey[]) => {
 			const rows = forNet.filter((p) => keys.includes(p.tariffKey));
@@ -181,6 +188,8 @@ export interface StationDetail {
 	lat: number;
 	lng: number;
 	network: { slug: string; name: string; websiteUrl: string | null };
+	/** the site's owner sets the price here, not the network */
+	hostPriced: boolean;
 	connectors: { type: ConnectorType; powerKw: number; count: number }[];
 	prices: {
 		mode: 'DC' | 'AC';
@@ -236,6 +245,7 @@ export async function stationDetail(db: Db, slug: string): Promise<StationDetail
 		lat: st.location.y,
 		lng: st.location.x,
 		network: { slug: net.slug, name: net.name, websiteUrl: net.websiteUrl },
+		hostPriced: st.hostPriced,
 		connectors: cons.map((c) => ({
 			type: c.type as ConnectorType,
 			powerKw: c.powerKw,
@@ -337,7 +347,8 @@ export interface TrendSeries {
 /**
  * Price history for the trend graph. With three networks priced per station there is
  * no single "network price" — each line plots the network's CHEAPEST current price
- * (min across its network-wide + station rows) at every change point.
+ * (min across its network-wide + station rows) at every change point. Host-priced
+ * stations are left out, like on the rate card.
  */
 export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSeries[]> {
 	const keys: TariffKey[] = mode === 'AC' ? ['AC'] : ['DC', 'DC_150'];
@@ -349,7 +360,7 @@ export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSerie
 			.leftJoin(stations, eq(prices.stationId, stations.id))
 			.where(or(isNull(prices.stationId), eq(stations.isActive, true)))
 	]);
-	const all = rawAll.map((r) => r.prices);
+	const all = rawAll.filter((r) => !r.stations?.hostPriced).map((r) => r.prices);
 	const rows = all
 		.filter((p) => (keys as string[]).includes(p.tariffKey))
 		.sort((a, b) => a.validFrom.getTime() - b.validFrom.getTime() || a.id - b.id);
