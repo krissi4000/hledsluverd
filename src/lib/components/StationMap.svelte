@@ -155,7 +155,10 @@
 				selectedId = s.id;
 				revealAboveCard(s);
 			});
-			return new maplibregl.Marker({ element: wrap }).setLngLat([s.lng, s.lat]).addTo(map!);
+			// anchor at the bottom: the tip under the pill points at the exact location
+			return new maplibregl.Marker({ element: wrap, anchor: 'bottom' })
+				.setLngLat([s.lng, s.lat])
+				.addTo(map!);
 		});
 	});
 
@@ -217,7 +220,14 @@
 		opacity: 0.7;
 		padding: 1rem 0;
 	}
+	/* the wrap's bottom edge is the marker anchor, so it reserves room for the tip */
+	:global(.pin-wrap) {
+		display: flex;
+		padding-bottom: var(--pin-tip);
+		--pin-tip: 6px;
+	}
 	:global(.pin) {
+		position: relative;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
@@ -233,9 +243,31 @@
 		line-height: 1;
 		cursor: pointer;
 		box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
+		/* scale around the tip so the pin never drifts off its location */
+		transform-origin: 50% calc(100% + var(--pin-tip));
 		transition:
 			transform 0.12s,
 			background-color 0.12s;
+	}
+	/* teardrop tip: a rotated square clipped to its lower half, sharing the pill's
+	   fill and border; it overlaps the pill's bottom border by 1px to hide the seam */
+	:global(.pin)::after {
+		content: '';
+		position: absolute;
+		left: 50%;
+		bottom: 1px;
+		width: 10px;
+		height: 10px;
+		box-sizing: border-box;
+		background: var(--pin-bg, #fff);
+		border-right: 1px solid var(--pin-border, rgb(0 0 0 / 12%));
+		border-bottom: 1px solid var(--pin-border, rgb(0 0 0 / 12%));
+		clip-path: polygon(100% 0, 100% 100%, 0 100%);
+		transform: translate(-50%, 50%) rotate(45deg);
+		pointer-events: none;
+	}
+	:global(.pin-wrap.selected .pin)::after {
+		border-color: var(--text, #111a15);
 	}
 	:global(.pin-unit) {
 		margin-left: 1px;

@@ -10,8 +10,6 @@
 	"th_price": "Verð/kWh",
 	"th_connectors": "Tengi",
 	"th_free": "Laust",
-	"filter_all_connectors": "Öll tengi",
-	"filter_all_networks": "Öll fyrirtæki",
 	"price_unknown": "verð óþekkt",
 	"no_results": "Engar stöðvar fundust með þessum síum.",
 	"cheapest": "ódýrast",

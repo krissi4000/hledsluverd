@@ -69,12 +69,6 @@
 		<div class="filter-row">
 			<span class="filter-label" aria-hidden="true">{m.th_connectors()}</span>
 			<span class="pills" role="group" aria-label={m.th_connectors()}>
-				<a
-					class="pill"
-					href={href({ tengi: null })}
-					class:active={!connector}
-					aria-current={!connector ? 'page' : undefined}>{m.filter_all_connectors()}</a
-				>
 				{#each CONNECTOR_TYPES as t (t)}
 					<a
 						class="pill"
@@ -89,12 +83,6 @@
 		<div class="filter-row">
 			<span class="filter-label" aria-hidden="true">{m.th_network()}</span>
 			<span class="pills" role="group" aria-label={m.th_network()}>
-				<a
-					class="pill"
-					href={href({ fyrirtaeki: null })}
-					class:active={!network}
-					aria-current={!network ? 'page' : undefined}>{m.filter_all_networks()}</a
-				>
 				{#each networkOptions as n (n.slug)}
 					<a
 						class="pill has-logo"

@@ -136,7 +136,7 @@ export function extractActionId(chunkJs: string): string | null {
 
 async function deriveActionId(html: string): Promise<string> {
 	const urls = [...new Set(html.match(/\/_next\/static\/chunks\/[a-zA-Z0-9_.-]+\.js/g) ?? [])];
-	for (const url of urls.slice(0, 40)) {
+	for (const url of urls) {
 		const res = await fetch(`https://n1.is${url}`, { headers: UA });
 		if (!res.ok) continue;
 		const id = extractActionId(await res.text());
