@@ -6,6 +6,7 @@
 	import type { LatLng } from '$lib/geo';
 	import { networkColor, networkInitials, networkLogo } from '$lib/networks';
 	import { priceRanks, rankColors } from '$lib/price-scale';
+	import { unknownStalls } from '$lib/availability';
 
 	interface PinStation {
 		id: number;
@@ -20,6 +21,7 @@
 		freeCount?: number | null;
 		totalCount?: number | null;
 		availabilityFetchedAt?: Date | null;
+		stallCount?: number | null;
 	}
 
 	// Pins have no room for an age label, so they only carry availability that is
@@ -27,7 +29,9 @@
 	// The tooltip always states the age (honesty rule: shown availability has an age).
 	const PIN_AVAILABILITY_MAX_AGE_MS = 30 * 60 * 1000;
 
-	function pinAvailability(s: PinStation): { free: number; total: number; age: string } | null {
+	function pinAvailability(
+		s: PinStation
+	): { free: number; total: number; unknown: number; age: string } | null {
 		const { freeCount: free, totalCount: total, availabilityFetchedAt: at } = s;
 		if (free == null || total == null || total === 0 || !at) return null;
 		if (Date.now() - at.getTime() > PIN_AVAILABILITY_MAX_AGE_MS) return null;
@@ -38,7 +42,7 @@
 				: p.unit === 'h'
 					? m.age_h({ n: p.n })
 					: m.age_d({ n: p.n });
-		return { free, total, age };
+		return { free, total, unknown: unknownStalls(s.stallCount ?? null, total), age };
 	}
 
 	let {
@@ -111,9 +115,12 @@
 				el.style.setProperty('--pin-border', c.border);
 			}
 			const avail = pinAvailability(s);
-			const title = s.name ? `${s.name} · ${s.networkName}` : s.networkName;
+			const title = [s.name, s.networkName, s.mode].filter(Boolean).join(' · ');
 			el.title = avail
-				? `${title} · ${m.pin_free({ free: avail.free, total: avail.total })} (${avail.age})`
+				? `${title} · ${m.pin_free({ free: avail.free, total: avail.total })} (${avail.age})` +
+					(avail.unknown
+						? ` · ${m.avail_partial({ total: avail.total, all: avail.total + avail.unknown, unknown: avail.unknown })}`
+						: '')
 				: title;
 			const logoUrl = networkLogo(s.networkSlug);
 			if (logoUrl) {
@@ -141,12 +148,28 @@
 				label.append(unit);
 			}
 			el.append(label);
+			// AC (slow) and DC (fast) prices are not comparable, so every pin says which it is
+			if (s.mode) {
+				const tag = document.createElement('span');
+				tag.className = `pin-mode pin-mode-${s.mode.toLowerCase()}`;
+				tag.dataset.testid = 'map-pin-mode';
+				tag.textContent = s.mode;
+				el.dataset.mode = s.mode;
+				el.append(tag);
+			}
 			if (avail) {
 				const free = document.createElement('span');
 				free.className = avail.free > 0 ? 'pin-avail' : 'pin-avail pin-avail-none';
 				free.dataset.testid = 'map-pin-availability';
 				free.textContent = `${avail.free}/${avail.total}`;
 				el.append(free);
+				if (avail.unknown) {
+					const unk = document.createElement('span');
+					unk.className = 'pin-unknown';
+					unk.dataset.testid = 'map-pin-unknown';
+					unk.textContent = `?/${avail.unknown}`;
+					el.append(unk);
+				}
 			}
 			wrap.append(el);
 			pinEls.set(s.id, wrap);
@@ -215,6 +238,8 @@
 		width: 100%;
 		height: 100%;
 		min-height: 16rem;
+		/* keep the markers' z-indexes inside the map, under overlays drawn over it */
+		isolation: isolate;
 	}
 	.fallback {
 		opacity: 0.7;
@@ -275,6 +300,25 @@
 		font-weight: 600;
 		opacity: 0.7;
 	}
+	:global(.pin-mode) {
+		margin-left: 1px;
+		padding: 2px 3px;
+		border-radius: 4px;
+		font-size: 0.55rem;
+		font-weight: 750;
+		letter-spacing: 0.02em;
+		line-height: 1;
+	}
+	:global(.pin-mode-dc) {
+		background: var(--text, #111a15);
+		color: #fff;
+	}
+	/* AC: outlined, so slow-charging pins read differently at a glance */
+	:global(.pin-mode-ac) {
+		padding: 1px 2px;
+		border: 1px solid currentColor;
+		background: rgb(255 255 255 / 70%);
+	}
 	:global(.pin-avail) {
 		display: inline-flex;
 		align-items: center;
@@ -293,6 +337,15 @@
 		border-radius: 50%;
 		background: #16a34a;
 		box-shadow: 0 0 0 1px #fff;
+	}
+	/* stalls with no live status (see $lib/availability) */
+	:global(.pin-unknown) {
+		padding: 1px 4px;
+		border-radius: 999px;
+		background: rgb(0 0 0 / 8%);
+		color: var(--muted, #5d6b63);
+		font-size: 0.65rem;
+		font-weight: 650;
 	}
 	:global(.pin-avail-none)::before {
 		background: #9ca3af;

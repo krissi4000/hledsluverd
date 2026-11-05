@@ -18,7 +18,7 @@ test('homepage renders the rate card and a station list sorted by price', async 
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
 
 	// unknown-price rows render no price cell and must sort last; some networks
-	// (Tesla) stay app-priced indefinitely, so such rows always exist
+	// stay unpriced for long stretches, so such rows always exist
 	const rows = page.locator('[data-testid="station-row"]');
 	await expect(rows.first().locator('[data-testid="price"]')).toHaveCount(1);
 	await expect(rows.last().locator('[data-testid="price"]')).toHaveCount(0);
@@ -129,6 +129,60 @@ test('map page renders price pins and a mini-card linking to the station', async
 	await expect(card).toBeVisible();
 	await expect(card.locator('a[href^="/stod/"]').first()).toBeVisible();
 	await expect(card.locator('[data-testid="card-availability"]')).toHaveText(/—|\d+\/\d+/);
+});
+
+test('network toggles: Tesla starts hidden, toggling shows and hides, reset restores', async ({
+	page
+}) => {
+	await page.goto('/');
+	const rows = page.locator('[data-testid="station-row"]');
+	const tesla = page.locator('[data-testid="network-toggle"][data-network="tesla"]');
+	await expect(tesla).toHaveAttribute('data-on', 'false');
+	await expect(page.locator('[data-testid="network-toggle"][data-on="true"]')).not.toHaveCount(0);
+	await expect(page.locator('[data-testid="station-row"][data-network="tesla"]')).toHaveCount(0);
+	const before = await rows.count();
+
+	await tesla.click();
+	await expect(tesla).toHaveAttribute('data-on', 'true');
+	await expect(
+		page.locator('[data-testid="station-row"][data-network="tesla"]').first()
+	).toBeVisible();
+	expect(await rows.count()).toBeGreaterThan(before);
+
+	// hide another network: none of its rows remain
+	const on = page.locator('[data-testid="network-toggle"][data-network="on"]');
+	await on.click();
+	await expect(on).toHaveAttribute('data-on', 'false');
+	await expect(page.locator('[data-testid="station-row"][data-network="on"]')).toHaveCount(0);
+
+	await page.locator('[data-testid="network-reset"]').click();
+	await expect(page).not.toHaveURL(/fyrirtaeki/);
+	await expect(tesla).toHaveAttribute('data-on', 'false');
+	await expect(on).toHaveAttribute('data-on', 'true');
+	expect(await rows.count()).toBe(before);
+});
+
+test('map filter menu hides networks and AC/DC pins, and every pin says AC or DC', async ({
+	page
+}) => {
+	await page.goto('/kort');
+	const pins = page.locator('[data-testid="map-pin"]');
+	await expect(pins.first()).toBeVisible({ timeout: 15000 });
+	const all = await pins.count();
+	await expect(page.locator('[data-testid="map-pin-mode"]')).toHaveCount(all);
+
+	await page.locator('[data-testid="map-filters-toggle"]').click();
+	const panel = page.locator('[data-testid="map-filters"]');
+	await expect(panel).toBeVisible();
+	// switch AC off: only DC pins remain
+	await panel.getByRole('link', { name: /AC/ }).click();
+	await expect(page).toHaveURL(/afl=DC/);
+	await expect(pins.and(page.locator('[data-mode="AC"]'))).toHaveCount(0);
+	expect(await pins.count()).toBeLessThan(all);
+
+	await page.locator('[data-testid="map-filters-reset"]').click();
+	await expect(page).not.toHaveURL(/afl=/);
+	await expect(pins).toHaveCount(all);
 });
 
 test('car filter: pick a car, the list narrows to stations it fits, and the car is remembered', async ({

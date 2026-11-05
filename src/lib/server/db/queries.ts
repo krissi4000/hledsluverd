@@ -4,6 +4,15 @@ import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
 import { availability, connectors, networks, prices, stations } from './schema';
 
+/** Stall count where ours is per stall (supercharge.info: one plug per stall), else
+ * null — see unknownStalls in $lib/availability. */
+function perStallCount(
+	st: { externalIds: { supercharge?: number } },
+	cons: { count: number }[]
+): number | null {
+	return st.externalIds.supercharge != null ? cons.reduce((n, c) => n + c.count, 0) : null;
+}
+
 export interface CurrentPrice {
 	/** prices.id of the current row — admin uses it to bump verified_at */
 	id: number;
@@ -117,6 +126,8 @@ export interface StationRow {
 	freeCount: number | null;
 	totalCount: number | null;
 	availabilityFetchedAt: Date | null;
+	/** per-stall count, set only where it can be compared with TomTom's total */
+	stallCount: number | null;
 }
 
 /**
@@ -172,7 +183,8 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 			})),
 			freeCount: availByStation.get(s.id)?.freeCount ?? null,
 			totalCount: availByStation.get(s.id)?.totalCount ?? null,
-			availabilityFetchedAt: availByStation.get(s.id)?.fetchedAt ?? null
+			availabilityFetchedAt: availByStation.get(s.id)?.fetchedAt ?? null,
+			stallCount: perStallCount(s, all)
 		});
 	}
 	return rows.sort(
@@ -200,6 +212,8 @@ export interface StationDetail {
 		verifiedAt: Date;
 	}[];
 	availability: { freeCount: number | null; totalCount: number | null; fetchedAt: Date } | null;
+	/** per-stall count, set only where it can be compared with TomTom's total */
+	stallCount: number | null;
 	tomtomId: string | null;
 }
 
@@ -259,6 +273,7 @@ export async function stationDetail(db: Db, slug: string): Promise<StationDetail
 					fetchedAt: avail[0].fetchedAt
 				}
 			: null,
+		stallCount: perStallCount(st, cons),
 		tomtomId: st.externalIds.tomtom ?? null
 	};
 }
@@ -278,6 +293,8 @@ export interface MapStation {
 	freeCount: number | null;
 	totalCount: number | null;
 	availabilityFetchedAt: Date | null;
+	/** per-stall count, set only where it can be compared with TomTom's total */
+	stallCount: number | null;
 	tomtomId: string | null;
 }
 
@@ -331,6 +348,7 @@ export async function mapStations(db: Db): Promise<MapStation[]> {
 			freeCount: a?.freeCount ?? null,
 			totalCount: a?.totalCount ?? null,
 			availabilityFetchedAt: a?.fetchedAt ?? null,
+			stallCount: perStallCount(s, all),
 			tomtomId: s.externalIds.tomtom ?? null
 		});
 	}

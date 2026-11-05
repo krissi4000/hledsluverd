@@ -3,6 +3,7 @@ import { rateCard, stationList } from '$lib/server/db/queries';
 import { carBySlug } from '$lib/server/db/cars';
 import { carPlugForMode, effectiveKw } from '$lib/ev';
 import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
+import { NETWORK_PARAM, defaultNetworks, parseShown } from '$lib/filter-params';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -11,7 +12,6 @@ export const load: PageServerLoad = async ({ url }) => {
 	const connector = (CONNECTOR_TYPES as readonly string[]).includes(tengi ?? '')
 		? (tengi as ConnectorType)
 		: null;
-	const rawNetwork = url.searchParams.get('fyrirtaeki');
 	const carSlug = url.searchParams.get('bill');
 
 	const [cards, allStations, car] = await Promise.all([
@@ -27,13 +27,15 @@ export const load: PageServerLoad = async ({ url }) => {
 	const networkOptions = [...new Map(allStations.map((s) => [s.networkSlug, s.networkName]))]
 		.map(([slug, name]) => ({ slug, name }))
 		.sort((a, b) => a.name.localeCompare(b.name, 'is'));
-	const network = networkOptions.some((n) => n.slug === rawNetwork) ? rawNetwork : null;
+	const slugs = networkOptions.map((n) => n.slug);
+	const networkDefaults = defaultNetworks(slugs, car?.make);
+	const networks = parseShown(url.searchParams.get(NETWORK_PARAM), slugs, networkDefaults);
 
 	const stations = allStations
 		.filter(
 			(s) =>
 				(!connector || s.connectors.some((c) => c.type === connector)) &&
-				(!network || s.networkSlug === network) &&
+				networks.includes(s.networkSlug) &&
 				(!car || s.connectors.some((c) => c.type === carPlug))
 		)
 		.map((s) => ({
@@ -50,7 +52,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	return {
 		mode,
 		connector,
-		network,
+		networks,
+		networkDefaults,
 		car: car && { slug: car.slug, make: car.make, model: car.model, variant: car.variant },
 		cards,
 		stations,

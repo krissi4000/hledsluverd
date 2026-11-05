@@ -7,13 +7,18 @@
 	import { ownBrandPriceOnly } from '$lib/networks';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import CarFilter from '$lib/components/CarFilter.svelte';
+	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
+	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
+	import { unknownStalls } from '$lib/availability';
+	import { NETWORK_PARAM } from '$lib/filter-params';
 	import type { StationRow } from '$lib/server/db/queries';
 
 	let {
 		stations,
 		mode,
 		connector,
-		network,
+		networks,
+		networkDefaults,
 		networkOptions,
 		car
 	}: {
@@ -21,7 +26,9 @@
 		stations: (StationRow & { carKw?: number | null })[];
 		mode: 'AC' | 'DC';
 		connector: string | null;
-		network: string | null;
+		/** slugs of the networks shown */
+		networks: string[];
+		networkDefaults: string[];
 		networkOptions: { slug: string; name: string }[];
 		car: { slug: string; make: string; model: string; variant: string | null } | null;
 	} = $props();
@@ -72,7 +79,7 @@
 				{#each CONNECTOR_TYPES as t (t)}
 					<a
 						class="pill"
-						href={href({ tengi: t })}
+						href={href({ tengi: connector === t ? null : t })}
 						class:active={connector === t}
 						aria-current={connector === t ? 'page' : undefined}
 						><ConnectorIcon type={t} size={18} />{t}</a
@@ -82,17 +89,12 @@
 		</div>
 		<div class="filter-row">
 			<span class="filter-label" aria-hidden="true">{m.th_network()}</span>
-			<span class="pills" role="group" aria-label={m.th_network()}>
-				{#each networkOptions as n (n.slug)}
-					<a
-						class="pill has-logo"
-						href={href({ fyrirtaeki: n.slug })}
-						class:active={network === n.slug}
-						aria-current={network === n.slug ? 'page' : undefined}
-						><NetworkLogo slug={n.slug} name={n.name} size={22} />{n.name}</a
-					>
-				{/each}
-			</span>
+			<NetworkToggles
+				options={networkOptions}
+				shown={networks}
+				defaults={networkDefaults}
+				href={(v) => href({ [NETWORK_PARAM]: v })}
+			/>
 		</div>
 		<div class="filter-row">
 			<span class="filter-label" aria-hidden="true">{m.filter_car()}</span>
@@ -115,7 +117,7 @@
 				</thead>
 				<tbody>
 					{#each stations as s (s.slug)}
-						<tr data-testid="station-row">
+						<tr data-testid="station-row" data-network={s.networkSlug}>
 							<td class="station">
 								<div class="station-cell">
 									<NetworkLogo slug={s.networkSlug} name={s.networkName} size={36} />
@@ -188,7 +190,10 @@
 								{#if s.freeCount !== null && s.totalCount !== null}
 									<span class="avail num" class:has-free={s.freeCount > 0} data-testid="free-count"
 										>{s.freeCount}/{s.totalCount}</span
-									>
+									><UnknownStalls
+										unknown={unknownStalls(s.stallCount, s.totalCount)}
+										total={s.totalCount}
+									/>
 									{#if s.availabilityFetchedAt}<small class="verified"
 											>{age(s.availabilityFetchedAt)}</small
 										>{/if}

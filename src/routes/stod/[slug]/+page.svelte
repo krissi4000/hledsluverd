@@ -2,6 +2,8 @@
 	import Chart from 'chart.js/auto';
 	import * as m from '$lib/paraglide/messages';
 	import StationMap from '$lib/components/StationMap.svelte';
+	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
+	import { unknownStalls } from '$lib/availability';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
 	import { networkColor, ownBrandPriceOnly } from '$lib/networks';
@@ -118,7 +120,11 @@
 					<h3>{m.station_availability()}</h3>
 					<p class="avail" data-testid="station-availability">
 						{#if st.availability && st.availability.freeCount !== null && st.availability.totalCount !== null}
-							<strong class="num">{st.availability.freeCount}/{st.availability.totalCount}</strong>
+							<strong class="num">{st.availability.freeCount}/{st.availability.totalCount}</strong
+							><UnknownStalls
+								unknown={unknownStalls(st.stallCount, st.availability.totalCount)}
+								total={st.availability.totalCount}
+							/>
 							<small class="verified">{age(st.availability.fetchedAt)}</small>
 						{:else}—{/if}
 					</p>
