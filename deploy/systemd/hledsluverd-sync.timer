@@ -1,0 +1,11 @@
+[Unit]
+Description=Run hledsluverd station sync daily
+
+[Timer]
+# before the 05:00 scrape, so a new Orkan station gets its price within the hour
+OnCalendar=*-*-* 04:30:00
+RandomizedDelaySec=600
+Persistent=true
+
+[Install]
+WantedBy=timers.target

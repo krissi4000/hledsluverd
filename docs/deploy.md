@@ -20,6 +20,7 @@ ISNIC (hledsluverd.is) → Cloudflare DNS (grey-cloud, DNS only)
   │            └─→ PostgreSQL 17 + PostGIS (localhost)  │
   │ hledsluverd-scrape.timer  — hourly npm run scrape   │
   │ hledsluverd-backup.timer  — nightly pg_dump, 14 d   │
+  │ hledsluverd-sync.timer    — daily station sync      │
   └─────────────────────────────────────────────────────┘
               ▲
   GitHub Actions (push to main) — ssh → deploy/deploy.sh
@@ -237,9 +238,9 @@ scp root@<ip>:'/srv/hledsluverd/backups/hledsluverd_*.dump' ./offsite/
 Restore drill (practice this once before launch):
 
 ```sh
-systemctl stop hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer
+systemctl stop hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer hledsluverd-sync.timer
 sudo -u hledsluverd pg_restore --clean --if-exists -d hledsluverd <file>.dump
-systemctl start hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer
+systemctl start hledsluverd hledsluverd-scrape.timer hledsluverd-backup.timer hledsluverd-sync.timer
 ```
 
 `pg_restore` then exits non-zero with `must be owner of extension postgis`
@@ -253,10 +254,12 @@ data is restored. Any other `ERROR:` is a real failure.
 ```sh
 journalctl -u hledsluverd -f                     # app logs (live)
 journalctl -u hledsluverd-scrape --since -2h     # last scrape output
+journalctl -u hledsluverd-sync --since -1d       # last station sync output
 systemctl status hledsluverd                     # app state
 systemctl list-timers 'hledsluverd*'             # next scrape/backup runs
 systemctl start hledsluverd-scrape.service       # run a scrape right now
 systemctl start hledsluverd-backup.service       # run a backup right now
+systemctl start hledsluverd-sync.service         # run the station sync right now
 sudo -u hledsluverd bash /srv/hledsluverd/app/deploy/deploy.sh   # manual deploy
 ```
 

@@ -47,6 +47,6 @@ CI (`.github/workflows/deploy.yml`) runs build → lint → check → `test:unit
 
 **i18n:** Paraglide (`project.inlang`, `messages/is.json` and `messages/en.json`). Locale comes from a cookie with Icelandic as the base, set via `/lang`. Every user-facing string goes in both message files and is used as `m.key()`.
 
-**Deployment:** a single VPS runs Caddy → `node build/index.js` under systemd → Postgres. An hourly systemd timer runs `npm run scrape`, and backups are a nightly `pg_dump`. The units and scripts are in `deploy/`, and the runbook is `docs/deploy.md`.
+**Deployment:** a single VPS runs Caddy → `node build/index.js` under systemd → Postgres. An hourly systemd timer runs `npm run scrape`, a daily one (04:30) runs `sync:superchargers` and `sync:e1` and pushes ntfy notes on new or vanished stations, and backups are a nightly `pg_dump`. The units and scripts are in `deploy/`, and the runbook is `docs/deploy.md`.
 
 `docs/superpowers/plans/` holds the original phase plans (1: foundation, 2: scrapers/history/admin, 3: map/finder/availability). They are useful for understanding why things were built the way they were.

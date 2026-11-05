@@ -215,11 +215,13 @@ cp $APP_DIR/deploy/systemd/hledsluverd.service \
 	$APP_DIR/deploy/systemd/hledsluverd-scrape.timer \
 	$APP_DIR/deploy/systemd/hledsluverd-backup.service \
 	$APP_DIR/deploy/systemd/hledsluverd-backup.timer \
+	$APP_DIR/deploy/systemd/hledsluverd-sync.service \
+	$APP_DIR/deploy/systemd/hledsluverd-sync.timer \
 	/etc/systemd/system/
 systemctl daemon-reload
 # NOT --now: there is no build yet — the first deploy.sh run builds and starts
 systemctl enable hledsluverd.service
-systemctl enable --now hledsluverd-scrape.timer hledsluverd-backup.timer
+systemctl enable --now hledsluverd-scrape.timer hledsluverd-backup.timer hledsluverd-sync.timer
 
 echo "== Caddyfile"
 grep -q hledsluverd.is /etc/caddy/Caddyfile 2>/dev/null ||
