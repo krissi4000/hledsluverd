@@ -164,7 +164,7 @@
 										>
 									{/each}
 								</span></span
-							><CarSilhouette car={c} width={72} /></a
+							><CarSilhouette car={c} width={88} /></a
 						>
 					</li>
 				{/each}
@@ -198,7 +198,8 @@
 		position: absolute;
 		top: calc(100% + 0.3rem);
 		left: 0;
-		right: 0;
+		/* a little wider than the search box, room for the plugs and the car's side view */
+		width: max(100%, min(28rem, calc(100vw - 2rem)));
 		z-index: 30;
 		list-style: none;
 		margin: 0;

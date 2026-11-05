@@ -27,7 +27,8 @@
 		"match:virta": "tsx scripts/match-virta.ts",
 		"match:n1": "tsx scripts/match-n1.ts",
 		"match:tomtom": "tsx scripts/match-tomtom.ts",
-		"sync:superchargers": "tsx scripts/sync-superchargers.ts"
+		"sync:superchargers": "tsx scripts/sync-superchargers.ts",
+		"sync:e1": "tsx scripts/sync-e1.ts"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.20.2",

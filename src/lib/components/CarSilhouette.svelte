@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { carProfile, PROFILE_HEIGHT, PROFILE_WIDTH, type CarShape } from '$lib/car-profile';
 
-	// Side view of the car, shaped by its body style and drawn to scale from its real
-	// dimensions. Always decorative: the make and model are printed next to it.
+	// Side view of the car: shaped after the real model (car-shapes.ts) and drawn to scale
+	// from its dimensions. Always decorative: the make and model are printed next to it.
 	let { car, width = 64 }: { car: CarShape; width?: number } = $props();
 
 	const p = $derived(carProfile(car));
@@ -17,16 +17,10 @@
 >
 	<path class="body" d={p.body} />
 	<path class="glass" d={p.glass} />
-	{#if p.pillar}
-		<rect
-			class="body"
-			x={p.pillar.x}
-			y={p.pillar.y}
-			width={p.pillar.width}
-			height={p.pillar.height}
-		/>
-	{/if}
-	{#each p.wheels as w, i (i)}
+	{#each p.pillars as pl, i (i)}
+		<rect class="body" x={pl.x} y={pl.y} width={pl.width} height={pl.height} />
+	{/each}
+	{#each p.spare ? [...p.wheels, p.spare] : p.wheels as w, i (i)}
 		<circle class="tyre" cx={w.cx} cy={w.cy} r={w.r} />
 		<circle class="hub" cx={w.cx} cy={w.cy} r={w.r * 0.45} />
 	{/each}

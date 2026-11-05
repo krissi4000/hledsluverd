@@ -52,6 +52,13 @@ export async function fetchOrkanHtml(): Promise<string> {
 
 const norm = (s: string) => s.toLowerCase().normalize('NFC').trim();
 
+/** Price-table names that share no word with the station's e1 name (checked 2026-11-05). */
+const ROW_ALIASES: Record<string, string> = {
+	// e1 "Orkan - Miklabraut Suður": the forecourt on the Kringlan side of Miklabraut
+	'miklabraut við kringlu': 'miklabraut suður',
+	'selfoss rafhleðsla': 'selfoss'
+};
+
 /**
  * Price-table names are bare place names, sometimes compound ("Austurmörk, Hveragerði");
  * ours carry "(Orkan)" and OCM addresses. Try the full name, then comma-separated
@@ -61,7 +68,7 @@ export function matchOrkanStations<T extends { name: string; address: string | n
 	rowName: string,
 	sts: T[]
 ): T[] {
-	const full = norm(rowName);
+	const full = ROW_ALIASES[norm(rowName)] ?? norm(rowName);
 	const candidates = [full, ...full.split(/\s*,\s*/).filter((t) => t.length >= 4)];
 	for (const token of candidates) {
 		const matches = sts.filter(

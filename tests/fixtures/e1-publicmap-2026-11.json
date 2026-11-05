@@ -1,0 +1,5807 @@
+{
+	"data": [
+		{
+			"id": 98235,
+			"name": {
+				"en": "Orkan - Vesturlandsvegur"
+			},
+			"status": "active",
+			"locationId": 37971,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.123824,
+				"longitude": -21.8023681
+			},
+			"address": {
+				"en": "Orkan - Vesturlandsvegur"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 98357,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15816",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102468,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98358,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15810",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102469,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98359,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15818",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102470,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98360,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15813",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102471,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98362,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15809",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102473,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98363,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15804",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102474,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 142538,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15952",
+					"currentType": "dc",
+					"maxPower": 240000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191156,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 142640,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15808",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 147615,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 142641,
+					"externalId": null,
+					"networkId": "10",
+					"physicalReference": "15953",
+					"currentType": "dc",
+					"maxPower": 240000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191157,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98361,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15829",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 102472,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 139,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2023-08-23T11:55:49+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 98679,
+			"name": {
+				"en": "Orkan - Birkimel"
+			},
+			"status": "active",
+			"locationId": 38097,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.1419342,
+				"longitude": -21.9532807
+			},
+			"address": {
+				"en": "Orkan, Birkimelur, Reykjavík, Iceland"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 98808,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "14481",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102922,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 150,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98810,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "14599",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102924,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 150,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98811,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15783",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102925,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 150,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98812,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "14482",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102926,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 150,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98814,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "14480",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 102928,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 150,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 98813,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15784",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 102927,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 150,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2023-08-29T13:29:49+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 99744,
+			"name": {
+				"en": "Orkan - Laugavegur"
+			},
+			"status": "active",
+			"locationId": 38447,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.14027,
+				"longitude": -21.89513
+			},
+			"address": {
+				"en": "Laugavegur 180, 105 Reykjavík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 99883,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "14491",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 104016,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 82,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 99884,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "14492",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 104017,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 82,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 99887,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "14495",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 104020,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 82,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 99886,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "14494",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "preparing",
+					"connectors": [
+						{
+							"id": 104019,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 82,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 99881,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15781",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 104014,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 82,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 99885,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "14493",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 104018,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 82,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2023-09-19T12:15:29+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 101353,
+			"name": {
+				"en": "Orkan - Hörgárbraut"
+			},
+			"status": "active",
+			"locationId": 38937,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 65.6956893,
+				"longitude": -18.1217865
+			},
+			"address": {
+				"en": "Hörgárbraut, 603 Akureyri"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 101496,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15915",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105638,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101497,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15917",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105639,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101498,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15911",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105640,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101499,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15912",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105641,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101500,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15913",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105642,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101501,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15914",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105643,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101502,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15916",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105644,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 101605,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15918",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 105747,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 147,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2023-09-28T13:57:37+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 111418,
+			"name": {
+				"en": "Orkan - Fitjum"
+			},
+			"status": "active",
+			"locationId": 41878,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.972591,
+				"longitude": -22.5427273
+			},
+			"address": {
+				"en": "Fitjar, 260 Njarðvík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 111759,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15787",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 115974,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111760,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15788",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 115975,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111761,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15789",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 115976,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111763,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15786",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 115978,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111764,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15823",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 115979,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111765,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15830",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": 300,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 115980,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111758,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15760",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 115973,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 111762,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15790",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 500,
+					"status": "active",
+					"hardwareStatus": "suspendedEV",
+					"connectors": [
+						{
+							"id": 115977,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 110,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-01-23T09:33:31+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 115265,
+			"name": {
+				"en": "Orkan - Hella"
+			},
+			"status": "active",
+			"locationId": 42911,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.8309601,
+				"longitude": -20.3928996
+			},
+			"address": {
+				"en": "Faxaflatir 4, 850 Hella, Iceland"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 115459,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15797",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 119688,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115460,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "11712",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 119689,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115461,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15800",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": 125,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 119690,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115463,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15799",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 119692,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115464,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15782",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 119693,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115465,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15833",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 119694,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115867,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15827",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 120197,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 115868,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15828",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 120198,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 117,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-02-21T09:16:08+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 127389,
+			"name": {
+				"en": "Orkan - Landeyjar"
+			},
+			"status": "active",
+			"locationId": 46649,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.6215988,
+				"longitude": -20.0321179
+			},
+			"address": {
+				"en": "Brúnir 1\r\n861 Hvolsvöllur"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 127631,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15811",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131944,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127632,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15802",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131945,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127633,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15815",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131946,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127634,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15807",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131947,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127635,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15805",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131948,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127636,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15820",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131949,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127637,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15941",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 131950,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 127630,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15801",
+					"currentType": "dc",
+					"maxPower": 320000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 131943,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 209,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-07-01T10:32:18+00:00",
+			"tags": []
+		},
+		{
+			"id": 130807,
+			"name": {
+				"en": "Orkan - Dalvegur"
+			},
+			"status": "active",
+			"locationId": 47959,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.105369,
+				"longitude": -21.8677957
+			},
+			"address": {
+				"en": "Dalvegur 20, 201 Reykjavík, Iceland"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 131064,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15743",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135388,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131065,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15744",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135389,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131066,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15759",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135390,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131067,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15742",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": 125,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135391,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131068,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15741",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135392,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131069,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15746",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135393,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131071,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15774",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 135395,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131939,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15745",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 136264,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 140,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 131063,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "5035",
+					"currentType": "dc",
+					"maxPower": null,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "disabled",
+					"hardwareStatus": "available",
+					"connectors": [],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": null,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-08-07T10:22:36+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 133221,
+			"name": {
+				"en": "Orkan - Miklabraut Norður"
+			},
+			"status": "active",
+			"locationId": 48508,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.1326052,
+				"longitude": -21.8925702
+			},
+			"address": {
+				"en": "Miklabraut 101 108, 108 Reykjavík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 133488,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15758",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 143905,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133490,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15780",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 137818,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133493,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15957",
+					"currentType": "dc",
+					"maxPower": 240000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191158,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133494,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15755",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 143906,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133496,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15842",
+					"currentType": "dc",
+					"maxPower": 240000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 137824,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 138998,
+					"externalId": null,
+					"networkId": "10",
+					"physicalReference": "15776",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 143352,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133489,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15756",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 0,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 137817,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133495,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15747",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 137823,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133491,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15757",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "suspendedEV",
+					"connectors": [
+						{
+							"id": 137819,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 133492,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15778",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": 600,
+					"status": "active",
+					"hardwareStatus": "suspendedEV",
+					"connectors": [
+						{
+							"id": 137820,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 148,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-09-04T09:50:23+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 142495,
+			"name": {
+				"en": "Orkan - Miklabraut Suður"
+			},
+			"status": "active",
+			"locationId": 40026,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.1318536,
+				"longitude": -21.8927968
+			},
+			"address": {
+				"en": "Miklabraut 101, 108 Reykjavík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 142777,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "14490",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 147753,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 142778,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "14483",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 147754,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 142779,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "14484",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 147755,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 146788,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "14486",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 151778,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 146789,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "14488",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 151779,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 146790,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "14485",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 151780,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 146911,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "14487",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 151900,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 146791,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "3023",
+					"currentType": "ac",
+					"maxPower": 0,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "disabled",
+					"hardwareStatus": "available",
+					"connectors": [],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": null,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 142780,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "14489",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 147756,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 149,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-11-13T13:28:32+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 148090,
+			"name": {
+				"en": "Orkan - Baulan"
+			},
+			"status": "active",
+			"locationId": 51889,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.6749374,
+				"longitude": -21.6648545
+			},
+			"address": {
+				"en": "Þjóðvegur, 311 Borgarnes"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 148389,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "14508",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 153384,
+							"status": "active",
+							"type": "ccs2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 161,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 148390,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "14509",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 153385,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 161,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 148391,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "14505",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 153386,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 161,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 148392,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "14498",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 153387,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 161,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 148393,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "14497",
+					"currentType": "dc",
+					"maxPower": 250000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 153388,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 161,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2024-12-19T13:47:16+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 149469,
+			"name": {
+				"en": "Orkan - Lambhagavegur"
+			},
+			"status": "active",
+			"locationId": 52310,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.1414688,
+				"longitude": -21.7588961
+			},
+			"address": {
+				"en": "Lambhagavegur 12, 113 Reykjavík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 149774,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "14504",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 154771,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 149775,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "14500",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 154772,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 149776,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "14502",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 154773,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 149778,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "14496",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 154775,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 164472,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "14499",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 169680,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 149773,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "14501",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 154770,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 149777,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "12171",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "suspendedEV",
+					"connectors": [
+						{
+							"id": 154774,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 164473,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "4978",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "faulted",
+					"connectors": [
+						{
+							"id": 169681,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 163,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-01-15T16:51:30+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 162013,
+			"name": {
+				"en": "Orkan - Freysnes"
+			},
+			"status": "active",
+			"locationId": 55869,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.9901572,
+				"longitude": -16.8950267
+			},
+			"address": {
+				"en": "Þjóðvegur, Öræfum, 785, IS"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 162358,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "12059",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 167558,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 183,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 162360,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "12087",
+					"currentType": "dc",
+					"maxPower": 350000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 167560,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 183,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 162361,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "12090",
+					"currentType": "dc",
+					"maxPower": 350000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 167561,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 183,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 162362,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "12085",
+					"currentType": "dc",
+					"maxPower": 350000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 167562,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 183,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 162359,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "2620",
+					"currentType": "dc",
+					"maxPower": 0,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "disabled",
+					"hardwareStatus": "available",
+					"connectors": [],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": null,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-05-09T12:15:59+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 162713,
+			"name": {
+				"en": "Orkan - Selfoss"
+			},
+			"status": "active",
+			"locationId": 55911,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.9320558,
+				"longitude": -21.0168097
+			},
+			"address": {
+				"en": "Suðurlandsvegur, 800 Selfoss"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 163064,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15771",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 168269,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163065,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15947",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 168270,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163066,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15765",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 168271,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163068,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15948",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 168273,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163069,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15770",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 168274,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163070,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15949",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 168275,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163063,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15950",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 168268,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 164321,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15772",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 169527,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 163067,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "2416",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "unavailable",
+					"connectors": [
+						{
+							"id": 168272,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 185,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-05-15T13:05:36+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 164430,
+			"name": {
+				"en": "Orkan - Hveragerði"
+			},
+			"status": "active",
+			"locationId": 51496,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.995618,
+				"longitude": -21.185245
+			},
+			"address": {
+				"en": "Austurmörk 22, 810 Hveragerði"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 164796,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15838",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 170006,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 160,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 164797,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15837",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 170007,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 160,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 164798,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15839",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 170008,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 160,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 164799,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15840",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 170009,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 160,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-06-03T10:12:39+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 166742,
+			"name": {
+				"en": "Orkan Ólafsvík"
+			},
+			"status": "active",
+			"locationId": 61901,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.894255,
+				"longitude": -23.70456
+			},
+			"address": {
+				"en": "Ólafsbraut 27, 355 Ólafsvík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 167111,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15764",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 172328,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 167112,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15767",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 172329,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 167113,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15762",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 172330,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 167114,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15766",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 172331,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 167115,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15942",
+					"currentType": "dc",
+					"maxPower": 240000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 172333,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 246,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-06-24T10:06:48+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 171749,
+			"name": {
+				"en": "Orkan - Litlatún 1"
+			},
+			"status": "active",
+			"locationId": 58245,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.0899923,
+				"longitude": -21.9260362
+			},
+			"address": {
+				"en": "Litlatún 1, 210 Garðabær"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 175677,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15803",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 180912,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175678,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15819",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 180913,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175679,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15814",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 180914,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175681,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15832",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 180916,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175682,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15812",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 180917,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175683,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15806",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 180918,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175675,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15821",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 180910,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175676,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15817",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 180911,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 200,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 175680,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "8792",
+					"currentType": "ac",
+					"maxPower": 0,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "disabled",
+					"hardwareStatus": "faulted",
+					"connectors": [
+						{
+							"id": 180915,
+							"status": "active",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": null,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-08-06T13:32:51+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 172876,
+			"name": {
+				"en": "Orkan - Smáralind"
+			},
+			"status": "active",
+			"locationId": 58662,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.1020639,
+				"longitude": -21.8844387
+			},
+			"address": {
+				"en": "Hagasmári 9, 200 Kópavogur, Iceland"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 179054,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15761",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184309,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179056,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15795",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184311,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179057,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15793",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184312,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179058,
+					"externalId": null,
+					"networkId": "6",
+					"physicalReference": "15748",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184313,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179059,
+					"externalId": null,
+					"networkId": "7",
+					"physicalReference": "15749",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184314,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179060,
+					"externalId": null,
+					"networkId": "8",
+					"physicalReference": "15750",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "220-240",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184315,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179061,
+					"externalId": null,
+					"networkId": "9",
+					"physicalReference": "15794",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 184316,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179053,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15796",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "charging",
+					"connectors": [
+						{
+							"id": 184308,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 179055,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "6193",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "disabled",
+					"hardwareStatus": "faulted",
+					"connectors": [
+						{
+							"id": 184310,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 201,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2025-08-20T09:39:17+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 185347,
+			"name": {
+				"en": "Orkan - Þorlákshöfn"
+			},
+			"status": "active",
+			"locationId": 57136,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 63.8589729,
+				"longitude": -21.3781162
+			},
+			"address": {
+				"en": "Óseyrarbraut 15, 815 Þorlákshöfn"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 185768,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15768",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191054,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185769,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15944",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191055,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185770,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15946",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191056,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185771,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15945",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191057,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185772,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15943",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191058,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 195,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2026-01-20T09:53:24+00:00",
+			"tags": [
+				"autocharge"
+			]
+		},
+		{
+			"id": 185509,
+			"name": {
+				"en": "Orkan - Suðurfell"
+			},
+			"status": "active",
+			"locationId": 40025,
+			"ownerPartnerId": 145,
+			"geoposition": {
+				"latitude": 64.1014664,
+				"longitude": -21.8312145
+			},
+			"address": {
+				"en": "Suðurfell 4, 111 Reykjavík"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 185965,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "15763",
+					"currentType": "dc",
+					"maxPower": 50000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191255,
+							"status": "active",
+							"type": "chademo",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 151,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185966,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "15773",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191256,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 151,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185967,
+					"externalId": null,
+					"networkId": "3",
+					"physicalReference": "15779",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191257,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 151,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185968,
+					"externalId": null,
+					"networkId": "4",
+					"physicalReference": "15775",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191258,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 151,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 185969,
+					"externalId": null,
+					"networkId": "5",
+					"physicalReference": "15777",
+					"currentType": "dc",
+					"maxPower": 400000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 191259,
+							"status": "active",
+							"type": "ccs2",
+							"format": "cable"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 151,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2026-05-28T11:03:48+00:00",
+			"tags": []
+		},
+		{
+			"id": 83662,
+			"name": {
+				"en": "Kringlan Norður"
+			},
+			"status": "out of order",
+			"locationId": 33914,
+			"ownerPartnerId": 101,
+			"geoposition": {
+				"latitude": 64.13159,
+				"longitude": -21.89457
+			},
+			"address": {
+				"en": "Kringlan 4-12, 103 Reykjavík"
+			},
+			"pin": "",
+			"networkStatus": "long-term unavailable",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 83745,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "6140",
+					"currentType": "ac",
+					"maxPower": 22000,
+					"maxVoltage": "400",
+					"maxAmperage": null,
+					"status": "active",
+					"hardwareStatus": "faulted",
+					"connectors": [
+						{
+							"id": 87272,
+							"status": "active",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 47,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"REMOTE_START_STOP_CAPABLE",
+							"RFID_READER"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2023-04-03T12:49:33+00:00",
+			"tags": [
+				"AC",
+				"AC 5%",
+				"AC500",
+				"APR23"
+			]
+		},
+		{
+			"id": 133,
+			"name": {
+				"en": "Orkusalan - Húsasmiðjan Akureyri"
+			},
+			"status": "active",
+			"locationId": 40,
+			"ownerPartnerId": 16,
+			"geoposition": {
+				"latitude": 65.6973229,
+				"longitude": -18.1230488
+			},
+			"address": {
+				"en": "Narðarnes 2, Njarðarnes 2, 603 Akureyri, Iceland"
+			},
+			"pin": "",
+			"networkStatus": "long-term unavailable",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 142,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "10092",
+					"currentType": "ac",
+					"maxPower": 22000,
+					"maxVoltage": "400",
+					"maxAmperage": 32,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 147,
+							"status": "active",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 48,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"RFID_READER",
+							"REMOTE_START_STOP_CAPABLE"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 143,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "10093",
+					"currentType": "ac",
+					"maxPower": 22000,
+					"maxVoltage": "400",
+					"maxAmperage": 32,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 148,
+							"status": "active",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 48,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"RFID_READER",
+							"REMOTE_START_STOP_CAPABLE"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2022-03-24T18:12:19+00:00",
+			"tags": [
+				"AC",
+				"AC 5%",
+				"AC990",
+				"MAR22"
+			]
+		},
+		{
+			"id": 134,
+			"name": {
+				"en": "Orkusalan - Húsasmiðjan Akureyri"
+			},
+			"status": "active",
+			"locationId": 40,
+			"ownerPartnerId": 16,
+			"geoposition": {
+				"latitude": 65.6973229,
+				"longitude": -18.1230488
+			},
+			"address": {
+				"en": "Narðarnes 2, Njarðarnes 2, 603 Akureyri, Iceland"
+			},
+			"pin": "",
+			"networkStatus": "available",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 144,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "10089",
+					"currentType": "ac",
+					"maxPower": 22000,
+					"maxVoltage": "400",
+					"maxAmperage": 32,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 149,
+							"status": "active",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 48,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"RFID_READER",
+							"REMOTE_START_STOP_CAPABLE"
+						],
+						"status": null
+					}
+				},
+				{
+					"id": 145,
+					"externalId": null,
+					"networkId": "2",
+					"physicalReference": "10090",
+					"currentType": "ac",
+					"maxPower": 22000,
+					"maxVoltage": "400",
+					"maxAmperage": 32,
+					"status": "active",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 150,
+							"status": "active",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 48,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"RFID_READER",
+							"REMOTE_START_STOP_CAPABLE"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2022-03-24T18:15:47+00:00",
+			"tags": [
+				"AC",
+				"AC 5%",
+				"AC990",
+				"MAR22"
+			]
+		},
+		{
+			"id": 60345,
+			"name": {
+				"en": "OV - Hvitanes"
+			},
+			"status": "active",
+			"locationId": 26042,
+			"ownerPartnerId": 66,
+			"geoposition": {
+				"latitude": 65.9922889,
+				"longitude": -22.8141713
+			},
+			"address": {
+				"en": "OV Hvitanes, 401 Isafjardardjup"
+			},
+			"pin": "",
+			"networkStatus": "long-term unavailable",
+			"hardwareStatus": "available",
+			"plugAndCharge": false,
+			"evses": [
+				{
+					"id": 60382,
+					"externalId": null,
+					"networkId": "1",
+					"physicalReference": "10187",
+					"currentType": "ac",
+					"maxPower": 22000,
+					"maxVoltage": "400",
+					"maxAmperage": 32,
+					"status": "disabled",
+					"hardwareStatus": "available",
+					"connectors": [
+						{
+							"id": 61553,
+							"status": "disabled",
+							"type": "type2",
+							"format": "socket"
+						}
+					],
+					"midMeterCertificationEndYear": null,
+					"tariffGroupId": 20,
+					"chargingProfile": null,
+					"allowsReservation": false,
+					"roaming": {
+						"evseId": null,
+						"physicalReference": null,
+						"tariffIds": null,
+						"capabilities": [
+							"RFID_READER",
+							"REMOTE_START_STOP_CAPABLE"
+						],
+						"status": null
+					}
+				}
+			],
+			"accessType": "public",
+			"createdAt": "2022-11-23T20:53:01+00:00",
+			"tags": [
+				"AC",
+				"AC 10%",
+				"AC990",
+				"NOV22"
+			]
+		}
+	]
+}

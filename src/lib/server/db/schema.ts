@@ -42,6 +42,7 @@ export const stations = pgTable(
 				virta?: number;
 				n1?: string;
 				supercharge?: number;
+				e1?: number;
 			}>()
 			.notNull()
 			.default({}),

@@ -36,7 +36,8 @@
 		"websiteUrl": "https://www.orkan.is",
 		"scraperId": "orkan",
 		"ocmOperatorIds": [],
-		"ocmMatchers": ["orkan"]
+		"ocmMatchers": ["orkan"],
+		"e1PartnerIds": [145]
 	},
 	{
 		"name": "Tesla",

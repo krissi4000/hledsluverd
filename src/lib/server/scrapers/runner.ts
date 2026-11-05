@@ -17,7 +17,7 @@ export interface RunSummary {
 	message: string;
 }
 
-async function ntfy(topic: string, message: string): Promise<void> {
+export async function ntfy(topic: string, message: string): Promise<void> {
 	const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
 		method: 'POST',
 		body: message

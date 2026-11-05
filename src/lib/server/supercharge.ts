@@ -1,4 +1,4 @@
-import { haversineKm } from '$lib/geo';
+import { planSiteSync, type SitePlan } from './site-sync';
 
 /**
  * supercharge.info keeps a community-maintained list of every Tesla Supercharger
@@ -92,55 +92,12 @@ export interface ExistingStation {
 	superchargeId?: number;
 }
 
-export interface SuperchargerPlan {
-	matched: { site: SuperchargerSite; station: ExistingStation; distanceM: number }[];
-	toInsert: SuperchargerSite[];
-	/** our stations no open site claimed — closed, or not a Supercharger (destination chargers) */
-	unclaimed: ExistingStation[];
-}
+export type SuperchargerPlan = SitePlan<SuperchargerSite, ExistingStation>;
 
-/**
- * Pair each open site with one of our Tesla stations: an existing supercharge id wins,
- * otherwise the nearest unclaimed station within SUPERCHARGER_MATCH_M. Sites are
- * processed closest-pair first so two nearby sites (old + new Egilsstaðir) can't
- * both grab the same station.
- */
+/** Pair open sites with our Tesla stations — see planSiteSync. */
 export function planSuperchargerSync(
 	sites: SuperchargerSite[],
 	existing: ExistingStation[]
 ): SuperchargerPlan {
-	const matched: SuperchargerPlan['matched'] = [];
-	const claimedStations = new Set<number>();
-	const claimedSites = new Set<number>();
-
-	for (const site of sites) {
-		const st = existing.find((e) => e.superchargeId === site.id);
-		if (!st) continue;
-		matched.push({ site, station: st, distanceM: haversineKm(site, st) * 1000 });
-		claimedStations.add(st.id);
-		claimedSites.add(site.id);
-	}
-
-	const pairs: { site: SuperchargerSite; station: ExistingStation; distanceM: number }[] = [];
-	for (const site of sites) {
-		if (claimedSites.has(site.id)) continue;
-		for (const st of existing) {
-			if (claimedStations.has(st.id) || st.superchargeId != null) continue;
-			const distanceM = haversineKm(site, st) * 1000;
-			if (distanceM <= SUPERCHARGER_MATCH_M) pairs.push({ site, station: st, distanceM });
-		}
-	}
-	pairs.sort((a, b) => a.distanceM - b.distanceM);
-	for (const p of pairs) {
-		if (claimedSites.has(p.site.id) || claimedStations.has(p.station.id)) continue;
-		matched.push(p);
-		claimedSites.add(p.site.id);
-		claimedStations.add(p.station.id);
-	}
-
-	return {
-		matched,
-		toInsert: sites.filter((s) => !claimedSites.has(s.id)),
-		unclaimed: existing.filter((e) => !claimedStations.has(e.id))
-	};
+	return planSiteSync(sites, existing, (st) => st.superchargeId, SUPERCHARGER_MATCH_M);
 }

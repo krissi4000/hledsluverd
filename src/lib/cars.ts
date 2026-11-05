@@ -2,6 +2,10 @@
 // Logos live in src/lib/assets/cars/<key>.svg — drop a file there and it is picked up.
 // A make without a logo gets a lettered badge (CarLogo), never a broken image.
 
+import { carMakeKey } from './car-key';
+
+export { carMakeKey };
+
 const logoFiles = import.meta.glob<string>('./assets/cars/*.svg', {
 	eager: true,
 	query: '?url',
@@ -11,16 +15,6 @@ const logoFiles = import.meta.glob<string>('./assets/cars/*.svg', {
 const LOGOS: Record<string, string> = Object.fromEntries(
 	Object.entries(logoFiles).map(([path, url]) => [path.replace(/^.*\/(.+)\.svg$/, '$1'), url])
 );
-
-/** "Škoda" → "skoda", "Mercedes-Benz" → "mercedes-benz", "MG Motor" → "mg-motor" */
-export function carMakeKey(make: string): string {
-	return make
-		.normalize('NFD')
-		.replace(/[̀-ͯ]/g, '')
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-|-$/g, '');
-}
 
 export function carLogo(make: string): string | null {
 	return LOGOS[carMakeKey(make)] ?? null;

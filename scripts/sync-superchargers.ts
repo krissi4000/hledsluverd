@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { and, eq, inArray } from 'drizzle-orm';
 import { createDb } from '../src/lib/server/db/client';
 import { connectors, networks, stations } from '../src/lib/server/db/schema';
+import { ntfy } from '../src/lib/server/scrapers/runner';
 import { slugify } from '../src/lib/server/slug';
 import {
 	SUPERCHARGE_INFO_URL,
@@ -13,7 +14,9 @@ import {
 // Adds Iceland's Tesla Superchargers that OCM lacks and refreshes stall counts from
 // supercharge.info. Run after seed:ocm (which would overwrite the connector counts).
 // `npm run sync:superchargers -- --dry-run` prints the plan without writing.
+// Runs daily on the server (hledsluverd-sync.timer); what needs a human goes to ntfy.
 const dryRun = process.argv.includes('--dry-run');
+const notices: string[] = [];
 
 const res = await fetch(SUPERCHARGE_INFO_URL, { headers: { 'User-Agent': 'hledsluverd.is' } });
 if (!res.ok) throw new Error(`supercharge.info fetch failed: HTTP ${res.status}`);
@@ -84,6 +87,7 @@ for (const site of plan.toInsert) {
 	console.log(
 		`ADD    ${name} — ${site.street}, ${site.city} (${site.stallCount}×${site.powerKw} kW)`
 	);
+	notices.push(`Ný stöð: ${name} — Tesla hefur engan skrapara, settu verð á /admin`);
 	if (dryRun) continue;
 	await db.transaction(async (tx) => {
 		let slug = slugify(`${name}-tesla`);
@@ -110,12 +114,22 @@ for (const site of plan.toInsert) {
 }
 
 // Destination chargers are expected here; a ≥100 kW CCS2 station means a closed or moved site.
+// Deactivated stations are already reviewed.
 for (const s of plan.unclaimed) {
 	const fast = ourConnectors.some(
 		(c) => c.stationId === s.id && c.type === 'CCS2' && c.powerKw >= 100
 	);
+	const active = ours.find((o) => o.id === s.id)!.isActive;
+	const review = fast && active;
 	console.log(
-		`${fast ? 'REVIEW (Supercharger with no open site — closed? deactivate on /admin)' : 'skip  '} ${s.name}`
+		`${review ? 'REVIEW (Supercharger with no open site — closed? deactivate on /admin)' : 'skip  '} ${s.name}`
 	);
+	if (review)
+		notices.push(
+			`Athuga: ${s.name} — ekki lengur á supercharge.info. Lokuð? Slökktu á henni á /admin`
+		);
 }
 await db.$client.end();
+if (!dryRun && notices.length > 0 && process.env.NTFY_TOPIC) {
+	await ntfy(process.env.NTFY_TOPIC, `Tesla-stöðvar:\n${notices.join('\n')}`);
+}
