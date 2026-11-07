@@ -43,4 +43,6 @@
 	networkDefaults={data.networkDefaults}
 	networkOptions={data.networkOptions}
 	car={data.car}
+	search={data.search}
+	near={data.near}
 />

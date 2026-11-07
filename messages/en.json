@@ -77,7 +77,20 @@
 	"finder_up_to": "up to {kw} kW",
 	"effective_price": "{price} kr/kWh incl. per-minute fee",
 	"session_cost": "{cost} for 10→80 % (~{min} min)",
-	"estimate_note": "Sorted by price including per-minute fees for this car. ≈ marks an estimate for charging from 10 % to 80 % ({kwh} kWh usable battery). The data has no charging curves, so on DC the average power is assumed to be about 60 % of the car's peak (or 90 % of the charger's rating if it is slower). A real charge can be faster or slower. Charging losses are not included.",
-	"estimate_note_no_battery": "Sorted by price including per-minute fees for this car. The car's battery size is missing from the data, so no charging cost is estimated.",
-	"session_cost_h": "{cost} for 10→80 % (~{h} h)"
+	"estimate_note": "≈ marks an estimate for charging from 10 % to 80 % ({kwh} kWh usable battery). The data has no charging curves, so on DC the average power is assumed to be about 60 % of the car's peak (or 90 % of the charger's rating if it is slower). A real charge can be faster or slower. Charging losses are not included.",
+	"estimate_note_no_battery": "The car's battery size is missing from the data, so no charging cost is estimated.",
+	"session_cost_h": "{cost} for 10→80 % (~{h} h)",
+	"sorted_by_effective": "Sorted by price including per-minute fees for this car.",
+	"sorted_by_distance": "Sorted by distance from your location (rounded to about 100 m).",
+	"filter_search": "Search",
+	"search_label": "Search stations by name or town",
+	"search_placeholder": "Station name or town…",
+	"search_submit": "Search",
+	"search_clear": "Clear search",
+	"near_me": "Near me",
+	"near_clear": "Stop sorting by distance",
+	"near_locating": "Finding your location…",
+	"near_denied": "The browser was not allowed to use your location. You can allow it in the browser settings, or search by town.",
+	"near_unavailable": "Your location could not be found. Try again, or search by town.",
+	"near_unsupported": "This browser does not support location. Search by town instead."
 }

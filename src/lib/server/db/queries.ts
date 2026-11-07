@@ -116,6 +116,10 @@ export async function rateCard(db: Db): Promise<RateCardEntry[]> {
 export interface StationRow {
 	slug: string;
 	name: string;
+	/** street and town (OCM/Virta/e1 style), searched by the homepage text box */
+	address: string | null;
+	lat: number;
+	lng: number;
 	networkSlug: string;
 	networkName: string;
 	price: number | null;
@@ -170,6 +174,9 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 		rows.push({
 			slug: s.slug,
 			name: s.name,
+			address: s.address,
+			lat: s.location.y,
+			lng: s.location.x,
 			networkSlug: net.slug,
 			networkName: net.name,
 			price: price?.priceIskPerKwh ?? null,

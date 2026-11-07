@@ -15,6 +15,8 @@
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import CarFilter from '$lib/components/CarFilter.svelte';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
+	import StationSearch from '$lib/components/StationSearch.svelte';
+	import { formatKm } from '$lib/geo';
 	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
 	import { unknownStalls } from '$lib/availability';
 	import { NETWORK_PARAM } from '$lib/filter-params';
@@ -27,7 +29,9 @@
 		networks,
 		networkDefaults,
 		networkOptions,
-		car
+		car,
+		search,
+		near
 	}: {
 		/** carKw: the speed the chosen car gets at the station; effectivePrice/session: what
 		 * it pays there with per-minute fees, ≈ a 10→80 % charge (set when a car is chosen) */
@@ -36,6 +40,8 @@
 			effectivePrice?: number | null;
 			effectiveApprox?: boolean;
 			session?: { costIsk: number; minutes: number } | null;
+			/** km from the visitor (set when they asked for stations near them) */
+			distanceKm?: number | null;
 		})[];
 		mode: 'AC' | 'DC';
 		connector: string | null;
@@ -50,6 +56,8 @@
 			variant: string | null;
 			batteryNetKwh: number | null;
 		} | null;
+		search: string;
+		near: { lat: number; lng: number } | null;
 	} = $props();
 
 	function age(d: Date): string {
@@ -119,13 +127,15 @@
 			<span class="filter-label" aria-hidden="true">{m.filter_car()}</span>
 			<CarFilter {car} {href} />
 		</div>
+		<StationSearch {search} {near} {href} />
 	</nav>
 
-	{#if car}
+	{#if near || car}
 		<p class="estimate-note" data-testid="estimate-note">
-			{car.batteryNetKwh
-				? m.estimate_note({ kwh: formatNumber(car.batteryNetKwh) })
-				: m.estimate_note_no_battery()}
+			{near ? m.sorted_by_distance() : m.sorted_by_effective()}
+			{#if car}{car.batteryNetKwh
+					? m.estimate_note({ kwh: formatNumber(car.batteryNetKwh) })
+					: m.estimate_note_no_battery()}{/if}
 		</p>
 	{/if}
 
@@ -153,6 +163,9 @@
 										<span class="net"
 											>{s.networkName}{#if s.carKw}{' · '}<span class="car-kw"
 													>{m.finder_up_to({ kw: Math.round(s.carKw) })}</span
+												>{/if}{#if s.distanceKm != null}{' · '}<span
+													class="distance"
+													data-testid="distance">{formatKm(s.distanceKm)}</span
 												>{/if}</span
 										>
 									</span>
@@ -326,6 +339,10 @@
 	.net {
 		color: var(--muted);
 		font-size: 0.82rem;
+	}
+	.distance {
+		color: var(--text);
+		font-weight: 600;
 	}
 	.car-kw {
 		color: var(--accent-text);

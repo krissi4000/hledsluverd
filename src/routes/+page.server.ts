@@ -2,7 +2,15 @@ import { db } from '$lib/server/db';
 import { rateCard, stationList } from '$lib/server/db/queries';
 import { carBySlug } from '$lib/server/db/cars';
 import { carPlugForMode, carStationEstimate, effectiveKw } from '$lib/ev';
-import { sortStations } from '$lib/station-list';
+import { haversineKm } from '$lib/geo';
+import {
+	NEAR_PARAM,
+	SEARCH_PARAM,
+	matchesSearch,
+	parseNear,
+	parseSearch,
+	sortStations
+} from '$lib/station-list';
 import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
 import { NETWORK_PARAM, defaultNetworks, parseShown } from '$lib/filter-params';
 import type { PageServerLoad } from './$types';
@@ -14,6 +22,9 @@ export const load: PageServerLoad = async ({ url }) => {
 		? (tengi as ConnectorType)
 		: null;
 	const carSlug = url.searchParams.get('bill');
+	const search = parseSearch(url.searchParams.get(SEARCH_PARAM));
+	// the visitor's position, only ever present after they pressed "Nálægt mér"
+	const near = parseNear(url.searchParams.get(NEAR_PARAM));
 
 	const [cards, allStations, car] = await Promise.all([
 		rateCard(db),
@@ -37,7 +48,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			(s) =>
 				(!connector || s.connectors.some((c) => c.type === connector)) &&
 				networks.includes(s.networkSlug) &&
-				(!car || s.connectors.some((c) => c.type === carPlug))
+				(!car || s.connectors.some((c) => c.type === carPlug)) &&
+				matchesSearch(search, [s.name, s.address])
 		)
 		.map((s) => {
 			const fitting = s.connectors.filter((c) => c.type === carPlug);
@@ -55,16 +67,19 @@ export const load: PageServerLoad = async ({ url }) => {
 				carKw: car ? effectiveKw(car, fitting) : null,
 				effectivePrice: est?.effectivePrice ?? null,
 				effectiveApprox: est?.effectiveApprox ?? false,
-				session: est?.session ?? null
+				session: est?.session ?? null,
+				distanceKm: near ? haversineKm(near, s) : null
 			};
 		});
-	const stations = sortStations(filtered, car ? 'effective' : 'price');
+	const stations = sortStations(filtered, near ? 'distance' : car ? 'effective' : 'price');
 
 	return {
 		mode,
 		connector,
 		networks,
 		networkDefaults,
+		search,
+		near,
 		car: car && {
 			slug: car.slug,
 			make: car.make,

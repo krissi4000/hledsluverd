@@ -77,7 +77,20 @@
 	"finder_up_to": "allt að {kw} kW",
 	"effective_price": "{price} kr/kWh með mínútugjaldi",
 	"session_cost": "{cost} fyrir 10→80 % (~{min} mín)",
-	"estimate_note": "Raðað eftir verði með mínútugjöldum fyrir þennan bíl. ≈ merkir áætlun fyrir hleðslu úr 10 % í 80 % ({kwh} kWh nýtanleg rafhlaða). Hleðslukúrfur bíla eru ekki til í gögnunum, svo í DC er gert ráð fyrir að meðalafl sé um 60 % af hámarksafli bílsins (eða 90 % af afli stöðvarinnar ef hún er hægari). Raunveruleg hleðsla getur verið hraðari eða hægari. Hleðslutap er ekki talið með.",
-	"estimate_note_no_battery": "Raðað eftir verði með mínútugjöldum fyrir þennan bíl. Rafhlöðustærð bílsins vantar í gögnin, svo kostnaður við hleðslu er ekki áætlaður.",
-	"session_cost_h": "{cost} fyrir 10→80 % (~{h} klst)"
+	"estimate_note": "≈ merkir áætlun fyrir hleðslu úr 10 % í 80 % ({kwh} kWh nýtanleg rafhlaða). Hleðslukúrfur bíla eru ekki til í gögnunum, svo í DC er gert ráð fyrir að meðalafl sé um 60 % af hámarksafli bílsins (eða 90 % af afli stöðvarinnar ef hún er hægari). Raunveruleg hleðsla getur verið hraðari eða hægari. Hleðslutap er ekki talið með.",
+	"estimate_note_no_battery": "Rafhlöðustærð bílsins vantar í gögnin, svo kostnaður við hleðslu er ekki áætlaður.",
+	"session_cost_h": "{cost} fyrir 10→80 % (~{h} klst)",
+	"sorted_by_effective": "Raðað eftir verði með mínútugjöldum fyrir þennan bíl.",
+	"sorted_by_distance": "Raðað eftir fjarlægð frá staðsetningu þinni (námunduð að um 100 m).",
+	"filter_search": "Leit",
+	"search_label": "Leita að stöð eftir nafni eða bæ",
+	"search_placeholder": "Nafn stöðvar eða bær…",
+	"search_submit": "Leita",
+	"search_clear": "Hreinsa leit",
+	"near_me": "Nálægt mér",
+	"near_clear": "Hætta að raða eftir fjarlægð",
+	"near_locating": "Finn staðsetningu…",
+	"near_denied": "Vafrinn fékk ekki leyfi til að nota staðsetninguna. Þú getur leyft hana í stillingum vafrans eða leitað eftir bæ.",
+	"near_unavailable": "Ekki tókst að finna staðsetninguna. Reyndu aftur eða leitaðu eftir bæ.",
+	"near_unsupported": "Þessi vafri styður ekki staðsetningu. Leitaðu frekar eftir bæ."
 }
