@@ -74,5 +74,10 @@
 	"filter_car": "Car",
 	"car_remove": "Remove {car} from the filter",
 	"finder_search": "Search for a car…",
-	"finder_up_to": "up to {kw} kW"
+	"finder_up_to": "up to {kw} kW",
+	"effective_price": "{price} kr/kWh incl. per-minute fee",
+	"session_cost": "{cost} for 10→80 % (~{min} min)",
+	"estimate_note": "Sorted by price including per-minute fees for this car. ≈ marks an estimate for charging from 10 % to 80 % ({kwh} kWh usable battery). The data has no charging curves, so on DC the average power is assumed to be about 60 % of the car's peak (or 90 % of the charger's rating if it is slower). A real charge can be faster or slower. Charging losses are not included.",
+	"estimate_note_no_battery": "Sorted by price including per-minute fees for this car. The car's battery size is missing from the data, so no charging cost is estimated.",
+	"session_cost_h": "{cost} for 10→80 % (~{h} h)"
 }

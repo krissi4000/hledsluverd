@@ -1,0 +1,1 @@
+ALTER TABLE "cars" ADD COLUMN "battery_net_kwh" double precision;

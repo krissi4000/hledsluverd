@@ -10,6 +10,7 @@
 			"variant": { "slug": "sportback", "name": "Sportback", "kind": "body_style" },
 			"vehicle_type": "passenger_car",
 			"charge_ports": [{ "kind": "combo", "connector": "ccs2" }],
+			"battery": { "chemistry": "li-ion", "pack_capacity_kwh_gross": 100, "pack_capacity_kwh_net": 94.9 },
 			"charging": {
 				"ac": { "max_power_kw": 11, "phases": 3 },
 				"dc": { "max_power_kw": 270, "architecture_voltage_class": "800v" }
@@ -49,6 +50,7 @@
 				{ "kind": "dc_only", "connector": "chademo" },
 				{ "kind": "ac_only", "connector": "type1" }
 			],
+			"battery": { "chemistry": "li-ion", "pack_capacity_kwh_gross": 40, "pack_capacity_kwh_net": 40 },
 			"charging": {
 				"ac": { "max_power_kw": 6.6, "phases": 1 },
 				"dc": { "max_power_kw": 50, "architecture_voltage_class": "400v" }

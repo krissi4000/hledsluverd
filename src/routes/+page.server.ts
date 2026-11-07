@@ -1,7 +1,8 @@
 import { db } from '$lib/server/db';
 import { rateCard, stationList } from '$lib/server/db/queries';
 import { carBySlug } from '$lib/server/db/cars';
-import { carPlugForMode, effectiveKw } from '$lib/ev';
+import { carPlugForMode, carStationEstimate, effectiveKw } from '$lib/ev';
+import { sortStations } from '$lib/station-list';
 import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
 import { NETWORK_PARAM, defaultNetworks, parseShown } from '$lib/filter-params';
 import type { PageServerLoad } from './$types';
@@ -31,30 +32,46 @@ export const load: PageServerLoad = async ({ url }) => {
 	const networkDefaults = defaultNetworks(slugs, car?.make);
 	const networks = parseShown(url.searchParams.get(NETWORK_PARAM), slugs, networkDefaults);
 
-	const stations = allStations
+	const filtered = allStations
 		.filter(
 			(s) =>
 				(!connector || s.connectors.some((c) => c.type === connector)) &&
 				networks.includes(s.networkSlug) &&
 				(!car || s.connectors.some((c) => c.type === carPlug))
 		)
-		.map((s) => ({
-			...s,
-			// charging speed this car actually gets here: min(car max, connector power)
-			carKw: car
-				? effectiveKw(
-						car,
-						s.connectors.filter((c) => c.type === carPlug)
-					)
-				: null
-		}));
+		.map((s) => {
+			const fitting = s.connectors.filter((c) => c.type === carPlug);
+			const est =
+				car && s.price !== null
+					? carStationEstimate(mode, car, fitting, {
+							priceIskPerKwh: s.price,
+							minuteFeeIsk: s.minuteFeeIsk,
+							minuteFeeAfterMin: s.minuteFeeAfterMin
+						})
+					: null;
+			return {
+				...s,
+				// charging speed this car actually gets here: min(car max, connector power)
+				carKw: car ? effectiveKw(car, fitting) : null,
+				effectivePrice: est?.effectivePrice ?? null,
+				effectiveApprox: est?.effectiveApprox ?? false,
+				session: est?.session ?? null
+			};
+		});
+	const stations = sortStations(filtered, car ? 'effective' : 'price');
 
 	return {
 		mode,
 		connector,
 		networks,
 		networkDefaults,
-		car: car && { slug: car.slug, make: car.make, model: car.model, variant: car.variant },
+		car: car && {
+			slug: car.slug,
+			make: car.make,
+			model: car.model,
+			variant: car.variant,
+			batteryNetKwh: car.batteryNetKwh
+		},
 		cards,
 		stations,
 		networkOptions

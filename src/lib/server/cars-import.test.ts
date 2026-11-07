@@ -60,6 +60,13 @@ describe('parseOpenEvData', () => {
 		});
 	});
 
+	it('keeps the usable battery capacity, null when the record has none', () => {
+		const byslug = (s: string) => result.cars.find((c) => c.slug === s)!;
+		expect(byslug('audi-a6-e-tron-2024-a6-e-tron').batteryNetKwh).toBe(94.9);
+		expect(byslug('nissan-leaf-2024-leaf').batteryNetKwh).toBe(40);
+		expect(byslug('tesla-model-3-2024-model-3-long-range').batteryNetKwh).toBeNull();
+	});
+
 	it('excludes records without a European market', () => {
 		expect(result.cars).toHaveLength(3);
 		expect(result.skippedNonEuropean).toBe(1);

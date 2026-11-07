@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk, formatDate, formatNumber, isStale, ageParts } from '$lib/format';
+	import {
+		formatIsk,
+		formatDate,
+		formatEstimateIsk,
+		formatNumber,
+		isStale,
+		ageParts
+	} from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { ownBrandPriceOnly } from '$lib/networks';
@@ -22,15 +29,27 @@
 		networkOptions,
 		car
 	}: {
-		/** carKw: the speed the chosen car gets at the station (set when a car filters the list) */
-		stations: (StationRow & { carKw?: number | null })[];
+		/** carKw: the speed the chosen car gets at the station; effectivePrice/session: what
+		 * it pays there with per-minute fees, ≈ a 10→80 % charge (set when a car is chosen) */
+		stations: (StationRow & {
+			carKw?: number | null;
+			effectivePrice?: number | null;
+			effectiveApprox?: boolean;
+			session?: { costIsk: number; minutes: number } | null;
+		})[];
 		mode: 'AC' | 'DC';
 		connector: string | null;
 		/** slugs of the networks shown */
 		networks: string[];
 		networkDefaults: string[];
 		networkOptions: { slug: string; name: string }[];
-		car: { slug: string; make: string; model: string; variant: string | null } | null;
+		car: {
+			slug: string;
+			make: string;
+			model: string;
+			variant: string | null;
+			batteryNetKwh: number | null;
+		} | null;
 	} = $props();
 
 	function age(d: Date): string {
@@ -102,6 +121,14 @@
 		</div>
 	</nav>
 
+	{#if car}
+		<p class="estimate-note" data-testid="estimate-note">
+			{car.batteryNetKwh
+				? m.estimate_note({ kwh: formatNumber(car.batteryNetKwh) })
+				: m.estimate_note_no_battery()}
+		</p>
+	{/if}
+
 	{#if stations.length === 0}
 		<p class="empty surface">{m.no_results()}</p>
 	{:else}
@@ -172,6 +199,29 @@
 									<!-- a per-minute fee from minute 0 hits every charge, so it stays visible -->
 									{#if s.minuteFeeIsk && !s.minuteFeeAfterMin}<small class="fee"
 											>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
+										>{/if}
+									<!-- what the chosen car pays with per-minute fees; only when it differs -->
+									{#if s.effectivePrice != null && Math.abs(s.effectivePrice - s.price) >= 0.05}<small
+											class="effective"
+											class:stale={s.verifiedAt !== null && isStale(s.verifiedAt)}
+											data-testid="effective-price"
+											>{s.effectiveApprox ? '≈ ' : ''}{m.effective_price({
+												price: formatNumber(s.effectivePrice)
+											})}</small
+										>{/if}
+									{#if s.session}<small
+											class="session"
+											class:stale={s.verifiedAt !== null && isStale(s.verifiedAt)}
+											data-testid="session-cost"
+											>≈ {s.session.minutes < 90
+												? m.session_cost({
+														cost: formatEstimateIsk(s.session.costIsk),
+														min: Math.round(s.session.minutes)
+													})
+												: m.session_cost_h({
+														cost: formatEstimateIsk(s.session.costIsk),
+														h: formatNumber(Math.round(s.session.minutes / 6) / 10)
+													})}</small
 										>{/if}
 									{#if ownBrandPriceOnly(s.networkSlug)}<small
 											class="brand-only"
@@ -361,6 +411,25 @@
 	.fee {
 		font-size: 0.78rem;
 		color: var(--text);
+	}
+	.effective {
+		font-size: 0.8rem;
+		font-weight: 650;
+		color: var(--accent-text);
+	}
+	.session {
+		font-size: 0.78rem;
+		color: var(--muted);
+	}
+	.effective.stale,
+	.session.stale {
+		color: var(--stale);
+	}
+	.estimate-note {
+		margin: -0.25rem 0 1rem;
+		font-size: 0.82rem;
+		color: var(--muted);
+		max-width: 60rem;
 	}
 	.brand-only {
 		display: block;

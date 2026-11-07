@@ -13,6 +13,7 @@ export interface OpenEvVehicle {
 		ac?: { max_power_kw?: number } | null;
 		dc?: { max_power_kw?: number } | null;
 	} | null;
+	battery?: { pack_capacity_kwh_net?: number } | null;
 	markets?: string[];
 	body?: { style?: string } | null;
 	dimensions?: { length_mm?: number; height_mm?: number; wheelbase_mm?: number } | null;
@@ -28,6 +29,8 @@ export interface CarSeed {
 	maxAcKw: number | null;
 	dcConnector: ConnectorType | null;
 	maxDcKw: number | null;
+	/** usable (net) battery capacity, kWh — sizes the 10→80 % cost estimate */
+	batteryNetKwh: number | null;
 	bodyStyle: string | null;
 	lengthMm: number | null;
 	heightMm: number | null;
@@ -37,6 +40,11 @@ export interface CarSeed {
 /** A dimension the silhouette can use: a positive whole number of millimetres. */
 function mm(v: number | undefined): number | null {
 	return typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.round(v) : null;
+}
+
+/** A usable battery size: a plausible positive kWh figure, else null (no estimate). */
+function kwh(v: number | undefined): number | null {
+	return typeof v === 'number' && Number.isFinite(v) && v > 0 && v < 1000 ? v : null;
 }
 
 export interface CarsImportResult {
@@ -130,6 +138,7 @@ export function parseOpenEvData(data: { vehicles: OpenEvVehicle[] }): CarsImport
 			maxAcKw: acConnector ? (v.charging?.ac?.max_power_kw ?? null) : null,
 			dcConnector,
 			maxDcKw: dcConnector ? (v.charging?.dc?.max_power_kw ?? null) : null,
+			batteryNetKwh: kwh(v.battery?.pack_capacity_kwh_net),
 			bodyStyle: v.body?.style ?? null,
 			lengthMm: mm(v.dimensions?.length_mm),
 			heightMm: mm(v.dimensions?.height_mm),

@@ -25,3 +25,9 @@ export function ageParts(from: Date, now = new Date()): { n: number; unit: 'min'
 	if (h < 24) return { n: h, unit: 'h' };
 	return { n: Math.round(h / 24), unit: 'd' };
 }
+
+/** An estimated amount: rounded to 10 kr (no false precision), "." thousands separator — "2.480 kr". */
+export function formatEstimateIsk(value: number): string {
+	const rounded = Math.round(value / 10) * 10;
+	return `${String(rounded).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kr`;
+}

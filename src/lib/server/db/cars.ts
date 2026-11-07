@@ -12,6 +12,8 @@ export interface CarRow {
 	maxAcKw: number | null;
 	dcConnector: ConnectorType | null;
 	maxDcKw: number | null;
+	/** usable battery kWh; null = no cost estimate for this car */
+	batteryNetKwh: number | null;
 }
 
 /** Every car, ordered for the finder's search list (shipped to the client as JSON). */
@@ -28,7 +30,8 @@ export async function carList(db: Db): Promise<CarRow[]> {
 		acConnector: c.acConnector,
 		maxAcKw: c.maxAcKw,
 		dcConnector: c.dcConnector,
-		maxDcKw: c.maxDcKw
+		maxDcKw: c.maxDcKw,
+		batteryNetKwh: c.batteryNetKwh
 	}));
 }
 
@@ -51,6 +54,7 @@ export async function carSearchList(db: Db): Promise<CarSearchRow[]> {
 			maxAcKw: cars.maxAcKw,
 			dcConnector: cars.dcConnector,
 			maxDcKw: cars.maxDcKw,
+			batteryNetKwh: cars.batteryNetKwh,
 			bodyStyle: cars.bodyStyle,
 			lengthMm: cars.lengthMm,
 			heightMm: cars.heightMm,
@@ -71,6 +75,7 @@ export async function carBySlug(db: Db, slug: string): Promise<CarRow | null> {
 		acConnector: c.acConnector,
 		maxAcKw: c.maxAcKw,
 		dcConnector: c.dcConnector,
-		maxDcKw: c.maxDcKw
+		maxDcKw: c.maxDcKw,
+		batteryNetKwh: c.batteryNetKwh
 	};
 }

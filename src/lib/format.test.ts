@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatIsk, formatDate, formatNumber, isStale, ageParts } from './format';
+import {
+	formatIsk,
+	formatDate,
+	formatEstimateIsk,
+	formatNumber,
+	isStale,
+	ageParts
+} from './format';
 
 describe('formatNumber', () => {
 	it('formats fractional values with an Icelandic comma', () => {
@@ -44,5 +51,14 @@ describe('ageParts', () => {
 	it('clamps future timestamps to zero minutes', () => {
 		const now = new Date('2026-07-06T12:00:00Z');
 		expect(ageParts(new Date('2026-07-06T12:00:30Z'), now)).toEqual({ n: 0, unit: 'min' });
+	});
+});
+
+describe('formatEstimateIsk', () => {
+	it('rounds to 10 kr and groups thousands with a dot', () => {
+		expect(formatEstimateIsk(2484.4)).toBe('2.480 kr');
+		expect(formatEstimateIsk(2485)).toBe('2.490 kr');
+		expect(formatEstimateIsk(12345)).toBe('12.350 kr');
+		expect(formatEstimateIsk(994)).toBe('990 kr');
 	});
 });

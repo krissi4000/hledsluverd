@@ -115,6 +115,8 @@ export const cars = pgTable(
 		maxAcKw: doublePrecision('max_ac_kw'),
 		dcConnector: connectorTypeEnum('dc_connector'),
 		maxDcKw: doublePrecision('max_dc_kw'),
+		// OpenEV battery.pack_capacity_kwh_net: usable capacity, sizes the 10→80 % estimate
+		batteryNetKwh: doublePrecision('battery_net_kwh'),
 		// OpenEV body.style ("sedan", "crossover", "pickup", …) and exterior size, used to
 		// draw the car's side-view silhouette. Null when the dataset doesn't say.
 		bodyStyle: text('body_style'),
