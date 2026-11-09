@@ -111,6 +111,7 @@ DATABASE_URL=postgres://hledsluverd:<dbpass>@127.0.0.1:5432/hledsluverd
 OCM_API_KEY=<key from openchargemap.org>
 NTFY_TOPIC=<your ntfy.sh topic>
 TOMTOM_API_KEY=<key from developer.tomtom.com, free tier>
+CONTACT_EMAIL=<address shown on /um; unset = the page only points to the report form>
 HEALTHCHECKS_URL=<scrape check ping URL, §9 — add later is fine>
 HEALTHCHECKS_BACKUP_URL=<backup check ping URL, §9 — add later is fine>
 EOF

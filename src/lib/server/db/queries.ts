@@ -1,8 +1,8 @@
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, eq, inArray, isNull, max, or } from 'drizzle-orm';
 import type { ConnectorType, TariffKey } from '$lib/types';
 import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
-import { availability, connectors, networks, prices, stations } from './schema';
+import { availability, connectors, networks, prices, scrapeRuns, stations } from './schema';
 
 /** Stall count where ours is per stall (supercharge.info: one plug per stall), else
  * null — see unknownStalls in $lib/availability. */
@@ -405,4 +405,14 @@ export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSerie
 		.filter((n) => byNetwork.has(n.id))
 		.map((n) => ({ networkSlug: n.slug, networkName: n.name, points: byNetwork.get(n.id)! }))
 		.sort((a, b) => a.networkName.localeCompare(b.networkName, 'is'));
+}
+
+/** When any scraper last ran successfully: the footer's "prices last fetched" line.
+ * Null when no scrape has succeeded yet (the footer then says nothing). */
+export async function lastPriceFetch(db: Db): Promise<Date | null> {
+	const [row] = await db
+		.select({ t: max(scrapeRuns.startedAt) })
+		.from(scrapeRuns)
+		.where(inArray(scrapeRuns.status, ['ok', 'changed']));
+	return row?.t ?? null;
 }

@@ -4,6 +4,7 @@ import {
 	formatDate,
 	formatEstimateIsk,
 	formatNumber,
+	formatTime,
 	isStale,
 	ageParts
 } from './format';
@@ -60,5 +61,12 @@ describe('formatEstimateIsk', () => {
 		expect(formatEstimateIsk(2485)).toBe('2.490 kr');
 		expect(formatEstimateIsk(12345)).toBe('12.350 kr');
 		expect(formatEstimateIsk(994)).toBe('990 kr');
+	});
+});
+
+describe('formatTime', () => {
+	it('is Icelandic (UTC) time, zero-padded', () => {
+		expect(formatTime(new Date('2026-11-07T09:05:00Z'))).toBe('09:05');
+		expect(formatTime(new Date('2026-07-01T23:59:59Z'))).toBe('23:59');
 	});
 });
