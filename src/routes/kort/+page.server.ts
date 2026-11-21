@@ -14,5 +14,9 @@ export const load: PageServerLoad = async () => {
 			.map((s) => ({ stationId: s.id, tomtomId: s.tomtomId!, fetchedAt: s.availabilityFetchedAt }));
 		refreshAvailability(db, targets, { key: env.TOMTOM_API_KEY }).catch(() => {});
 	}
-	return { stations: sts };
+	return {
+		stations: sts,
+		// browser key for the station card's Google photos (Places UI Kit); null = none
+		googleMapsKey: env.GOOGLE_MAPS_BROWSER_KEY || null
+	};
 };

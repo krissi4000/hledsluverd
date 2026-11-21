@@ -303,6 +303,20 @@ export interface MapStation {
 	/** per-stall count, set only where it can be compared with TomTom's total */
 	stallCount: number | null;
 	tomtomId: string | null;
+	/** for the card's Google photos (Places UI Kit) */
+	googlePlaceId: string | null;
+}
+
+/** An active station's coordinates — for its Street View photo (/stod/[slug]/mynd). */
+export async function stationLocation(
+	db: Db,
+	slug: string
+): Promise<{ lat: number; lng: number } | null> {
+	const [st] = await db
+		.select({ location: stations.location })
+		.from(stations)
+		.where(and(eq(stations.slug, slug), eq(stations.isActive, true)));
+	return st ? { lat: st.location.y, lng: st.location.x } : null;
 }
 
 /** Every active station, priced for its dominant mode — feeds /kort. */
@@ -356,7 +370,8 @@ export async function mapStations(db: Db): Promise<MapStation[]> {
 			totalCount: a?.totalCount ?? null,
 			availabilityFetchedAt: a?.fetchedAt ?? null,
 			stallCount: perStallCount(s, all),
-			tomtomId: s.externalIds.tomtom ?? null
+			tomtomId: s.externalIds.tomtom ?? null,
+			googlePlaceId: s.externalIds.google ?? null
 		});
 	}
 	return rows.sort((a, b) => a.name.localeCompare(b.name, 'is'));

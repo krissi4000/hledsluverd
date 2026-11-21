@@ -111,6 +111,10 @@ DATABASE_URL=postgres://hledsluverd:<dbpass>@127.0.0.1:5432/hledsluverd
 OCM_API_KEY=<key from openchargemap.org>
 NTFY_TOPIC=<your ntfy.sh topic>
 TOMTOM_API_KEY=<key from developer.tomtom.com, free tier>
+GOOGLE_MAPS_API_KEY=<optional: Street View photos on the nearby cards, see below>
+GOOGLE_MAPS_SIGNING_SECRET=<optional: the project's URL signing secret>
+GOOGLE_MAPS_BROWSER_KEY=<optional: Google photos on the map's station card, see below>
+GOOGLE_PLACES_API_KEY=<optional: only for npm run match:google, see below>
 CONTACT_EMAIL=<address shown on /um; unset = the page only points to the report form>
 HEALTHCHECKS_URL=<scrape check ping URL, §9 — add later is fine>
 HEALTHCHECKS_BACKUP_URL=<backup check ping URL, §9 — add later is fine>
@@ -124,6 +128,85 @@ Formatting rules (this file is parsed by BOTH dotenv and systemd
 no `$VAR` expansion, no `#` or spaces inside values. Hex secrets satisfy this
 automatically. `HOST`/`PORT`/`ORIGIN` have correct defaults baked into the
 systemd unit; only set them here to override.
+
+### Google photos (optional)
+
+Two features, each off until its key is set; without them nothing calls Google and
+the cards show the network logo.
+
+| What                                                         | Key in `.env`             | APIs on the key                    | Restriction                                                                                                        |
+| ------------------------------------------------------------ | ------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Street View photo on each "Nálægt mér" card                  | `GOOGLE_MAPS_API_KEY`     | Street View Static API             | that API only, **no** website restriction: the server uses the key too, for the free "is there a panorama?" checks |
+| Google photo on the station card on `/kort`                  | `GOOGLE_MAPS_BROWSER_KEY` | Maps JavaScript API, Places UI Kit | those APIs, website `https://hledsluverd.is/*`                                                                     |
+| Finding each station's Google place (`npm run match:google`) | `GOOGLE_PLACES_API_KEY`   | Places API (New)                   | that API only; never in a browser                                                                                  |
+
+1. In the Google Cloud console, a project with billing: enable those four APIs and
+   make three keys, restricted as above. Keep them apart: the first two reach
+   visitors' browsers (the Street View key inside the signed image URLs), and the
+   Places API key would let anyone run searches on your bill.
+2. Google Maps Platform → Credentials → URL signing secret: put it in
+   `GOOGLE_MAPS_SIGNING_SECRET`.
+3. Set daily quotas as the hard cost ceiling. The console won't edit a quota that has
+   never been used, so set them in Cloud Shell (the `>_` button at the top of the
+   console):
+
+   ```sh
+   P=$(gcloud config get-value project)
+   gcloud services enable cloudquotas.googleapis.com --project=$P
+   q() { gcloud quotas preferences create --project=$P --billing-project=$P \
+     --service=$1 --quota-id=$2 --preferred-value=$3 --allow-high-percentage-quota-decrease; }
+   q street-view-image-backend.googleapis.com BillableUnsignedbucketPerDayPerProject 0
+   q street-view-image-backend.googleapis.com BillableDefaultPerDayPerProject 300
+   q placewidgets.googleapis.com PlacesUiKitQueryRequestsPerDayPerProject 300
+   q placewidgets.googleapis.com PlacesUiKitAdvancedQueryRequestsPerDayPerProject 0
+   q placewidgets.googleapis.com PlacesUiKitSessionRequestsPerDayPerProject 0
+   ```
+
+   - Unsigned Street View requests at 0: the key in the image URLs is useless without
+     a signature.
+   - 300 a day, roughly Google's free 10 000 a month, on Street View images and on the
+     Places UI Kit element of the map card. The free metadata checks count separately
+     (`StreetViewMetadata…`) and stay uncapped. The app also hands out at most
+     `GOOGLE_STREETVIEW_DAILY_BUDGET` Street View images a day (default 300).
+   - 0 on the Places UI Kit's Pro (Advanced) and autocomplete elements, which the site
+     doesn't use.
+
+4. Stamp the stations' Google place IDs, as `hledsluverd` in `/srv/hledsluverd/app`:
+
+   ```sh
+   npm run match:google -- --dry-run   # prints what it would stamp, writes nothing
+   npm run match:google
+   ```
+
+   Only stations without a place ID are searched (a full run is ~270 "Nearby Search
+   Pro" requests, 5 000 a month free) and stamps are never overwritten. It matches by
+   distance alone and stamps only clear cases. Settle the rest by hand: `AMBIGUOUS`
+   (several Google charging places nearby) and `CLASH` (two of our stations want the
+   same place). Open the printed Google Maps links, pick the right place, then in
+   `psql -d hledsluverd`:
+
+   ```sql
+   UPDATE stations
+   SET external_ids = external_ids || jsonb_build_object('google', '<place-id>')
+   WHERE slug = '<station-slug>';
+   ```
+
+   A wrong stamp comes off with `SET external_ids = external_ids - 'google'`. Re-run
+   after new stations sync in.
+
+Costs past the free tiers: Street View images about $7 per 1 000; Places UI Kit $1 per
+1 000, one request each time a visitor opens a station that has a Google place. The map
+page never creates a Google map, which is what Google bills as a map load.
+
+Google's terms for an EEA billing address decide where each photo may go:
+
+- Street View images never on, next to or linked with any map: only the homepage
+  cards, never `/kort` or `/stod/…` (both have maps).
+- Places UI Kit content may be shown with any map, ours included, with its "Google
+  Maps" attribution kept visible.
+- Of Places API results, only place IDs and coordinates may be used with a map, and
+  place IDs may be stored indefinitely. So `match:google` asks for nothing else and
+  keeps only the ID.
 
 ## 6. Caddy: admin password + TLS
 

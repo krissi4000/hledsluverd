@@ -137,6 +137,20 @@ export function effectivePricePerKwh(
 	return estimateSession(tariff, avgKw, batteryNetKwh)?.effectivePerKwh ?? null;
 }
 
+/**
+ * The connectors a charge in this mode would use when no car is chosen: the mode's
+ * (AC → Type2, DC → the rest), narrowed to the plug filter when that leaves any.
+ */
+export function modeConnectors<T extends StationConnector>(
+	connectors: T[],
+	mode: 'AC' | 'DC',
+	plug: ConnectorType | null
+): T[] {
+	const ofMode = connectors.filter((c) => (mode === 'AC') === (c.type === 'Type2'));
+	const ofPlug = plug ? ofMode.filter((c) => c.type === plug) : [];
+	return ofPlug.length ? ofPlug : ofMode;
+}
+
 /** Best connector rating among the given ones (the car picks the fastest plug that fits). */
 export function maxConnectorKw(connectors: StationConnector[]): number | null {
 	return connectors.length ? Math.max(...connectors.map((c) => c.powerKw)) : null;
@@ -173,5 +187,147 @@ export function carStationEstimate(
 		effectivePrice: effectivePricePerKwh(tariff, avgKw, car.batteryNetKwh),
 		effectiveApprox: (tariff.minuteFeeIsk ?? 0) > 0,
 		session: session && { costIsk: session.costIsk, minutes: session.minutes }
+	};
+}
+
+// ── Full charge: what the "Nálægt mér" list shows and ranks ──────────────────────────
+//
+// The nearby list prices a charge from empty to full (0 → 100 %). Same caveat as the
+// 10→80 % estimate: there are no charging curves, so the time comes from ONE average
+// power for the whole charge. The UI marks it "≈" and explains why it is an average.
+
+/**
+ * DC, 0→100 %: a car or charger rarely holds its rated power for the whole charge,
+ * so neither counts for more than 80 % of its rating on average.
+ */
+export const FULL_DC_SHARE_OF_RATING = 0.8;
+/**
+ * DC, 0→100 %: the slow last 20 % means a full DC charge takes about an hour whatever
+ * the car's peak (77 kWh at 233 kW ≈ 50–60 min, 40 kWh at 50 kW ≈ 60–70 min), i.e.
+ * an average of about 1.1 kW per kWh of battery. This cap is what keeps a fast car's
+ * full charge from looking like 20 minutes.
+ */
+export const FULL_DC_KW_PER_BATTERY_KWH = 1.1;
+/** AC without a chosen car: the most common on-board charger. A 22 kW post charges
+ * most cars at 11 kW. */
+export const TYPICAL_AC_ONBOARD_KW = 11;
+/**
+ * Energy lost between the charger's meter (what is billed) and the battery: heat in
+ * the cable, the car's charger and the battery. Typical figures, they vary with the
+ * car and the weather. AC goes through the car's own charger, so it loses more.
+ */
+export const CHARGING_LOSS: Record<'AC' | 'DC', number> = { AC: 0.12, DC: 0.08 };
+
+/**
+ * What sets the average power of a full charge, i.e. why it takes as long as it does:
+ * - `station`: the charger's rating
+ * - `car`: the car's peak (DC) or its on-board charger (AC)
+ * - `battery`: DC only, the slowing as the battery fills (FULL_DC_KW_PER_BATTERY_KWH)
+ * - `onboard`: AC without a car, the assumed TYPICAL_AC_ONBOARD_KW
+ */
+export type FullChargeLimit = 'station' | 'car' | 'battery' | 'onboard';
+
+export interface FullChargeSpeed {
+	/** the one average power the estimate rests on */
+	avgKw: number;
+	limit: FullChargeLimit;
+	/** the charger's rating */
+	stationKw: number;
+	/** the car's DC peak or AC on-board charger; null without a car */
+	carKw: number | null;
+}
+
+/**
+ * Approximate average power (kW) over a 0→100 % charge, and what sets it.
+ * - AC: flat at min(car on-board charger, connector); 11 kW stands in for an unknown car.
+ * - DC: min(car peak × 0.8, charger × 0.8, battery kWh × 1.1). Without the car's peak
+ *   (only a battery size was given) the battery cap and the charger decide.
+ * Null without a connector rating or a battery size.
+ */
+export function fullChargeSpeed(
+	mode: 'AC' | 'DC',
+	carMaxKw: number | null,
+	connectorKw: number | null,
+	batteryKwh: number | null
+): FullChargeSpeed | null {
+	if (connectorKw === null || !(connectorKw > 0)) return null;
+	if (batteryKwh === null || !(batteryKwh > 0)) return null;
+	const carKw = carMaxKw !== null && carMaxKw > 0 ? carMaxKw : null;
+	const speed = (avgKw: number, limit: FullChargeLimit): FullChargeSpeed => ({
+		avgKw,
+		limit,
+		stationKw: connectorKw,
+		carKw
+	});
+	if (mode === 'AC') {
+		const onboard = carKw ?? TYPICAL_AC_ONBOARD_KW;
+		if (connectorKw <= onboard) return speed(connectorKw, 'station');
+		return speed(onboard, carKw !== null ? 'car' : 'onboard');
+	}
+	const byStation = connectorKw * FULL_DC_SHARE_OF_RATING;
+	const byCar = carKw !== null ? carKw * FULL_DC_SHARE_OF_RATING : Infinity;
+	const byBattery = batteryKwh * FULL_DC_KW_PER_BATTERY_KWH;
+	const avgKw = Math.min(byStation, byCar, byBattery);
+	return speed(avgKw, avgKw === byStation ? 'station' : avgKw === byCar ? 'car' : 'battery');
+}
+
+export interface FullChargeEstimate {
+	mode: 'AC' | 'DC';
+	/** usable battery, kWh: what goes into the battery from 0 to 100 % */
+	batteryKwh: number;
+	/** charging losses as a share of the battery energy (0.08 = 8 %) */
+	loss: number;
+	/** kWh the charger meters and bills: the battery plus charging losses */
+	billedKwh: number;
+	/** the one average power the whole estimate rests on */
+	avgKw: number;
+	minutes: number;
+	priceIskPerKwh: number;
+	minuteFeeIsk: number | null;
+	/** minute the per-minute fee starts (0 = from the first minute); null = no fee */
+	feeFromMin: number | null;
+	/** minutes the per-minute fee is charged for */
+	feeMinutes: number;
+	energyIsk: number;
+	feeIsk: number;
+	costIsk: number;
+}
+
+/**
+ * Cost of a 0→100 % charge: billed kWh × price + per-minute fee × billed minutes.
+ * The time is billed kWh / average kW. Null when any input is missing — show
+ * "unknown", never a guess.
+ */
+export function estimateFullCharge(
+	mode: 'AC' | 'DC',
+	tariff: TariffForSession,
+	avgKw: number | null,
+	batteryKwh: number | null
+): FullChargeEstimate | null {
+	if (avgKw === null || !(avgKw > 0)) return null;
+	if (batteryKwh === null || !(batteryKwh > 0)) return null;
+	if (!(tariff.priceIskPerKwh >= 0)) return null;
+	const loss = CHARGING_LOSS[mode];
+	const billedKwh = batteryKwh * (1 + loss);
+	const minutes = (billedKwh / avgKw) * 60;
+	const fee = tariff.minuteFeeIsk ?? 0;
+	const feeFromMin = fee > 0 ? (tariff.minuteFeeAfterMin ?? 0) : null;
+	const feeMinutes = feeFromMin === null ? 0 : Math.max(0, minutes - feeFromMin);
+	const energyIsk = billedKwh * tariff.priceIskPerKwh;
+	const feeIsk = fee * feeMinutes;
+	return {
+		mode,
+		batteryKwh,
+		loss,
+		billedKwh,
+		avgKw,
+		minutes,
+		priceIskPerKwh: tariff.priceIskPerKwh,
+		minuteFeeIsk: fee > 0 ? fee : null,
+		feeFromMin,
+		feeMinutes,
+		energyIsk,
+		feeIsk,
+		costIsk: energyIsk + feeIsk
 	};
 }

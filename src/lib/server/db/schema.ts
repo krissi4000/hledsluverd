@@ -43,6 +43,8 @@ export const stations = pgTable(
 				n1?: string;
 				supercharge?: number;
 				e1?: number;
+				/** Google Maps place ID (npm run match:google), for the map card's photos */
+				google?: string;
 			}>()
 			.notNull()
 			.default({}),

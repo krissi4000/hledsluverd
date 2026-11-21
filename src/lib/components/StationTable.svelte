@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
 	import {
@@ -31,7 +32,8 @@
 		networkOptions,
 		car,
 		search,
-		near
+		near,
+		list
 	}: {
 		/** carKw: the speed the chosen car gets at the station; effectivePrice/session: what
 		 * it pays there with per-minute fees, ≈ a 10→80 % charge (set when a car is chosen) */
@@ -58,6 +60,8 @@
 		} | null;
 		search: string;
 		near: { lat: number; lng: number } | null;
+		/** shown under the filters instead of the table (the nearby cards) */
+		list?: Snippet;
 	} = $props();
 
 	function age(d: Date): string {
@@ -130,7 +134,7 @@
 		<StationSearch {search} {near} {href} />
 	</nav>
 
-	{#if near || car}
+	{#if !list && (near || car)}
 		<p class="estimate-note" data-testid="estimate-note">
 			{near ? m.sorted_by_distance() : m.sorted_by_effective()}
 			{#if car}{car.batteryNetKwh
@@ -139,7 +143,9 @@
 		</p>
 	{/if}
 
-	{#if stations.length === 0}
+	{#if list}
+		{@render list()}
+	{:else if stations.length === 0}
 		<p class="empty surface">{m.no_results()}</p>
 	{:else}
 		<div class="table-wrap surface">

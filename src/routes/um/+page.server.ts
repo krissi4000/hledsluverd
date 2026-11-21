@@ -10,6 +10,10 @@ export const load: PageServerLoad = async () => {
 		// derived from networks.scraper_id + the registered scrapers, not hand-written
 		sources: priceSources(nets),
 		// CONTACT_EMAIL in .env; unset = the page points only to the report form
-		contactEmail: env.CONTACT_EMAIL?.trim() || null
+		contactEmail: env.CONTACT_EMAIL?.trim() || null,
+		// credit Google only for the photos actually shown: Street View on the nearby
+		// cards, Places UI Kit on the map's station card
+		streetView: Boolean(env.GOOGLE_MAPS_API_KEY),
+		placePhotos: Boolean(env.GOOGLE_MAPS_BROWSER_KEY)
 	};
 };

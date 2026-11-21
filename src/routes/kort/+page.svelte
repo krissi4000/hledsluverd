@@ -8,6 +8,7 @@
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
+	import GooglePlacePhoto from '$lib/components/GooglePlacePhoto.svelte';
 	import { unknownStalls } from '$lib/availability';
 	import { page } from '$app/state';
 	import { CONNECTOR_TYPES } from '$lib/types';
@@ -21,6 +22,9 @@
 
 	let { data } = $props();
 	let selectedId = $state<number | null>(null);
+
+	/** how much taller the station card gets with a Google photo on top */
+	const PHOTO_ROOM_PX = 190;
 	let filtersOpen = $state(false);
 
 	// Filters live in the URL like the homepage's (shareable, back button works). The
@@ -94,7 +98,13 @@
 	<h2 class="visually-hidden">{m.map_title()}</h2>
 	<noscript><p class="js-note">{m.map_js()}</p></noscript>
 	<div class="maparea" class:has-card={selected}>
-		<StationMap stations={visible} bind:selectedId fallbackText={m.map_fallback()} />
+		<StationMap
+			stations={visible}
+			bind:selectedId
+			fallbackText={m.map_fallback()}
+			cardExtra={(id) =>
+				data.googleMapsKey && visible.find((s) => s.id === id)?.googlePlaceId ? PHOTO_ROOM_PX : 0}
+		/>
 
 		<div class="filter-ctl" class:open={filtersOpen}>
 			{#if filtersOpen}
@@ -187,6 +197,11 @@
 		</div>
 		{#if selected}
 			<aside class="card" data-testid="map-card">
+				{#if data.googleMapsKey && selected.googlePlaceId}
+					{#key selected.googlePlaceId}
+						<GooglePlacePhoto apiKey={data.googleMapsKey} placeId={selected.googlePlaceId} />
+					{/key}
+				{/if}
 				<div class="card-head">
 					<NetworkLogo slug={selected.networkSlug} name={selected.networkName} size={40} />
 					<div class="card-title">
@@ -264,6 +279,10 @@
 		bottom: 1.5rem;
 		z-index: 10;
 		width: min(22rem, calc(100% - 2rem));
+		/* a tall card (a photo on top, a short phone) scrolls rather than run off the map */
+		max-height: calc(100% - 2.5rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);

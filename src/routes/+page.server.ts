@@ -1,8 +1,18 @@
+import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { rateCard, stationList } from '$lib/server/db/queries';
 import { carBySlug } from '$lib/server/db/cars';
-import { carPlugForMode, carStationEstimate, effectiveKw } from '$lib/ev';
+import {
+	carPlugForMode,
+	carStationEstimate,
+	effectiveKw,
+	estimateFullCharge,
+	fullChargeSpeed,
+	maxConnectorKw,
+	modeConnectors
+} from '$lib/ev';
 import { haversineKm } from '$lib/geo';
+import { BATTERY_PARAM, parseBattery, rankNearby } from '$lib/nearby';
 import {
 	NEAR_PARAM,
 	SEARCH_PARAM,
@@ -25,6 +35,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	const search = parseSearch(url.searchParams.get(SEARCH_PARAM));
 	// the visitor's position, only ever present after they pressed "Nálægt mér"
 	const near = parseNear(url.searchParams.get(NEAR_PARAM));
+	// a battery size typed in on the nearby list, for when no car (or no car data) gives one
+	const typedBattery = parseBattery(url.searchParams.get(BATTERY_PARAM));
 
 	const [cards, allStations, car] = await Promise.all([
 		rateCard(db),
@@ -43,6 +55,10 @@ export const load: PageServerLoad = async ({ url }) => {
 	const networkDefaults = defaultNetworks(slugs, car?.make);
 	const networks = parseShown(url.searchParams.get(NETWORK_PARAM), slugs, networkDefaults);
 
+	// the full charge on the nearby list: the car's battery, else the size typed in
+	const battery = car?.batteryNetKwh ?? typedBattery;
+	const carMaxKw = car ? (mode === 'AC' ? car.maxAcKw : car.maxDcKw) : null;
+
 	const filtered = allStations
 		.filter(
 			(s) =>
@@ -53,14 +69,20 @@ export const load: PageServerLoad = async ({ url }) => {
 		)
 		.map((s) => {
 			const fitting = s.connectors.filter((c) => c.type === carPlug);
-			const est =
-				car && s.price !== null
-					? carStationEstimate(mode, car, fitting, {
+			const tariff =
+				s.price !== null
+					? {
 							priceIskPerKwh: s.price,
 							minuteFeeIsk: s.minuteFeeIsk,
 							minuteFeeAfterMin: s.minuteFeeAfterMin
-						})
+						}
 					: null;
+			const est = car && tariff ? carStationEstimate(mode, car, fitting, tariff) : null;
+			// 0→100 % at the plug the car (or, without one, the mode) would use
+			const plugs = car ? fitting : modeConnectors(s.connectors, mode, connector);
+			const speed = near ? fullChargeSpeed(mode, carMaxKw, maxConnectorKw(plugs), battery) : null;
+			const fullCharge =
+				speed && tariff ? estimateFullCharge(mode, tariff, speed.avgKw, battery) : null;
 			return {
 				...s,
 				// charging speed this car actually gets here: min(car max, connector power)
@@ -68,10 +90,25 @@ export const load: PageServerLoad = async ({ url }) => {
 				effectivePrice: est?.effectivePrice ?? null,
 				effectiveApprox: est?.effectiveApprox ?? false,
 				session: est?.session ?? null,
-				distanceKm: near ? haversineKm(near, s) : null
+				distanceKm: near ? haversineKm(near, s) : null,
+				fullCharge,
+				/** what sets the full charge's time, for the card's explanation */
+				fullChargeSpeed: fullCharge ? speed : null
 			};
 		});
 	const stations = sortStations(filtered, near ? 'distance' : car ? 'effective' : 'price');
+
+	// With a position the page shows the nearby cards instead of the table: the nearest
+	// stations, ranked by distance and price (fees folded in where the charge is known).
+	const nearby = near
+		? rankNearby(
+				filtered.map((s) => ({
+					...s,
+					distanceKm: s.distanceKm!,
+					rankPrice: s.fullCharge ? s.fullCharge.costIsk / s.fullCharge.billedKwh : s.price
+				}))
+			)
+		: null;
 
 	return {
 		mode,
@@ -88,7 +125,17 @@ export const load: PageServerLoad = async ({ url }) => {
 			batteryNetKwh: car.batteryNetKwh
 		},
 		cards,
-		stations,
+		// the table is not shown next to the nearby cards, so don't ship it
+		stations: nearby ? [] : stations,
+		nearby,
+		battery: {
+			kwh: battery,
+			/** true when the size comes from the chosen car (no battery field then) */
+			fromCar: car?.batteryNetKwh != null,
+			typed: typedBattery
+		},
+		// the nearby cards show Google Street View photos only when a key is configured
+		streetView: Boolean(env.GOOGLE_MAPS_API_KEY),
 		networkOptions
 	};
 };

@@ -60,6 +60,7 @@
 	<section class="panel surface">
 		<h3>{m.um_estimate_title()}</h3>
 		<p>{m.um_estimate()}</p>
+		<p>{m.um_nearby()}</p>
 	</section>
 
 	<section class="panel surface">
@@ -87,6 +88,17 @@
 			<li>
 				<a href="https://www.tomtom.com" rel="noopener external">TomTom</a>: {m.um_src_tomtom()}
 			</li>
+			{#if data.streetView}
+				<li>
+					<a href="https://www.google.com/streetview/" rel="noopener external">Google Street View</a
+					>: {m.um_src_streetview()}
+				</li>
+			{/if}
+			{#if data.placePhotos}
+				<li>
+					<a href="https://www.google.com/maps" rel="noopener external">Google Maps</a>: {m.um_src_places()}
+				</li>
+			{/if}
 			<li>
 				<a href="https://github.com/open-ev-data/open-ev-data-dataset" rel="noopener external"
 					>OpenEV Data</a
