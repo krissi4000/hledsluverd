@@ -6,7 +6,7 @@
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { ownBrandPriceOnly } from '$lib/networks';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
-	import CarFilter from '$lib/components/CarFilter.svelte';
+	import CarFilter, { type CarPill } from '$lib/components/CarFilter.svelte';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
 	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
 	import { unknownStalls } from '$lib/availability';
@@ -20,7 +20,8 @@
 		networks,
 		networkDefaults,
 		networkOptions,
-		car
+		car,
+		plateLookup = false
 	}: {
 		/** carKw: the speed the chosen car gets at the station (set when a car filters the list) */
 		stations: (StationRow & { carKw?: number | null })[];
@@ -30,7 +31,9 @@
 		networks: string[];
 		networkDefaults: string[];
 		networkOptions: { slug: string; name: string }[];
-		car: { slug: string; make: string; model: string; variant: string | null } | null;
+		car: CarPill | null;
+		/** offer registration-plate lookup in the car search */
+		plateLookup?: boolean;
 	} = $props();
 
 	function age(d: Date): string {
@@ -98,7 +101,7 @@
 		</div>
 		<div class="filter-row">
 			<span class="filter-label" aria-hidden="true">{m.filter_car()}</span>
-			<CarFilter {car} {href} />
+			<CarFilter {car} {href} {plateLookup} />
 		</div>
 	</nav>
 

@@ -43,4 +43,5 @@
 	networkDefaults={data.networkDefaults}
 	networkOptions={data.networkOptions}
 	car={data.car}
+	plateLookup={data.plateLookup}
 />

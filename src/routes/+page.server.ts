@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { rateCard, stationList } from '$lib/server/db/queries';
 import { carBySlug } from '$lib/server/db/cars';
@@ -54,7 +55,15 @@ export const load: PageServerLoad = async ({ url }) => {
 		connector,
 		networks,
 		networkDefaults,
-		car: car && { slug: car.slug, make: car.make, model: car.model, variant: car.variant },
+		car: car && {
+			slug: car.slug,
+			make: car.make,
+			model: car.model,
+			variant: car.variant,
+			yearFrom: car.yearFrom,
+			yearTo: car.yearTo
+		},
+		plateLookup: env.PLATE_LOOKUP === 'island',
 		cards,
 		stations,
 		networkOptions
