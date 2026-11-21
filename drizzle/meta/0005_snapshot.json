@@ -1,6 +1,6 @@
 {
-  "id": "7c023c6d-b142-4909-ac0b-176d6393cca1",
-  "prevId": "34fd37b3-90f9-4fc3-9c15-8b61786f300f",
+  "id": "9e9a3351-0230-45b1-91f0-1aa0d9f3d942",
+  "prevId": "99686fd5-4aec-4ef8-a462-8f0b95634545",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -127,8 +127,20 @@
           "primaryKey": false,
           "notNull": false
         },
-        "battery_net_kwh": {
-          "name": "battery_net_kwh",
+        "year_from": {
+          "name": "year_from",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "year_to": {
+          "name": "year_to",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "battery_kwh": {
+          "name": "battery_kwh",
           "type": "double precision",
           "primaryKey": false,
           "notNull": false
@@ -169,13 +181,14 @@
             "slug"
           ]
         },
-        "cars_make_model_variant_idx": {
-          "name": "cars_make_model_variant_idx",
+        "cars_make_model_variant_year_idx": {
+          "name": "cars_make_model_variant_year_idx",
           "nullsNotDistinct": true,
           "columns": [
             "make",
             "model",
-            "variant"
+            "variant",
+            "year_from"
           ]
         }
       },

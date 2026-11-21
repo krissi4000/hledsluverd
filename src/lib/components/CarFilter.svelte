@@ -1,19 +1,27 @@
+<script lang="ts" module>
+	/** the car currently filtering the list */
+	export interface CarPill {
+		slug: string;
+		make: string;
+		model: string;
+		variant: string | null;
+		yearFrom: number | null;
+		yearTo: number | null;
+	}
+</script>
+
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import * as m from '$lib/paraglide/messages';
 	import CarLogo from '$lib/components/CarLogo.svelte';
 	import CarSilhouette from '$lib/components/CarSilhouette.svelte';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
+	import { searchCars } from '$lib/car-search';
+	import { carFullName, carVariantLabel } from '$lib/car-name';
+	import { couldBePlate, looksLikePlate, type PlateResult } from '$lib/plate';
 	import type { CarSearchRow } from '$lib/server/db/cars';
 
-	interface Car {
-		slug: string;
-		make: string;
-		model: string;
-		variant: string | null;
-	}
-
-	/** the car's plugs, fast charging first, each with its top speed when the dataset has it */
+	/** the car's plugs, fast charging first, each with its top speed when known */
 	function plugs(c: CarSearchRow) {
 		const out: { type: NonNullable<CarSearchRow['dcConnector']>; kw: number | null }[] = [];
 		if (c.dcConnector) out.push({ type: c.dcConnector, kw: c.maxDcKw });
@@ -23,12 +31,14 @@
 
 	let {
 		car,
-		href
+		href,
+		plateLookup = false
 	}: {
-		/** the car currently filtering the list, if any */
-		car: Car | null;
+		car: CarPill | null;
 		/** builds a link to the current page with the given query params changed */
 		href: (params: Record<string, string | null>) => string;
+		/** offer looking a registration plate up in the vehicle registry */
+		plateLookup?: boolean;
 	} = $props();
 
 	let cars = $state<CarSearchRow[] | null>(null);
@@ -36,8 +46,11 @@
 	let search = $state('');
 	let open = $state(false);
 	let box = $state<HTMLDivElement>();
+	/** the plate being looked up and, once back, what the registry said */
+	let plate = $state<{ plate: string; result: PlateResult | null } | null>(null);
 
-	// the list is ~1500 cars, so it is fetched on first focus instead of shipping with the page
+	// the list is several hundred cars, so it is fetched on first focus instead of shipping
+	// with the page
 	async function load() {
 		if (cars || loading) return;
 		loading = true;
@@ -49,13 +62,42 @@
 		}
 	}
 
-	const hits = $derived.by(() => {
-		const q = search.trim().toLowerCase();
-		if (!cars || q.length < 2) return [];
-		return cars
-			.filter((c) => `${c.make} ${c.model} ${c.variant ?? ''}`.toLowerCase().includes(q))
-			.slice(0, 30);
-	});
+	const hits = $derived(cars ? searchCars(cars, search) : []);
+	const typedPlate = $derived(search.replace(/[\s-]/g, '').toUpperCase());
+	// a standard plate always gets the lookup row; a personalised one only when no car matches
+	const offerPlate = $derived(
+		plateLookup &&
+			(looksLikePlate(search) || (couldBePlate(search) && cars !== null && hits.length === 0))
+	);
+
+	async function lookUp(p: string) {
+		// the lookup row is about to disappear; keep focus (and the dropdown) in the box
+		box?.querySelector('input')?.focus();
+		plate = { plate: p, result: null };
+		open = true;
+		let result: PlateResult;
+		try {
+			const res = await fetch(`/bilnumer/${encodeURIComponent(p)}`);
+			result = await res.json();
+		} catch {
+			result = { status: 'error' };
+		}
+		if (plate?.plate !== p) return; // the visitor typed something else meanwhile
+		const only =
+			result.status === 'found' &&
+			result.match.kind === 'model' &&
+			result.match.candidates.length === 1
+				? result.match.candidates[0]
+				: null;
+		if (only) {
+			// the registry and the year leave one car: pick it
+			plate = null;
+			open = false;
+			goto(href({ bill: only.slug }), { noScroll: true });
+		} else {
+			plate = { plate: p, result };
+		}
+	}
 
 	function onfocusout(e: FocusEvent) {
 		if (!box?.contains(e.relatedTarget as Node | null)) open = false;
@@ -64,25 +106,31 @@
 	function onkeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			open = false;
-		} else if (e.key === 'Enter' && hits.length > 0) {
+		} else if (e.key === 'Enter' && offerPlate) {
+			e.preventDefault();
+			lookUp(typedPlate);
+		} else if (e.key === 'Enter' && hits.length > 0 && !plate) {
 			e.preventDefault();
 			goto(href({ bill: hits[0].slug }), { noScroll: true });
-		} else if (e.key === 'ArrowDown' && hits.length > 0) {
-			e.preventDefault();
-			box?.querySelector<HTMLAnchorElement>('.hits a')?.focus();
+		} else if (e.key === 'ArrowDown') {
+			const first = box?.querySelector<HTMLElement>('.hits a, .hits button');
+			if (first) {
+				e.preventDefault();
+				first.focus();
+			}
 		}
 	}
 
 	// arrow/escape handling once focus is on a result
 	function onlistkeydown(e: KeyboardEvent) {
-		const links = [...(box?.querySelectorAll<HTMLAnchorElement>('.hits a') ?? [])];
-		const i = links.indexOf(document.activeElement as HTMLAnchorElement);
-		if (e.key === 'ArrowDown' && i < links.length - 1) {
+		const items = [...(box?.querySelectorAll<HTMLElement>('.hits a, .hits button') ?? [])];
+		const i = items.indexOf(document.activeElement as HTMLElement);
+		if (e.key === 'ArrowDown' && i < items.length - 1) {
 			e.preventDefault();
-			links[i + 1].focus();
+			items[i + 1].focus();
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
-			if (i > 0) links[i - 1].focus();
+			if (i > 0) items[i - 1].focus();
 			else box?.querySelector('input')?.focus();
 		} else if (e.key === 'Escape') {
 			open = false;
@@ -91,20 +139,49 @@
 	}
 </script>
 
+{#snippet carRow(c: CarSearchRow)}
+	<li>
+		<a
+			href={href({ bill: c.slug })}
+			data-sveltekit-noscroll
+			onkeydown={onlistkeydown}
+			onclick={() => {
+				open = false;
+				plate = null;
+			}}
+			><CarLogo make={c.make} size={22} /><span class="hit-text"
+				><span class="hit-name"
+					><strong>{c.make}</strong>
+					{c.model} <span class="variant">{carVariantLabel(c)}</span></span
+				>
+				<span class="plugs" data-testid="car-hit-plugs">
+					{#each plugs(c) as p (p.type)}
+						<span class="plug"
+							><ConnectorIcon type={p.type} size={14} />{p.type}{#if p.kw !== null}<span class="kw"
+									>{Math.round(p.kw)} kW</span
+								>{/if}</span
+						>
+					{/each}
+				</span></span
+			><CarSilhouette car={c} width={88} /></a
+		>
+	</li>
+{/snippet}
+
 {#if car}
 	<span class="pills">
 		<a
 			class="pill active has-logo"
 			href={href({ bill: null })}
 			data-sveltekit-noscroll
-			aria-label={m.car_remove({ car: `${car.make} ${car.model} ${car.variant ?? ''}`.trim() })}
+			aria-label={m.car_remove({ car: carFullName(car) })}
 			data-testid="chosen-car"
 		>
 			<CarLogo make={car.make} size={20} />
 			<span class="car-name"
 				><strong>{car.make}</strong>
 				{car.model}
-				{#if car.variant}<span class="variant">{car.variant}</span>{/if}</span
+				{#if carVariantLabel(car)}<span class="variant">{carVariantLabel(car)}</span>{/if}</span
 			>
 			<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"
 				><path
@@ -129,7 +206,7 @@
 		>
 		<input
 			type="search"
-			placeholder={m.finder_search()}
+			placeholder={plateLookup ? m.finder_search_plate() : m.finder_search()}
 			aria-label={m.filter_car()}
 			autocomplete="off"
 			bind:value={search}
@@ -137,37 +214,70 @@
 				open = true;
 				load();
 			}}
-			oninput={() => (open = true)}
+			oninput={() => {
+				open = true;
+				plate = null;
+			}}
 			{onkeydown}
 			data-testid="car-search"
 		/>
-		{#if open && hits.length > 0}
-			<ul class="hits" data-testid="car-hits">
-				{#each hits as c (c.slug)}
-					<li>
-						<a
-							href={href({ bill: c.slug })}
-							data-sveltekit-noscroll
-							onkeydown={onlistkeydown}
-							onclick={() => (open = false)}
-							><CarLogo make={c.make} size={22} /><span class="hit-text"
-								><span class="hit-name"
-									><strong>{c.make}</strong>
-									{c.model} <span class="variant">{c.variant ?? ''}</span></span
-								>
-								<span class="plugs" data-testid="car-hit-plugs">
-									{#each plugs(c) as p (p.type)}
-										<span class="plug"
-											><ConnectorIcon type={p.type} size={14} />{p.type}{#if p.kw !== null}<span
-													class="kw">{Math.round(p.kw)} kW</span
-												>{/if}</span
-										>
-									{/each}
-								</span></span
-							><CarSilhouette car={c} width={88} /></a
+		{#if open && plate}
+			<ul class="hits" data-testid="plate-result">
+				{#if !plate.result}
+					<li class="note" role="status">{m.plate_loading({ plate: plate.plate })}</li>
+				{:else if plate.result.status === 'found'}
+					{@const v = plate.result.vehicle}
+					{@const match = plate.result.match}
+					<li class="note registry" role="status">
+						<span class="registry-car"
+							><strong>{v.plate}</strong> · {v.make}
+							{v.commercialName}{#if v.firstRegYear}{' '}· {v.firstRegYear}{/if}{#if v.color}{' '}·
+								{v.color}{/if}{#if v.deregistered}{' '}· {m.plate_deregistered()}{/if}</span
+						>
+						<span class="source"
+							>{m.plate_source()}{#if match.kind === 'model'}. {m.plate_variant_source()}{/if}</span
 						>
 					</li>
-				{/each}
+					{#if match.kind === 'model'}
+						<li class="note">{m.plate_pick()}</li>
+						{#each match.candidates as c (c.slug)}{@render carRow(c)}{/each}
+					{:else if match.kind === 'make'}
+						<li class="note">{m.plate_make_only({ model: v.commercialName })}</li>
+						{#each match.candidates as c (c.slug)}{@render carRow(c)}{/each}
+					{:else if match.kind === 'plug-in-hybrid'}
+						<li class="note">{m.plate_phev()}</li>
+					{:else if match.kind === 'not-electric'}
+						<li class="note">{m.plate_not_electric()}</li>
+					{:else}
+						<li class="note">{m.plate_unknown({ make: v.make })}</li>
+					{/if}
+				{:else if plate.result.status === 'not-found'}
+					<li class="note" role="status">{m.plate_not_found({ plate: plate.plate })}</li>
+				{:else if plate.result.status === 'invalid'}
+					<li class="note" role="status">{m.plate_invalid()}</li>
+				{:else if plate.result.status === 'busy'}
+					<li class="note" role="status">{m.plate_busy()}</li>
+				{:else}
+					<li class="note" role="status">{m.plate_error()}</li>
+				{/if}
+			</ul>
+		{:else if open && (hits.length > 0 || offerPlate)}
+			<ul class="hits" data-testid="car-hits">
+				{#if offerPlate}
+					<li>
+						<button
+							type="button"
+							class="plate-row"
+							onkeydown={onlistkeydown}
+							onclick={() => lookUp(typedPlate)}
+							data-testid="plate-lookup"
+							><span class="plate" aria-hidden="true">{typedPlate}</span>{m.plate_lookup({
+								plate: typedPlate
+							})}</button
+						>
+					</li>
+				{/if}
+				{#each hits as c (c.slug)}{@render carRow(c)}{/each}
 			</ul>
 		{/if}
 	</div>
@@ -204,27 +314,61 @@
 		list-style: none;
 		margin: 0;
 		padding: 0.25rem;
-		max-height: 20rem;
+		max-height: 24rem;
 		overflow-y: auto;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
 		box-shadow: var(--shadow-lg);
 	}
-	.hits a {
+	.hits a,
+	.plate-row {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
+		width: 100%;
 		padding: 0.45rem 0.55rem;
+		border: 0;
 		border-radius: 6px;
+		background: none;
 		color: var(--text);
+		font: inherit;
 		font-size: 0.9rem;
+		text-align: left;
 		text-decoration: none;
+		cursor: pointer;
 	}
 	.hits a:hover,
-	.hits a:focus-visible {
+	.hits a:focus-visible,
+	.plate-row:hover,
+	.plate-row:focus-visible {
 		background: var(--accent-soft);
 		outline: none;
+	}
+	.plate {
+		flex: none;
+		padding: 0.05rem 0.4rem;
+		border: 1.5px solid currentColor;
+		border-radius: 4px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		font-variant-numeric: tabular-nums;
+	}
+	.note {
+		padding: 0.45rem 0.55rem;
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+	.registry {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		color: var(--text);
+		border-bottom: 1px solid var(--border);
+	}
+	.source {
+		color: var(--muted);
+		font-size: 0.75rem;
 	}
 	.hit-text {
 		flex: 1;

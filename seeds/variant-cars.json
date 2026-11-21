@@ -1,0 +1,741 @@
+{
+	"_readme": [
+		"Hand-kept: which cars (slugs in seeds/cars.json) each EU type-approval variant can be, by registry make.",
+		"Decided variant by variant from the EEA CO2 monitoring figures for the cars registered in Iceland",
+		"(motor power, WLTP range and consumption, mass) and the names they are registered under.",
+		"A variant lists several cars where the registry data cannot tell them apart: other model years, a second",
+		"body style, or options such as a DC inlet or a CCS adapter. plate-match.ts narrows those by name and year",
+		"and the owner picks among what is left. A variant that is not listed here narrows nothing.",
+		"Variant codes are keyed as in seeds/registry-variants.json. Nissan is left out on purpose: its codes",
+		"repeat across models and batteries, and its registered names state the battery (LEAF 40KWH)."
+	],
+	"cars": {
+		"AIWAYS": {
+			"2WB/FL3": ["aiways-u5-63-kwh-6-6-kw-ac-2020", "aiways-u5-63-kwh-11-kw-ac-2022"],
+			"2WB/FL4": ["aiways-u5-63-kwh-6-6-kw-ac-2020", "aiways-u5-63-kwh-11-kw-ac-2022"]
+		},
+		"AUDI": {
+			"SBD2VQ1": [
+				"audi-e-tron-gt-quattro-rs-e-tron-gt-93-kwh-2021",
+				"audi-e-tron-gt-quattro-s-rs-105-kwh-2024"
+			],
+			"SBD2VQ2": ["audi-e-tron-gt-quattro-rs-e-tron-gt-93-kwh-2021"],
+			"SBD6CAQ1": ["audi-q6-sportback-e-tron-quattro-performance-sq6-100-kwh-2024"],
+			"SBD7PBQ1": ["audi-q4-sportback-e-tron-45-e-tron-77-kwh-rwd-2023"],
+			"SBL1EH1": ["audi-q4-sportback-e-tron-35-e-tron-52-kwh-2021"],
+			"SBL1FH1": [
+				"audi-q4-sportback-e-tron-40-45-quattro-50-quattro-77-kwh-125-kw-2021",
+				"audi-q4-sportback-e-tron-40-45-quattro-50-quattro-77-kwh-135-kw-2022"
+			],
+			"SBL1IAQ1": ["audi-q8-sportback-e-tron-50-quattro-89-kwh-2023"],
+			"SBL1RQ1": [
+				"audi-q4-sportback-e-tron-40-45-quattro-50-quattro-77-kwh-125-kw-2021",
+				"audi-q4-sportback-e-tron-40-45-quattro-50-quattro-77-kwh-135-kw-2022"
+			],
+			"SBL1WQ2": ["audi-e-tron-gt-quattro-rs-e-tron-gt-93-kwh-2021"],
+			"SBM0CAQ1": ["audi-e-tron-gt-quattro-s-rs-105-kwh-2024"],
+			"SBM1JAQ1": ["audi-q8-sportback-e-tron-55-quattro-sq8-106-kwh-2023"],
+			"SBM1JQ1": [
+				"audi-e-tron-sportback-55-quattro-s-95-kwh-2020",
+				"audi-e-tron-55-quattro-e-tron-s-95-kwh-2019"
+			],
+			"SBM2RQ1": ["audi-e-tron-sportback-50-quattro-71-kwh-2020"],
+			"SBM9TQ1": [
+				"audi-q4-sportback-e-tron-40-45-quattro-50-quattro-77-kwh-125-kw-2021",
+				"audi-q4-sportback-e-tron-40-45-quattro-50-quattro-77-kwh-135-kw-2022"
+			],
+			"SBMQ3Q1": ["audi-e-tron-sportback-55-quattro-s-95-kwh-2020"],
+			"XBD6CAQ1": ["audi-q6-e-tron-quattro-performance-sq6-100-kwh-2024"],
+			"XBD7PBQ1": ["audi-q4-e-tron-45-e-tron-77-kwh-rwd-2023"],
+			"XBL1EH1": ["audi-q4-e-tron-35-e-tron-52-kwh-2021"],
+			"XBL1FH1": [
+				"audi-q4-e-tron-40-45-quattro-50-quattro-77-kwh-125-kw-2021",
+				"audi-q4-e-tron-40-45-quattro-50-quattro-77-kwh-135-kw-2022"
+			],
+			"XBL1IAQ1": ["audi-q8-e-tron-50-quattro-89-kwh-2023"],
+			"XBL1NAQ1": ["audi-q6-e-tron-quattro-performance-sq6-100-kwh-2024"],
+			"XBL1RQ1": [
+				"audi-q4-e-tron-40-45-quattro-50-quattro-77-kwh-125-kw-2021",
+				"audi-q4-e-tron-40-45-quattro-50-quattro-77-kwh-135-kw-2022"
+			],
+			"XBM1JAQ1": ["audi-q8-e-tron-55-quattro-sq8-106-kwh-2023"],
+			"XBM1JQ1": ["audi-e-tron-55-quattro-e-tron-s-95-kwh-2019"],
+			"XBM2RQ1": ["audi-e-tron-50-quattro-71-kwh-2019"],
+			"XBM9TQ1": [
+				"audi-q4-e-tron-40-45-quattro-50-quattro-77-kwh-125-kw-2021",
+				"audi-q4-e-tron-40-45-quattro-50-quattro-77-kwh-135-kw-2022"
+			],
+			"XBMQ3Q1": ["audi-e-tron-55-quattro-e-tron-s-95-kwh-2019"]
+		},
+		"BMW": {
+			"11CF": ["bmw-ix-xdrive40-2021"],
+			"21CF": ["bmw-ix-xdrive50-m60-2021"],
+			"31AW": ["bmw-i4-edrive40-xdrive40-m50-m60-xdrive-2021"],
+			"31CF": ["bmw-ix-xdrive50-m60-2021"],
+			"41AW": ["bmw-i4-edrive35-2022"],
+			"41CF": ["bmw-ix-xdrive45-2025"],
+			"41DU": ["bmw-ix3-80-kwh-g08-2020"],
+			"41FK": ["bmw-i5-edrive40-xdrive40-m60-xdrive-2023"],
+			"51CF": ["bmw-ix-xdrive60-m70-xdrive-2025"],
+			"51EJ": ["bmw-i7-edrive50-xdrive60-m70-xdrive-2022"],
+			"61EF": ["bmw-ix1-edrive20-xdrive30-2022"],
+			"71AW": ["bmw-i4-edrive40-xdrive40-m50-m60-xdrive-2021"],
+			"71EG": ["bmw-ix1-edrive20-xdrive30-2022"],
+			"71HD": ["bmw-i4-edrive40-xdrive40-m50-m60-xdrive-2021"],
+			"7Z21": ["bmw-i3-94-ah-i3-i3s-ac-only-2016", "bmw-i3-94-ah-i3-i3s-with-ccs-2016"],
+			"7Z61": ["bmw-i3-94-ah-i3-i3s-ac-only-2016", "bmw-i3-94-ah-i3-i3s-with-ccs-2016"],
+			"8P21": ["bmw-i3-120-ah-i3-i3s-2018"],
+			"8P61": ["bmw-i3-120-ah-i3-i3s-2018"]
+		},
+		"BYD": {
+			"H2F1C": ["byd-dolphin-60-4-kwh-comfort-design-2023"],
+			"M2D1C": ["byd-tang-86-4-kwh-awd-2021", "byd-tang-108-8-kwh-awd-2024"],
+			"M2F1C": [
+				"byd-atto-3-60-48-kwh-2022",
+				"byd-atto-2-45-1-kwh-active-boost-2025",
+				"byd-atto-2-64-8-kwh-comfort-2025"
+			],
+			"ME2D1C": [
+				"byd-sealion-7-82-5-kwh-comfort-rwd-design-awd-2025",
+				"byd-sealion-7-91-3-kwh-excellence-awd-2025"
+			],
+			"ME2F1C": ["byd-seal-u-71-8-kwh-comfort-2024", "byd-seal-u-87-kwh-design-2024"],
+			"SE2D1C": ["byd-han-85-4-kwh-awd-2022", "byd-seal-82-5-kwh-design-rwd-excellence-awd-2023"]
+		},
+		"CITROEN": {
+			"C/ZKW": ["citroen-e-c4-54-kwh-156-hp-2023"],
+			"C/ZKX": ["citroen-e-c4-50-kwh-136-hp-2020"],
+			"F/ZKW": ["citroen-e-c4-x-54-kwh-156-hp-2023"],
+			"F/ZKX": ["citroen-e-c4-x-50-kwh-136-hp-2023"],
+			"Z/ZKX": ["citroen-e-berlingo-50-kwh-2021", "citroen-e-berlingo-van-50-kwh-2021"]
+		},
+		"FIAT": {
+			"1AEA0000A0": ["fiat-500e-42-kwh-2020"],
+			"2AEA0000A0": ["fiat-500e-42-kwh-2020"]
+		},
+		"FORD": {
+			"C0JA12X": ["ford-puma-gen-e-43-kwh-2025"],
+			"C1LM2YX": [
+				"ford-mustang-mach-e-standard-range-rwd-awd-75-7-kwh-2021",
+				"ford-mustang-mach-e-standard-range-rwd-awd-lfp-2024"
+			],
+			"C2DA4RX": ["ford-explorer-extended-range-rwd-awd-79-kwh-2024"],
+			"C2DA4SX": ["ford-capri-extended-range-rwd-awd-79-kwh-2024"],
+			"C2LS4YX": [
+				"ford-mustang-mach-e-standard-range-rwd-awd-75-7-kwh-2021",
+				"ford-mustang-mach-e-standard-range-rwd-awd-lfp-2024"
+			],
+			"EHL72YX": [
+				"ford-mustang-mach-e-extended-range-rwd-awd-gt-98-8-kwh-2021",
+				"ford-mustang-mach-e-extended-range-rwd-awd-gt-rally-91-kwh-2024"
+			],
+			"EJLU4YX": [
+				"ford-mustang-mach-e-extended-range-rwd-awd-gt-98-8-kwh-2021",
+				"ford-mustang-mach-e-extended-range-rwd-awd-gt-rally-91-kwh-2024"
+			],
+			"ELLX4YX": [
+				"ford-mustang-mach-e-extended-range-rwd-awd-gt-98-8-kwh-2021",
+				"ford-mustang-mach-e-extended-range-rwd-awd-gt-rally-91-kwh-2024"
+			]
+		},
+		"GWM": {
+			"ME2/EJJ": ["gwm-ora-03-48-kwh-2022"],
+			"ME2/EJK": ["gwm-ora-03-48-kwh-2022", "gwm-ora-03-63-kwh-incl-gt-2022"]
+		},
+		"HONDA": {
+			"RS101": ["honda-e-ny1-68-8-kwh-2023"],
+			"ZC701": ["honda-e-35-5-kwh-2020"]
+		},
+		"HYUNDAI": {
+			"A5E34": ["hyundai-ioniq-5-84-kwh-2024"],
+			"B5E11": ["hyundai-ioniq-electric-28-kwh-2016", "hyundai-ioniq-electric-38-3-kwh-2019"],
+			"F4E22": ["hyundai-inster-49-kwh-2024"],
+			"F5E11": ["hyundai-kona-electric-64-kwh-2018", "hyundai-kona-electric-64-kwh-2019"],
+			"F5E12": [
+				"hyundai-kona-electric-48-4-kwh-2023",
+				"hyundai-ioniq-6-standard-range-53-kwh-2022",
+				"hyundai-inster-42-kwh-2024",
+				"hyundai-ioniq-5-58-kwh-2021",
+				"hyundai-ioniq-5-63-kwh-2024"
+			],
+			"F5E14": ["hyundai-ioniq-5-72-6-kwh-2021"],
+			"F5E21": ["hyundai-kona-electric-39-2-kwh-2018"],
+			"F5E22": [
+				"hyundai-kona-electric-65-4-kwh-2023",
+				"hyundai-ioniq-6-long-range-77-4-kwh-2022",
+				"hyundai-inster-49-kwh-2024",
+				"hyundai-ioniq-5-63-kwh-2024",
+				"hyundai-ioniq-5-84-kwh-2024"
+			],
+			"F5E32": ["hyundai-ioniq-5-72-6-kwh-2021"],
+			"F5E34": [
+				"hyundai-ioniq-5-84-kwh-2024",
+				"hyundai-ioniq-6-long-range-77-4-kwh-2022",
+				"hyundai-ioniq-6-84-kwh-2025"
+			],
+			"F5E42": ["hyundai-ioniq-5-58-kwh-2021", "hyundai-ioniq-5-63-kwh-2024"],
+			"F5E54": ["hyundai-ioniq-5-77-4-kwh-2022"],
+			"F5E62": ["hyundai-ioniq-5-77-4-kwh-2022"],
+			"F5E74": ["hyundai-ioniq-5-n-84-kwh-2024"],
+			"F7E24": ["hyundai-ioniq-9-110-3-kwh-2025"],
+			"F7E34": ["hyundai-ioniq-9-110-3-kwh-2025"]
+		},
+		"JAGUAR": {
+			"A/502": ["jaguar-i-pace-ev400-7-kw-ac-2018", "jaguar-i-pace-ev320-ev400-11-kw-ac-2020"],
+			"CIAAA0": ["jaguar-i-pace-ev320-ev400-11-kw-ac-2020"],
+			"CIBAA0": ["jaguar-i-pace-ev320-ev400-11-kw-ac-2020"]
+		},
+		"JEEP": {
+			"1AEA0000A0": ["jeep-avenger-54-kwh-2023"]
+		},
+		"KGM": {
+			"AA2L": [
+				"kgm-torres-evx-73-4-kwh-2024",
+				"kgm-torres-evx-80-6-kwh-2025",
+				"ssangyong-korando-e-motion-61-5-kwh-2022"
+			]
+		},
+		"KIA": {
+			"B5E11": ["kia-e-soul-64-kwh-2019", "kia-soul-ev-27-kwh-2014", "kia-soul-ev-30-kwh-2017"],
+			"B5E21": ["kia-e-soul-39-2-kwh-2019", "kia-soul-ev-27-kwh-2014", "kia-soul-ev-30-kwh-2017"],
+			"C5E11": ["kia-e-niro-64-kwh-2018", "kia-niro-ev-64-8-kwh-2022"],
+			"C5E21": ["kia-e-niro-39-2-kwh-2019"],
+			"F4E22": ["kia-ev4-hatchback-81-4-kwh-2025", "kia-ev4-fastback-81-4-kwh-2025"],
+			"F5E12": [
+				"kia-ev6-58-kwh-2021",
+				"kia-ev6-63-kwh-2024",
+				"kia-ev3-standard-range-58-3-kwh-2024",
+				"kia-pv5-cargo-51-5-kwh-2025",
+				"kia-pv5-passenger-51-5-kwh-2025",
+				"kia-ev4-hatchback-58-3-kwh-2025",
+				"kia-ev4-fastback-58-3-kwh-2025",
+				"kia-ev2-42-2-kwh-2026",
+				"kia-ev2-61-kwh-2026"
+			],
+			"F5E22": [
+				"kia-ev6-77-4-kwh-incl-gt-2021",
+				"kia-ev6-84-kwh-incl-gt-2024",
+				"kia-ev3-long-range-81-4-kwh-2024",
+				"kia-pv5-cargo-71-2-kwh-2025",
+				"kia-pv5-passenger-71-2-kwh-2025",
+				"kia-ev4-hatchback-81-4-kwh-2025",
+				"kia-ev4-fastback-81-4-kwh-2025",
+				"kia-ev2-42-2-kwh-2026",
+				"kia-ev2-61-kwh-2026"
+			],
+			"F5E34": ["kia-ev6-58-kwh-2021", "kia-ev6-63-kwh-2024"],
+			"F5E44": ["kia-ev6-77-4-kwh-incl-gt-2021", "kia-ev6-84-kwh-incl-gt-2024"],
+			"F5E54": ["kia-ev6-77-4-kwh-incl-gt-2021", "kia-ev6-84-kwh-incl-gt-2024"],
+			"F6E34": ["kia-ev9-99-8-kwh-incl-gt-2023"],
+			"F7E24": ["kia-ev9-99-8-kwh-incl-gt-2023"]
+		},
+		"LEAPMOTOR": {
+			"0000": ["leapmotor-c10-69-9-kwh-2024"],
+			"0010": ["leapmotor-t03-37-3-kwh-2024"],
+			"AB2EE": ["leapmotor-b10-56-2-kwh-2025", "leapmotor-b10-67-1-kwh-2025"]
+		},
+		"LEXUS": {
+			"KMA10(W)": ["lexus-ux-300e-54-3-kwh-2020", "lexus-ux-300e-72-8-kwh-2023"],
+			"XEBM10(W)": ["lexus-rz-300e-450e-71-4-kwh-2023", "lexus-rz-350e-500e-550e-77-kwh-2025"],
+			"XEBM15(W)": ["lexus-rz-300e-450e-71-4-kwh-2023"]
+		},
+		"MAXUS": {
+			"1800": ["maxus-euniq-6-70-kwh-2021"],
+			"6620": [
+				"maxus-edeliver-9-51-5-kwh-2021",
+				"maxus-edeliver-9-72-kwh-2021",
+				"maxus-edeliver-9-88-55-kwh-2021"
+			],
+			"0800": ["maxus-euniq-5-52-5-kwh-2021"],
+			"800/110": ["maxus-euniq-5-52-5-kwh-2021"],
+			"800/C76": ["maxus-euniq-5-52-5-kwh-2021"]
+		},
+		"MAZDA": {
+			"1WB/JBW": ["mazda-mx-30-35-5-kwh-2020", "mazda-mx-30-35-5-kwh-50-kw-dc-2022"],
+			"AARA": ["mazda-6e-80-kwh-long-range-2025"]
+		},
+		"MERCEDES": {
+			"1301A0": [
+				"mercedes-benz-cla-250-350-4matic-85-kwh-without-400-v-converter-2025",
+				"mercedes-benz-cla-250-350-4matic-85-kwh-with-400-v-converter-2026"
+			],
+			"130CA1": [
+				"mercedes-benz-cla-250-350-4matic-85-kwh-without-400-v-converter-2025",
+				"mercedes-benz-cla-250-350-4matic-85-kwh-with-400-v-converter-2026"
+			],
+			"46EEA1": ["mercedes-benz-eqe-suv-300-350-4matic-amg-43-amg-53-90-6-kwh-2023"],
+			"46EEAB": ["mercedes-benz-eqe-suv-300-350-4matic-amg-43-amg-53-90-6-kwh-2023"],
+			"46EFAB": [
+				"mercedes-benz-eqe-suv-300-350-4matic-amg-43-amg-53-90-6-kwh-2023",
+				"mercedes-benz-eqe-suv-350-500-4matic-96-kwh-2023"
+			],
+			"46EKAB": ["mercedes-benz-eqe-suv-300-350-4matic-amg-43-amg-53-90-6-kwh-2023"],
+			"51EBA0": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"51ECA0": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"51ECAA": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"51EEA1": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"51EEAB": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"51EKAB": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"51ESAB": ["mercedes-benz-eqe-300-350-350-4matic-500-4matic-amg-43-amg-53-89-90-6-kwh-2022"],
+			"66ELBB": [
+				"mercedes-benz-eqs-suv-450-450-4matic-500-4matic-580-4matic-maybach-680-108-4-kwh-2022",
+				"mercedes-benz-eqs-suv-450-450-4matic-500-4matic-580-4matic-maybach-680-118-kwh-2024"
+			],
+			"71ECA0": ["mercedes-benz-eqs-350-90-6-kwh-2021"],
+			"71EDA0": [
+				"mercedes-benz-eqs-450-450-4matic-500-4matic-580-4matic-amg-53-107-8-108-4-kwh-2021"
+			],
+			"71EHA1": [
+				"mercedes-benz-eqs-450-450-4matic-500-4matic-580-4matic-amg-53-107-8-108-4-kwh-2021"
+			],
+			"71ETA1": [
+				"mercedes-benz-eqs-450-450-4matic-500-4matic-580-4matic-amg-53-107-8-108-4-kwh-2021"
+			],
+			"71EWA1": [
+				"mercedes-benz-eqs-450-450-4matic-500-4matic-580-4matic-amg-53-107-8-108-4-kwh-2021",
+				"mercedes-benz-eqs-450-450-4matic-500-4matic-580-4matic-118-kwh-2024"
+			],
+			"KLE45350HXX": [
+				"mercedes-benz-eqv-300-90-kwh-2020",
+				"mercedes-benz-evito-tourer-90-kwh-2020"
+			],
+			"KLE45350NXX": [
+				"mercedes-benz-eqv-300-90-kwh-2020",
+				"mercedes-benz-evito-tourer-90-kwh-2020"
+			],
+			"KOE45350HXX": ["mercedes-benz-eqv-300-90-kwh-2020"],
+			"KOE45350NXX": [
+				"mercedes-benz-eqv-300-90-kwh-2020",
+				"mercedes-benz-evito-tourer-90-kwh-2020"
+			],
+			"MKE/JA0": ["mercedes-benz-eqt-200-45-kwh-standard-long-2023"],
+			"MKJ/JA0": ["mercedes-benz-eqt-200-45-kwh-standard-long-2023"],
+			"OJ07Z1": ["mercedes-benz-eqa-250-300-4matic-350-4matic-70-5-kwh-2022"],
+			"OJEMZ2": ["mercedes-benz-eqa-250-300-4matic-350-4matic-66-5-kwh-2021"],
+			"OJEPZ1": ["mercedes-benz-eqa-250-300-4matic-350-4matic-66-5-kwh-2021"],
+			"OJEQZ2": ["mercedes-benz-eqa-250-300-4matic-350-4matic-66-5-kwh-2021"],
+			"OJERZ1": ["mercedes-benz-eqa-250-300-4matic-350-4matic-66-5-kwh-2021"],
+			"OJEUZ2": [
+				"mercedes-benz-eqa-250-300-4matic-350-4matic-66-5-kwh-2021",
+				"mercedes-benz-eqa-250-300-4matic-350-4matic-70-5-kwh-2022"
+			],
+			"OY07Z1": ["mercedes-benz-eqb-250-300-4matic-350-4matic-70-5-kwh-2022"],
+			"OYERZ1": ["mercedes-benz-eqb-250-300-4matic-350-4matic-66-5-kwh-2021"],
+			"OYEUZ2": [
+				"mercedes-benz-eqb-250-300-4matic-350-4matic-66-5-kwh-2021",
+				"mercedes-benz-eqb-250-300-4matic-350-4matic-70-5-kwh-2022"
+			],
+			"YNE0Z1": [
+				"mercedes-benz-eqc-400-4matic-2019",
+				"mercedes-benz-eqc-400-4matic-early-7-4-kw-ac-2019"
+			]
+		},
+		"MG": {
+			"1EAB1EI": [
+				"mg-zs-ev-44-5-kwh-2019",
+				"mg-zs-ev-long-range-72-kwh-2022",
+				"mg-zs-ev-standard-range-51-kwh-2022"
+			],
+			"1EAB2EI": [
+				"mg-marvel-r-70-kwh-rwd-awd-performance-2021",
+				"mg-mg4-long-range-64-kwh-2022",
+				"mg-mg4-standard-range-51-kwh-2022",
+				"mg-mg4-extended-range-77-kwh-2023"
+			],
+			"1EAB3EI": ["mg-marvel-r-70-kwh-rwd-awd-performance-2021"],
+			"1EAB4EI": ["mg-mg4-xpower-2023"],
+			"2EAC1EI": ["mg-mg5-long-range-61-1-kwh-2021", "mg-mg5-standard-range-50-3-kwh-2022"],
+			"AB2EE": [
+				"mg-mgs5-ev-long-range-64-kwh-2025",
+				"mg-mgs5-ev-standard-range-49-kwh-2025",
+				"mg-mg4-long-range-64-kwh-2022",
+				"mg-mg4-standard-range-51-kwh-2022",
+				"mg-mg4-extended-range-77-kwh-2023",
+				"mg-mgs6-ev-77-kwh-rwd-dual-motor-2025"
+			]
+		},
+		"MINI": {
+			"11DJ": ["mini-cooper-se-f56-32-6-kwh-2020"],
+			"11GC": ["mini-cooper-e-40-7-kwh-j01-2024"],
+			"21GC": ["mini-cooper-se-54-2-kwh-j01-john-cooper-works-e-2024"],
+			"31GC": ["mini-aceman-e-2024"],
+			"41GA": ["mini-countryman-e-se-all4-2024"],
+			"51GA": ["mini-countryman-e-se-all4-2024"],
+			"XP31": ["mini-cooper-se-f56-32-6-kwh-2020"]
+		},
+		"OPEL": {
+			"C/ZKZ": ["opel-grandland-electric-73-kwh-fwd-213-hp-awd-325-hp-2024"],
+			"GHXXFXX": ["opel-ampera-e-60-kwh-2017"],
+			"H/ZKW": ["opel-corsa-electric-51-54-kwh-156-hp-2023"],
+			"H/ZKX": ["opel-corsa-e-50-kwh-2020", "opel-corsa-electric-50-kwh-136-hp-2023"],
+			"K/ZKW": ["opel-mokka-electric-54-kwh-156-hp-2023"],
+			"K/ZKX": ["opel-mokka-e-50-kwh-2021"],
+			"M/ZKU": ["opel-combo-e-life-50-kwh-2021"],
+			"M/ZYA": ["opel-frontera-electric-44-kwh-2025"],
+			"Z/ZKX": [
+				"opel-combo-e-50-kwh-2021",
+				"opel-combo-e-life-50-kwh-2021",
+				"opel-zafira-e-life-50-kwh-2020",
+				"opel-zafira-e-life-75-kwh-2020"
+			]
+		},
+		"PEUGEOT": {
+			"C/ZKM": [
+				"peugeot-e-3008-long-range-98-kwh-230-hp-2025",
+				"peugeot-e-5008-long-range-98-kwh-230-hp-2025"
+			],
+			"C/ZKZ": [
+				"peugeot-e-3008-73-kwh-210-hp-dual-motor-325-hp-2024",
+				"peugeot-e-5008-73-kwh-210-hp-dual-motor-325-hp-2024"
+			],
+			"H/ZKW": ["peugeot-e-208-51-54-kwh-156-hp-2023"],
+			"H/ZKX": ["peugeot-e-208-50-kwh-136-hp-2019"],
+			"K/ZKW": ["peugeot-e-2008-54-kwh-156-hp-2023"],
+			"K/ZKX": ["peugeot-e-2008-50-kwh-136-hp-2020"],
+			"M/ZKU": ["peugeot-e-rifter-50-kwh-2021"],
+			"NZKY": ["peugeot-ion-14-5-kwh-2012"],
+			"Z/ZKX": [
+				"peugeot-e-expert-50-kwh-2020",
+				"peugeot-e-expert-75-kwh-2020",
+				"peugeot-e-partner-50-kwh-2021",
+				"peugeot-e-rifter-50-kwh-2021",
+				"peugeot-e-traveller-50-kwh-2020",
+				"peugeot-e-traveller-75-kwh-2020"
+			]
+		},
+		"POLESTAR": {
+			"VSEC": ["polestar-polestar-2-standard-range-single-motor-69-kwh-2021"],
+			"VSED": ["polestar-polestar-2-long-range-single-motor-dual-motor-78-kwh-2020"],
+			"VSEF": ["polestar-polestar-2-standard-range-single-motor-69-kwh-2021"],
+			"VSEG": ["polestar-polestar-2-long-range-single-motor-dual-motor-78-kwh-2020"],
+			"VSET": ["polestar-polestar-2-long-range-single-motor-dual-motor-78-kwh-2020"],
+			"VSFD": ["polestar-polestar-2-long-range-single-motor-dual-motor-82-kwh-2023"],
+			"VSFE": ["polestar-polestar-2-long-range-single-motor-dual-motor-82-kwh-2023"],
+			"VSFF": ["polestar-polestar-2-long-range-single-motor-dual-motor-82-kwh-2023"],
+			"YKEA": ["polestar-polestar-3-long-range-single-motor-dual-motor-111-kwh-2024"],
+			"YKEE": ["polestar-polestar-3-long-range-single-motor-dual-motor-111-kwh-2024"],
+			"ZPA/AE0": ["polestar-polestar-4-long-range-single-motor-dual-motor-2024"],
+			"ZPA/AE1": ["polestar-polestar-4-long-range-single-motor-dual-motor-2024"],
+			"ZPA/AEP": ["polestar-polestar-4-long-range-single-motor-dual-motor-2024"]
+		},
+		"PORSCHE": {
+			"CA22": ["porsche-taycan-cross-turismo-performance-battery-plus-93-kwh-2021"],
+			"CB22": ["porsche-taycan-cross-turismo-performance-battery-plus-93-kwh-2021"],
+			"CC22": ["porsche-taycan-cross-turismo-performance-battery-plus-93-kwh-2021"],
+			"CM22": [
+				"porsche-taycan-cross-turismo-performance-battery-89-kwh-2024",
+				"porsche-taycan-cross-turismo-performance-battery-plus-105-kwh-2024"
+			],
+			"HA22": ["porsche-macan-electric-100-kwh-macan-4-4s-gts-turbo-2024"],
+			"HB22": ["porsche-macan-electric-100-kwh-macan-4-4s-gts-turbo-2024"],
+			"HC22": ["porsche-macan-electric-100-kwh-macan-4-4s-gts-turbo-2024"],
+			"JA12": [
+				"porsche-taycan-performance-battery-79-kwh-2020",
+				"porsche-taycan-performance-battery-plus-93-kwh-2020"
+			],
+			"JB22": [
+				"porsche-taycan-performance-battery-79-kwh-2020",
+				"porsche-taycan-performance-battery-plus-93-kwh-2020"
+			],
+			"JC22": ["porsche-taycan-performance-battery-plus-93-kwh-2020"],
+			"JD22": ["porsche-taycan-performance-battery-plus-93-kwh-2020"],
+			"JE22": ["porsche-taycan-performance-battery-plus-93-kwh-2020"],
+			"JM12": [
+				"porsche-taycan-performance-battery-89-kwh-2024",
+				"porsche-taycan-performance-battery-plus-105-kwh-2024"
+			],
+			"JN22": [
+				"porsche-taycan-performance-battery-89-kwh-2024",
+				"porsche-taycan-performance-battery-plus-105-kwh-2024"
+			],
+			"SA12": [
+				"porsche-taycan-sport-turismo-performance-battery-79-kwh-2022",
+				"porsche-taycan-sport-turismo-performance-battery-plus-93-kwh-2022"
+			],
+			"SB22": [
+				"porsche-taycan-sport-turismo-performance-battery-79-kwh-2022",
+				"porsche-taycan-sport-turismo-performance-battery-plus-93-kwh-2022"
+			],
+			"SE22": ["porsche-taycan-sport-turismo-performance-battery-plus-93-kwh-2022"]
+		},
+		"RENAULT": {
+			"0V0Y": [
+				"renault-zoe-ze50-r110-r135-ac-only-2019",
+				"renault-zoe-ze50-r110-r135-with-ccs-2019"
+			],
+			"BE2/J1E": ["renault-megane-e-tech-ev60-60-kwh-2022"],
+			"BE2/J2E": ["renault-megane-e-tech-ev60-60-kwh-2022"],
+			"HE2/J1E": ["renault-scenic-e-tech-87-kwh-long-range-2024"],
+			"HE2/J8E": ["renault-scenic-e-tech-60-kwh-comfort-range-2024"],
+			"RBE/A1B": ["renault-5-e-tech-52-kwh-comfort-range-2024"],
+			"RBE/A3B": [
+				"renault-5-e-tech-40-kwh-urban-range-ac-only-2024",
+				"renault-5-e-tech-40-kwh-urban-range-with-ccs-2024"
+			],
+			"V/YF0": ["renault-zoe-ze40-q90-2016", "renault-zoe-ze40-r90-r110-2016"],
+			"V0Y/MCL": [
+				"renault-zoe-ze50-r110-r135-ac-only-2019",
+				"renault-zoe-ze50-r110-r135-with-ccs-2019"
+			],
+			"V0Y/MDL": [
+				"renault-zoe-ze50-r110-r135-ac-only-2019",
+				"renault-zoe-ze50-r110-r135-with-ccs-2019"
+			]
+		},
+		"SKODA": {
+			"ABLEDFAD7PX2": ["skoda-elroq-85-77-kwh-2025", "skoda-elroq-85-85x-rs-77-kwh-165-kw-2026"],
+			"ABLX1EDD7PX1": ["skoda-elroq-85x-77-kwh-2025", "skoda-elroq-85-85x-rs-77-kwh-165-kw-2026"],
+			"ABLX1EDL1IX1": ["skoda-elroq-rs-79-kwh-2025", "skoda-elroq-85-85x-rs-77-kwh-165-kw-2026"],
+			"ABX1EBL1GX1": [
+				"skoda-enyaq-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-coupe-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-85x-rs-77-kwh-2024",
+				"skoda-enyaq-coupe-85x-rs-77-kwh-2024"
+			],
+			"ABX1EBL1RX1": [
+				"skoda-enyaq-coupe-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-coupe-iv-80-80x-77-kwh-2022",
+				"skoda-enyaq-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-iv-80-80x-77-kwh-2022"
+			],
+			"ACEBJAL1FX2": [
+				"skoda-enyaq-iv-80-80x-77-kwh-50-kw-dc-2021",
+				"skoda-enyaq-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-iv-80-80x-77-kwh-2022",
+				"skoda-enyaq-coupe-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-coupe-iv-80-80x-77-kwh-2022"
+			],
+			"ACEBJCL1LX2": [
+				"skoda-enyaq-iv-60-58-kwh-50-kw-dc-2021",
+				"skoda-enyaq-iv-60-58-kwh-2022",
+				"skoda-enyaq-coupe-iv-60-58-kwh-2022"
+			],
+			"ACNX1EDD7PX1": [
+				"skoda-enyaq-85x-rs-77-kwh-2024",
+				"skoda-enyaq-85-85x-rs-77-kwh-165-kw-2026"
+			],
+			"ACNX1EDL1IX1": ["skoda-enyaq-rs-79-kwh-2025", "skoda-enyaq-coupe-rs-79-kwh-2025"],
+			"ACX1EBL1RX1": [
+				"skoda-enyaq-iv-80-80x-77-kwh-50-kw-dc-2021",
+				"skoda-enyaq-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-iv-80-80x-77-kwh-2022",
+				"skoda-enyaq-coupe-iv-80-80x-rs-77-kwh-135-kw-2022",
+				"skoda-enyaq-coupe-iv-80-80x-77-kwh-2022"
+			],
+			"ACX1EDD7PX1": ["skoda-enyaq-85x-rs-77-kwh-2024"]
+		},
+		"SMART": {
+			"0/A67": [
+				"smart-1-pro-66-kwh-7-4-kw-ac-2022",
+				"smart-1-pro-premium-pulse-brabus-66-kwh-2022"
+			],
+			"0/B67": ["smart-3-pro-premium-pulse-brabus-66-kwh-2023"],
+			"10/C68": [
+				"smart-1-pro-66-kwh-7-4-kw-ac-2022",
+				"smart-1-pro-premium-pulse-brabus-66-kwh-2022",
+				"smart-3-pro-premium-pulse-brabus-66-kwh-2023"
+			],
+			"10/C69": ["smart-3-pro-premium-pulse-brabus-66-kwh-2023"]
+		},
+		"SUBARU": {
+			"YEAM15(W)": ["subaru-solterra-71-4-kwh-2022"]
+		},
+		"TESLA": {
+			"100D": [
+				"tesla-model-s-100d-p100d-with-ccs-adapter-2017",
+				"tesla-model-s-100d-p100d-without-ccs-adapter-2017"
+			],
+			"100X": [
+				"tesla-model-x-100d-p100d-with-ccs-adapter-2017",
+				"tesla-model-x-100d-p100d-without-ccs-adapter-2017"
+			],
+			"E1LR": ["tesla-model-3-standard-range-plus-2019"],
+			"E1R/BB1": ["tesla-model-3-standard-range-plus-2019"],
+			"E3CD": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E3D/BB1": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E3D/PB1": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E3D/PP2": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E3LD": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E5CD": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E5D/BB1": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E5D/BGB": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E5LD": ["tesla-model-3-long-range-dual-motor-performance-2019"],
+			"E6CR": ["tesla-model-3-standard-range-plus-lfp-2021"],
+			"E6LR": ["tesla-model-3-rwd-lfp-2021"],
+			"E6R/BGB": ["tesla-model-3-standard-range-plus-lfp-2021"],
+			"E6R/PB1": ["tesla-model-3-standard-range-plus-lfp-2021"],
+			"E6R/PGB": ["tesla-model-3-standard-range-plus-lfp-2021"],
+			"H5LD": ["tesla-model-3-long-range-rwd-awd-performance-2023"],
+			"H5LR": ["tesla-model-3-long-range-rwd-awd-performance-2023"],
+			"H5MD": ["tesla-model-3-long-range-rwd-awd-performance-2023"],
+			"H5MR": ["tesla-model-3-long-range-rwd-awd-performance-2023"],
+			"H6LR": ["tesla-model-3-rwd-2023"],
+			"H6MR": ["tesla-model-3-rwd-2023"],
+			"HB6MN": ["tesla-model-3-standard-2025"],
+			"HB6MR": ["tesla-model-3-standard-2025"],
+			"SA3/EBS": [
+				"tesla-model-s-long-range-performance-raven-with-ccs-adapter-2019",
+				"tesla-model-s-long-range-performance-raven-without-ccs-adapter-2019"
+			],
+			"SA3/EPS": [
+				"tesla-model-s-long-range-performance-raven-with-ccs-adapter-2019",
+				"tesla-model-s-long-range-performance-raven-without-ccs-adapter-2019"
+			],
+			"SB1D": ["tesla-model-s-dual-motor-awd-long-range-plaid-2022"],
+			"SB1T": ["tesla-model-s-dual-motor-awd-long-range-plaid-2022"],
+			"XA3/EBX": [
+				"tesla-model-x-long-range-performance-raven-with-ccs-adapter-2019",
+				"tesla-model-x-long-range-performance-raven-without-ccs-adapter-2019"
+			],
+			"XA3/EPX": [
+				"tesla-model-x-long-range-performance-raven-with-ccs-adapter-2019",
+				"tesla-model-x-long-range-performance-raven-without-ccs-adapter-2019"
+			],
+			"XB1D": ["tesla-model-x-dual-motor-awd-long-range-plaid-2022"],
+			"XB1T": ["tesla-model-x-dual-motor-awd-long-range-plaid-2022"],
+			"Y5CD": ["tesla-model-y-long-range-awd-performance-2021"],
+			"Y5LD": ["tesla-model-y-long-range-awd-performance-2021"],
+			"Y5LR": ["tesla-model-y-long-range-awd-performance-2021"],
+			"Y6LR": ["tesla-model-y-rwd-lfp-2022"],
+			"Y7CR": ["tesla-model-y-rwd-lfp-2022"],
+			"YB6MN": ["tesla-model-y-standard-2025"],
+			"YB6MR": ["tesla-model-y-standard-2025"],
+			"YS5LD": ["tesla-model-y-long-range-rwd-awd-2025"],
+			"YS5LR": ["tesla-model-y-long-range-rwd-awd-2025"],
+			"YS5MD": ["tesla-model-y-long-range-rwd-awd-2025", "tesla-model-y-performance-2025"],
+			"YS5MR": ["tesla-model-y-long-range-rwd-awd-2025"],
+			"YS6MR": ["tesla-model-y-rwd-lfp-juniper-2025"]
+		},
+		"TOYOTA": {
+			"M/ZKU": ["toyota-proace-city-verso-electric-50-kwh-facelift-2024"],
+			"S/ZKU": ["toyota-proace-electric-75-kwh-2020", "toyota-proace-verso-electric-75-kwh-2020"],
+			"XEAM10(W)": ["toyota-bz4x-71-4-kwh-2022"],
+			"YEAM15(W)": ["toyota-bz4x-71-4-kwh-2022"],
+			"Z/EZZ": ["toyota-proace-city-verso-electric-50-kwh-2021"],
+			"Z/VZZ": ["toyota-proace-electric-75-kwh-2020", "toyota-proace-verso-electric-75-kwh-2020"],
+			"Z/ZKX": [
+				"toyota-proace-city-electric-50-kwh-2021",
+				"toyota-proace-city-verso-electric-50-kwh-2021",
+				"toyota-proace-electric-50-kwh-2020",
+				"toyota-proace-verso-electric-50-kwh-2020",
+				"toyota-proace-electric-75-kwh-2020",
+				"toyota-proace-verso-electric-75-kwh-2020"
+			]
+		},
+		"VOLVO": {
+			"2YEK": ["volvo-ex30-cross-country-twin-motor-performance-69-kwh-2025"],
+			"2ZEK": ["volvo-ex30-single-motor-extended-range-twin-motor-performance-69-kwh-2023"],
+			"2ZEL": ["volvo-ex30-single-motor-extended-range-twin-motor-performance-69-kwh-2023"],
+			"2ZEM": ["volvo-ex30-single-motor-51-kwh-2023"],
+			"TFEE": ["volvo-ex90-twin-motor-twin-motor-performance-111-kwh-2024"],
+			"TFEV": ["volvo-ex90-twin-motor-twin-motor-performance-111-kwh-2024"],
+			"XKED": ["volvo-c40-recharge-twin-motor-78-kwh-2021"],
+			"XKEF": ["volvo-c40-recharge-single-motor-69-kwh-2022"],
+			"XKER": [
+				"volvo-c40-recharge-single-motor-extended-range-twin-motor-performance-82-kwh-2023",
+				"volvo-ec40-single-motor-extended-range-twin-motor-performance-82-kwh-2024"
+			],
+			"XKEY": ["volvo-ec40-single-motor-extended-range-twin-motor-performance-82-kwh-2024"],
+			"XZED": ["volvo-xc40-recharge-p8-awd-twin-motor-78-kwh-2020"],
+			"XZEF": ["volvo-xc40-recharge-single-motor-69-kwh-2021"],
+			"XZER": [
+				"volvo-xc40-recharge-single-motor-extended-range-twin-motor-performance-82-kwh-2023",
+				"volvo-ex40-single-motor-extended-range-twin-motor-performance-82-kwh-2024"
+			]
+		},
+		"VW": {
+			"4ACEBJAL1FX2": [
+				"volkswagen-id-4-77-kwh-pro-performance-1st-pro-4motion-gtx-2020",
+				"volkswagen-id-4-pro-pro-performance-77-kwh-rwd-2022"
+			],
+			"4ACEBJAL1KX2": [
+				"volkswagen-id-4-pure-52-kwh-109-kw-2021",
+				"volkswagen-id-4-pure-52-kwh-2023"
+			],
+			"4ACEBJAL1TX2": ["volkswagen-id-4-pro-pro-performance-77-kwh-rwd-2022"],
+			"4ACX1EBL1GX1": [
+				"volkswagen-id-4-77-kwh-pro-performance-1st-pro-4motion-gtx-2020",
+				"volkswagen-id-4-pro-4motion-gtx-77-kwh-2022",
+				"volkswagen-id-4-pro-4motion-gtx-77-kwh-175-kw-2023"
+			],
+			"4ACX1EBL1RX1": [
+				"volkswagen-id-4-pro-4motion-gtx-77-kwh-2022",
+				"volkswagen-id-4-pro-4motion-gtx-77-kwh-175-kw-2023"
+			],
+			"4ACX1EDD7PX1": ["volkswagen-id-4-pro-4motion-gtx-77-kwh-175-kw-2023"],
+			"4ACX1EDL1IX1": ["volkswagen-id-4-gtx-79-kwh-2024"],
+			"5ACEBJAL1FX2": ["volkswagen-id-5-pro-pro-performance-77-kwh-rwd-2022"],
+			"5ACEBJAL1TX2": ["volkswagen-id-5-pro-pro-performance-77-kwh-rwd-2022"],
+			"5ACX1EBL1GX1": [
+				"volkswagen-id-5-gtx-77-kwh-2022",
+				"volkswagen-id-5-pro-4motion-gtx-77-kwh-175-kw-2023"
+			],
+			"5ACX1EDL1IX1": ["volkswagen-id-5-gtx-79-kwh-2024"],
+			"ABEABA": ["volkswagen-e-up-18-7-kwh-ac-only-2013", "volkswagen-e-up-18-7-kwh-with-ccs-2013"],
+			"ABEBMA": ["volkswagen-e-up-32-3-kwh-ac-only-2020", "volkswagen-e-up-32-3-kwh-with-ccs-2020"],
+			"ABEDFAD7PX2": ["volkswagen-id-7-pro-77-kwh-2023", "volkswagen-id-7-tourer-pro-77-kwh-2024"],
+			"ACEBJAL1EX2": ["volkswagen-id-4-pure-performance-52-kwh-2021"],
+			"ACEBJAL1FX2": [
+				"volkswagen-id-4-77-kwh-pro-performance-1st-pro-4motion-gtx-2020",
+				"volkswagen-id-4-pro-pro-performance-77-kwh-rwd-2022",
+				"volkswagen-id-3-pro-s-77-kwh-2021",
+				"volkswagen-id-3-pro-s-77-kwh-facelift-2023",
+				"volkswagen-id-buzz-77-kwh-2022",
+				"volkswagen-id-buzz-cargo-77-kwh-2022"
+			],
+			"ACEBJAL1KX2": ["volkswagen-id-4-pure-52-kwh-109-kw-2021"],
+			"ACEBJCL1FX2": [
+				"volkswagen-id-3-pro-performance-58-kwh-100-kw-dc-2020",
+				"volkswagen-id-3-pro-pro-performance-58-kwh-2021"
+			],
+			"ACEBJCL1JX2": [
+				"volkswagen-id-3-pro-performance-58-kwh-100-kw-dc-2020",
+				"volkswagen-id-3-pro-pro-performance-58-kwh-2021"
+			],
+			"ACEBJDL1DX2": ["volkswagen-id-3-pure-performance-45-kwh-2021"],
+			"ACEDCCM0AX2": ["volkswagen-id-3-pro-59-kwh-2024"],
+			"ACEDFAD7PX2": [
+				"volkswagen-id-3-gtx-gtx-performance-79-kwh-2024",
+				"volkswagen-id-7-pro-77-kwh-2023",
+				"volkswagen-id-7-tourer-pro-77-kwh-2024"
+			],
+			"ACEEWAL1AX2": ["volkswagen-id-3-gtx-gtx-performance-79-kwh-2024"],
+			"ACX1EBL1GX1": [
+				"volkswagen-id-4-77-kwh-pro-performance-1st-pro-4motion-gtx-2020",
+				"volkswagen-id-4-pro-4motion-gtx-77-kwh-2022"
+			],
+			"ACX1EDJ8AX1": ["volkswagen-id-7-tourer-pro-s-gtx-86-kwh-2024"],
+			"GAC4EAZAX0": [
+				"volkswagen-e-golf-35-8-kwh-ac-only-2017",
+				"volkswagen-e-golf-35-8-kwh-with-ccs-2017"
+			],
+			"GAC4EBSAX0": [
+				"volkswagen-e-golf-35-8-kwh-ac-only-2017",
+				"volkswagen-e-golf-35-8-kwh-with-ccs-2017"
+			]
+		},
+		"XPENG": {
+			"A0A0": [
+				"xpeng-g6-standard-range-66-kwh-2024",
+				"xpeng-g6-long-range-87-5-kwh-rwd-awd-performance-2024",
+				"xpeng-g6-long-range-80-8-kwh-2025-update-rwd-awd-performance-2025",
+				"xpeng-g9-98-kwh-rwd-long-range-awd-performance-2023",
+				"xpeng-g9-standard-range-78-2-kwh-2023",
+				"xpeng-g9-long-range-94-6-kwh-2025-update-2025"
+			],
+			"A0B0": [
+				"xpeng-g6-long-range-87-5-kwh-rwd-awd-performance-2024",
+				"xpeng-g6-long-range-80-8-kwh-2025-update-rwd-awd-performance-2025",
+				"xpeng-g9-98-kwh-rwd-long-range-awd-performance-2023",
+				"xpeng-g9-standard-range-78-2-kwh-2023",
+				"xpeng-g9-long-range-94-6-kwh-2025-update-2025"
+			],
+			"E1L/050": ["xpeng-g9-standard-range-78-2-kwh-2023"],
+			"E2L/150": [
+				"xpeng-g9-98-kwh-rwd-long-range-awd-performance-2023",
+				"xpeng-g9-long-range-94-6-kwh-2025-update-2025",
+				"xpeng-p7-82-7-kwh-rwd-long-range-awd-performance-wing-2021"
+			]
+		}
+	}
+}

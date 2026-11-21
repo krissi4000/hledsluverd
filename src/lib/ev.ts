@@ -42,9 +42,10 @@ export function effectiveKw(car: CarSpec, connectors: StationConnector[]): numbe
 
 // ── Session estimate: what a charge actually costs this car ──────────────────────────
 //
-// OpenEV Data has each car's peak DC power and usable battery size but no charging
-// curve, so the average power over a session is a labelled approximation, never shown
-// as exact (the UI prefixes it with "≈" and explains the assumption).
+// The car data (seeds/cars.json) has each car's peak DC power and usable battery size
+// but no charging curve, so the average power over a session is a labelled
+// approximation, never shown as exact (the UI prefixes it with "≈" and explains the
+// assumption).
 
 /** The session every estimate describes: 10 % → 80 % state of charge. */
 export const SESSION_FROM_SOC = 0.1;
@@ -105,12 +106,12 @@ export interface SessionEstimate {
 export function estimateSession(
 	tariff: TariffForSession,
 	avgKw: number | null,
-	batteryNetKwh: number | null
+	batteryKwh: number | null
 ): SessionEstimate | null {
 	if (avgKw === null || !(avgKw > 0)) return null;
-	if (batteryNetKwh === null || !(batteryNetKwh > 0)) return null;
+	if (batteryKwh === null || !(batteryKwh > 0)) return null;
 	if (!(tariff.priceIskPerKwh >= 0)) return null;
-	const energyKwh = batteryNetKwh * (SESSION_TO_SOC - SESSION_FROM_SOC);
+	const energyKwh = batteryKwh * (SESSION_TO_SOC - SESSION_FROM_SOC);
 	const minutes = (energyKwh / avgKw) * 60;
 	const fee = tariff.minuteFeeIsk ?? 0;
 	const after = tariff.minuteFeeAfterMin ?? 0;
@@ -128,13 +129,13 @@ export function estimateSession(
 export function effectivePricePerKwh(
 	tariff: TariffForSession,
 	avgKw: number | null,
-	batteryNetKwh: number | null
+	batteryKwh: number | null
 ): number | null {
 	const fee = tariff.minuteFeeIsk ?? 0;
 	if (!(fee > 0)) return tariff.priceIskPerKwh;
 	if (avgKw === null || !(avgKw > 0)) return null;
 	if (!tariff.minuteFeeAfterMin) return tariff.priceIskPerKwh + (fee * 60) / avgKw;
-	return estimateSession(tariff, avgKw, batteryNetKwh)?.effectivePerKwh ?? null;
+	return estimateSession(tariff, avgKw, batteryKwh)?.effectivePerKwh ?? null;
 }
 
 /**
@@ -172,7 +173,7 @@ export interface CarStationEstimate {
  */
 export function carStationEstimate(
 	mode: 'AC' | 'DC',
-	car: CarSpec & { batteryNetKwh: number | null },
+	car: CarSpec & { batteryKwh: number | null },
 	connectors: StationConnector[],
 	tariff: TariffForSession | null
 ): CarStationEstimate | null {
@@ -182,9 +183,9 @@ export function carStationEstimate(
 		mode === 'AC' ? car.maxAcKw : car.maxDcKw,
 		maxConnectorKw(connectors)
 	);
-	const session = estimateSession(tariff, avgKw, car.batteryNetKwh);
+	const session = estimateSession(tariff, avgKw, car.batteryKwh);
 	return {
-		effectivePrice: effectivePricePerKwh(tariff, avgKw, car.batteryNetKwh),
+		effectivePrice: effectivePricePerKwh(tariff, avgKw, car.batteryKwh),
 		effectiveApprox: (tariff.minuteFeeIsk ?? 0) > 0,
 		session: session && { costIsk: session.costIsk, minutes: session.minutes }
 	};

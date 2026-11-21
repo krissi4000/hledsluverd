@@ -47,6 +47,7 @@
 	search={data.search}
 	near={data.near}
 	list={data.nearby ? nearbyList : undefined}
+	plateLookup={data.plateLookup}
 />
 
 {#snippet nearbyList()}

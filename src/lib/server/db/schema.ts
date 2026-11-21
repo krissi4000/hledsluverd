@@ -117,16 +117,24 @@ export const cars = pgTable(
 		maxAcKw: doublePrecision('max_ac_kw'),
 		dcConnector: connectorTypeEnum('dc_connector'),
 		maxDcKw: doublePrecision('max_dc_kw'),
-		// OpenEV battery.pack_capacity_kwh_net: usable capacity, sizes the 10→80 % estimate
-		batteryNetKwh: doublePrecision('battery_net_kwh'),
-		// OpenEV body.style ("sedan", "crossover", "pickup", …) and exterior size, used to
-		// draw the car's side-view silhouette. Null when the dataset doesn't say.
+		// European model years this charging spec was sold; yearTo null = still on sale.
+		// The plate lookup narrows a registered car's candidates by these.
+		yearFrom: integer('year_from'),
+		yearTo: integer('year_to'),
+		/** usable battery, kWh — helps owners recognise their variant */
+		batteryKwh: doublePrecision('battery_kwh'),
+		// body style ("sedan", "crossover", "van", …) and exterior size, used to draw the
+		// car's side-view silhouette. Null when unknown.
 		bodyStyle: text('body_style'),
 		lengthMm: integer('length_mm'),
 		heightMm: integer('height_mm'),
 		wheelbaseMm: integer('wheelbase_mm')
 	},
-	(t) => [unique('cars_make_model_variant_idx').on(t.make, t.model, t.variant).nullsNotDistinct()]
+	(t) => [
+		unique('cars_make_model_variant_year_idx')
+			.on(t.make, t.model, t.variant, t.yearFrom)
+			.nullsNotDistinct()
+	]
 );
 
 export const scrapeRuns = pgTable('scrape_runs', {

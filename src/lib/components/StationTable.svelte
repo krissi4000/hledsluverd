@@ -14,7 +14,7 @@
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { ownBrandPriceOnly } from '$lib/networks';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
-	import CarFilter from '$lib/components/CarFilter.svelte';
+	import CarFilter, { type CarPill } from '$lib/components/CarFilter.svelte';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import { formatKm } from '$lib/geo';
@@ -33,7 +33,8 @@
 		car,
 		search,
 		near,
-		list
+		list,
+		plateLookup = false
 	}: {
 		/** carKw: the speed the chosen car gets at the station; effectivePrice/session: what
 		 * it pays there with per-minute fees, ≈ a 10→80 % charge (set when a car is chosen) */
@@ -51,13 +52,9 @@
 		networks: string[];
 		networkDefaults: string[];
 		networkOptions: { slug: string; name: string }[];
-		car: {
-			slug: string;
-			make: string;
-			model: string;
-			variant: string | null;
-			batteryNetKwh: number | null;
-		} | null;
+		car: (CarPill & { batteryKwh: number | null }) | null;
+		/** offer registration-plate lookup in the car search */
+		plateLookup?: boolean;
 		search: string;
 		near: { lat: number; lng: number } | null;
 		/** shown under the filters instead of the table (the nearby cards) */
@@ -129,7 +126,7 @@
 		</div>
 		<div class="filter-row">
 			<span class="filter-label" aria-hidden="true">{m.filter_car()}</span>
-			<CarFilter {car} {href} />
+			<CarFilter {car} {href} {plateLookup} />
 		</div>
 		<StationSearch {search} {near} {href} />
 	</nav>
@@ -137,8 +134,8 @@
 	{#if !list && (near || car)}
 		<p class="estimate-note" data-testid="estimate-note">
 			{near ? m.sorted_by_distance() : m.sorted_by_effective()}
-			{#if car}{car.batteryNetKwh
-					? m.estimate_note({ kwh: formatNumber(car.batteryNetKwh) })
+			{#if car}{car.batteryKwh
+					? m.estimate_note({ kwh: formatNumber(car.batteryKwh) })
 					: m.estimate_note_no_battery()}{/if}
 		</p>
 	{/if}

@@ -99,14 +99,7 @@
 					<a href="https://www.google.com/maps" rel="noopener external">Google Maps</a>: {m.um_src_places()}
 				</li>
 			{/if}
-			<li>
-				<a href="https://github.com/open-ev-data/open-ev-data-dataset" rel="noopener external"
-					>OpenEV Data</a
-				>: {m.um_src_openev()}
-				<a href="https://cdla.dev/permissive-2-0/" rel="noopener external license"
-					>CDLA-Permissive-2.0</a
-				>.
-			</li>
+			<li>{m.um_src_cars()}</li>
 			<li>
 				<a href="https://openfreemap.org" rel="noopener external">OpenFreeMap</a>: {m.um_src_map()}
 				<a href="https://www.openstreetmap.org/copyright" rel="noopener external">© OpenStreetMap</a

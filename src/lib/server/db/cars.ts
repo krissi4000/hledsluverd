@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 import type { ConnectorType } from '$lib/types';
 import type { Db } from './client';
 import { cars } from './schema';
@@ -8,31 +8,38 @@ export interface CarRow {
 	make: string;
 	model: string;
 	variant: string | null;
+	yearFrom: number | null;
+	yearTo: number | null;
+	batteryKwh: number | null;
 	acConnector: ConnectorType | null;
 	maxAcKw: number | null;
 	dcConnector: ConnectorType | null;
 	maxDcKw: number | null;
-	/** usable battery kWh; null = no cost estimate for this car */
-	batteryNetKwh: number | null;
 }
 
-/** Every car, ordered for the finder's search list (shipped to the client as JSON). */
+const carRowColumns = {
+	slug: cars.slug,
+	make: cars.make,
+	model: cars.model,
+	variant: cars.variant,
+	yearFrom: cars.yearFrom,
+	yearTo: cars.yearTo,
+	batteryKwh: cars.batteryKwh,
+	acConnector: cars.acConnector,
+	maxAcKw: cars.maxAcKw,
+	dcConnector: cars.dcConnector,
+	maxDcKw: cars.maxDcKw
+};
+
+// by make and model, newest generation first within a model
+const listOrder = [asc(cars.make), asc(cars.model), desc(cars.yearFrom), asc(cars.variant)];
+
+/** Every car, in the order the search lists them. */
 export async function carList(db: Db): Promise<CarRow[]> {
-	const rows = await db
-		.select()
+	return db
+		.select(carRowColumns)
 		.from(cars)
-		.orderBy(asc(cars.make), asc(cars.model), asc(cars.variant));
-	return rows.map((c) => ({
-		slug: c.slug,
-		make: c.make,
-		model: c.model,
-		variant: c.variant,
-		acConnector: c.acConnector,
-		maxAcKw: c.maxAcKw,
-		dcConnector: c.dcConnector,
-		maxDcKw: c.maxDcKw,
-		batteryNetKwh: c.batteryNetKwh
-	}));
+		.orderBy(...listOrder);
 }
 
 /** What the car search needs: enough to find and label a car, show its plugs and draw it. */
@@ -46,36 +53,17 @@ export interface CarSearchRow extends CarRow {
 export async function carSearchList(db: Db): Promise<CarSearchRow[]> {
 	return db
 		.select({
-			slug: cars.slug,
-			make: cars.make,
-			model: cars.model,
-			variant: cars.variant,
-			acConnector: cars.acConnector,
-			maxAcKw: cars.maxAcKw,
-			dcConnector: cars.dcConnector,
-			maxDcKw: cars.maxDcKw,
-			batteryNetKwh: cars.batteryNetKwh,
+			...carRowColumns,
 			bodyStyle: cars.bodyStyle,
 			lengthMm: cars.lengthMm,
 			heightMm: cars.heightMm,
 			wheelbaseMm: cars.wheelbaseMm
 		})
 		.from(cars)
-		.orderBy(asc(cars.make), asc(cars.model), asc(cars.variant));
+		.orderBy(...listOrder);
 }
 
 export async function carBySlug(db: Db, slug: string): Promise<CarRow | null> {
-	const [c] = await db.select().from(cars).where(eq(cars.slug, slug)).limit(1);
-	if (!c) return null;
-	return {
-		slug: c.slug,
-		make: c.make,
-		model: c.model,
-		variant: c.variant,
-		acConnector: c.acConnector,
-		maxAcKw: c.maxAcKw,
-		dcConnector: c.dcConnector,
-		maxDcKw: c.maxDcKw,
-		batteryNetKwh: c.batteryNetKwh
-	};
+	const [c] = await db.select(carRowColumns).from(cars).where(eq(cars.slug, slug)).limit(1);
+	return c ?? null;
 }

@@ -206,7 +206,8 @@ test('car filter: pick a car, the list narrows to stations it fits, and the car 
 	const rows = page.locator('[data-testid="station-row"]');
 	const before = await rows.count();
 
-	await page.locator('[data-testid="car-search"]').fill('Leaf');
+	// the 30 kWh Leaf (2015–2017): CHAdeMO (the 2026+ Leaf has CCS2)
+	await page.locator('[data-testid="car-search"]').fill('Leaf 30 kWh');
 	// each result shows the car's plugs and its side view
 	const hit = page.locator('[data-testid="car-hits"] a').first();
 	await expect(hit.locator('[data-testid="car-hit-plugs"]')).toContainText('CHAdeMO');

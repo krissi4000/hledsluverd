@@ -62,6 +62,8 @@ jobs:
       GOOGLE_MAPS_BROWSER_KEY: ''
       OCM_API_KEY: ''
       NTFY_TOPIC: ''
+      # plate lookups would call island.is
+      PLATE_LOOKUP: ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -93,16 +95,15 @@ jobs:
         run: node --input-type=module -e 'import postgres from "postgres"; const sql = postgres(process.env.DATABASE_URL); await sql.unsafe("CREATE EXTENSION IF NOT EXISTS postgis"); await sql.end();'
       - run: npm run db:migrate
 
-      # Seed through the real seed scripts, fully offline: networks + prices come from
-      # the committed seeds/, stations from a fixed OCM POI fixture (instead of the live
-      # OCM API), cars from the committed OpenEV Data sample (instead of the GitHub
-      # release download).
+      # Seed through the real seed scripts, fully offline: networks, prices and cars come
+      # from the committed seeds/, stations from a fixed OCM POI fixture (instead of the
+      # live OCM API).
       - name: Seed database (offline fixtures)
         run: |
           npm run seed:networks
           npm run seed:ocm -- e2e/fixtures/ocm-pois.json
           npm run seed:prices
-          npm run seed:cars -- tests/fixtures/open-ev-data-sample.json
+          npm run seed:cars
 
       - run: npm run build
       - run: npx playwright test

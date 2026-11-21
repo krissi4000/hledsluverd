@@ -188,7 +188,7 @@ describe('maxConnectorKw', () => {
 });
 
 describe('carStationEstimate', () => {
-	const car = { ...id4, batteryNetKwh: 77 };
+	const car = { ...id4, batteryKwh: 77 };
 	const ccs = [
 		{ type: 'CCS2' as const, powerKw: 50 },
 		{ type: 'CCS2' as const, powerKw: 150 }
@@ -212,7 +212,7 @@ describe('carStationEstimate', () => {
 	});
 
 	it('keeps the exact raw price but drops the cost without a battery size', () => {
-		const e = carStationEstimate('DC', { ...car, batteryNetKwh: null }, ccs, {
+		const e = carStationEstimate('DC', { ...car, batteryKwh: null }, ccs, {
 			priceIskPerKwh: 50,
 			minuteFeeIsk: null,
 			minuteFeeAfterMin: null

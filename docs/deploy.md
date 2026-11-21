@@ -118,6 +118,8 @@ GOOGLE_PLACES_API_KEY=<optional: only for npm run match:google, see below>
 CONTACT_EMAIL=<address shown on /um; unset = the page only points to the report form>
 HEALTHCHECKS_URL=<scrape check ping URL, §9 — add later is fine>
 HEALTHCHECKS_BACKUP_URL=<backup check ping URL, §9 — add later is fine>
+ADDRESS_HEADER=X-Forwarded-For
+XFF_DEPTH=1
 EOF
 chown hledsluverd:hledsluverd /srv/hledsluverd/app/.env
 chmod 600 /srv/hledsluverd/app/.env
@@ -127,7 +129,16 @@ Formatting rules (this file is parsed by BOTH dotenv and systemd
 `EnvironmentFile=`): plain `KEY=value` lines only — no `export`, no quotes,
 no `$VAR` expansion, no `#` or spaces inside values. Hex secrets satisfy this
 automatically. `HOST`/`PORT`/`ORIGIN` have correct defaults baked into the
-systemd unit; only set them here to override.
+systemd unit; only set them here to override. `ADDRESS_HEADER`/`XFF_DEPTH` make
+the app see visitors' IPs through Caddy (the plate lookup limits each visitor).
+
+**Plate lookup (off by default).** `PLATE_LOOKUP=island` lets the homepage car
+search look up registration plates in the public vehicle registry on island.is
+(the same lookup as island.is/uppfletting-i-oekutaekjaskra). Browsers can't call
+it from our site, so the server does, with a cache, 20 lookups per visitor per
+hour and 1000 a day in total. Samgöngustofa directs commercial reuse of registry
+data to its licensed processors (island.is/upplysingar-ur-okutaekjaskra), so
+check with them before turning this on.
 
 ### Google photos (optional)
 
@@ -243,7 +254,7 @@ That builds, migrates, starts the app and health-checks :3000. Then seed, as
 npm run seed:networks
 npm run seed:ocm        # needs OCM_API_KEY; prints unmatched operators — review
 npm run seed:prices
-npm run seed:cars
+npm run seed:cars       # also re-run by every deploy: syncs cars with seeds/cars.json
 npm run match:virta
 npm run sync:virta      # add the Virta sites classified in seeds/virta-sites.json
 npm run match:n1        # REVIEW the printed matches before trusting them

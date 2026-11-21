@@ -95,9 +95,7 @@
 			>), Virta, e1,
 			<a href="https://supercharge.info" rel="noopener external">supercharge.info</a>
 			· {m.footer_availability_data()} TomTom · {m.footer_cars_data()}
-			<a href="https://github.com/open-ev-data/open-ev-data-dataset" rel="noopener external"
-				>OpenEV Data</a
-			>
+			{m.footer_cars_source()}
 			· {m.footer_map_data()}
 			<a href="https://www.openstreetmap.org/copyright" rel="noopener external">© OpenStreetMap</a>
 		</p>

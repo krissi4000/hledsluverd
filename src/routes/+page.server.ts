@@ -56,7 +56,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const networks = parseShown(url.searchParams.get(NETWORK_PARAM), slugs, networkDefaults);
 
 	// the full charge on the nearby list: the car's battery, else the size typed in
-	const battery = car?.batteryNetKwh ?? typedBattery;
+	const battery = car?.batteryKwh ?? typedBattery;
 	const carMaxKw = car ? (mode === 'AC' ? car.maxAcKw : car.maxDcKw) : null;
 
 	const filtered = allStations
@@ -122,8 +122,11 @@ export const load: PageServerLoad = async ({ url }) => {
 			make: car.make,
 			model: car.model,
 			variant: car.variant,
-			batteryNetKwh: car.batteryNetKwh
+			yearFrom: car.yearFrom,
+			yearTo: car.yearTo,
+			batteryKwh: car.batteryKwh
 		},
+		plateLookup: env.PLATE_LOOKUP === 'island',
 		cards,
 		// the table is not shown next to the nearby cards, so don't ship it
 		stations: nearby ? [] : stations,
@@ -131,7 +134,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		battery: {
 			kwh: battery,
 			/** true when the size comes from the chosen car (no battery field then) */
-			fromCar: car?.batteryNetKwh != null,
+			fromCar: car?.batteryKwh != null,
 			typed: typedBattery
 		},
 		// the nearby cards show Google Street View photos only when a key is configured
