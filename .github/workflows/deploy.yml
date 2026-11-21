@@ -58,6 +58,8 @@ jobs:
       # TomTom availability refreshes on `if (env.TOMTOM_API_KEY)`, so any non-empty
       # value would make /kort, /bilaleit and /stod call api.tomtom.com.
       TOMTOM_API_KEY: ''
+      GOOGLE_MAPS_API_KEY: ''
+      GOOGLE_MAPS_BROWSER_KEY: ''
       OCM_API_KEY: ''
       NTFY_TOPIC: ''
       # plate lookups would call island.is

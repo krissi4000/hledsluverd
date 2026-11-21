@@ -131,6 +131,20 @@ test('map page renders price pins and a mini-card linking to the station', async
 	await expect(card.locator('[data-testid="card-availability"]')).toHaveText(/—|\d+\/\d+/);
 });
 
+test('without a browser key the map card loads nothing from Google', async ({ page }) => {
+	const google: string[] = [];
+	page.on('request', (r) => {
+		if (/(^|\.)(googleapis|gstatic)\.com$/.test(new URL(r.url()).hostname)) google.push(r.url());
+	});
+	await page.goto('/kort');
+	const pins = page.locator('[data-testid="map-pin"]');
+	await expect(pins.first()).toBeVisible({ timeout: 15000 });
+	await pins.first().click();
+	await expect(page.locator('[data-testid="map-card"]')).toBeVisible();
+	await expect(page.locator('[data-testid="google-place"]')).toHaveCount(0);
+	expect(google).toEqual([]);
+});
+
 test('network toggles: Tesla starts hidden, toggling shows and hides, reset restores', async ({
 	page
 }) => {

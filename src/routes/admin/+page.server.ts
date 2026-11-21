@@ -9,20 +9,26 @@ import {
 	submitManualPrice
 } from '$lib/server/admin';
 import { currentPrices } from '$lib/server/db/queries';
+import { openReports, resolveReport } from '$lib/server/reports';
 import { networks, stations } from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	const [nets, sts, cp, health] = await Promise.all([
+export const load: PageServerLoad = async ({ url }) => {
+	const [nets, sts, cp, health, reports] = await Promise.all([
 		db.select().from(networks),
 		db.select().from(stations),
 		currentPrices(db),
-		scraperHealth(db)
+		scraperHealth(db),
+		openReports(db)
 	]);
 	const netName = new Map(nets.map((n) => [n.id, n.name]));
 	const stName = new Map(sts.map((s) => [s.id, s.name]));
+	// "Skrá verð" on a report links here with ?stod=<id>: preselect that station's form
+	const preStation = sts.find((s) => s.id === Number(url.searchParams.get('stod')));
 	return {
 		health,
+		reports,
+		preselect: preStation ? { stationId: preStation.id, networkId: preStation.networkId } : null,
 		networks: nets
 			.map((n) => ({ id: n.id, name: n.name }))
 			.sort((a, b) => a.name.localeCompare(b.name, 'is')),
@@ -66,6 +72,11 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const res = await bumpVerified(db, Number(form.get('priceId')));
 		return res.ok ? { saved: true } : fail(400, { error: res.error });
+	},
+	resolveReport: async ({ request }) => {
+		const form = await request.formData();
+		const ok = await resolveReport(db, Number(form.get('reportId')));
+		return ok ? { saved: true } : fail(400, { error: 'tilkynning fannst ekki eða er þegar leyst' });
 	},
 	stationActive: async ({ request }) => {
 		const form = await request.formData();

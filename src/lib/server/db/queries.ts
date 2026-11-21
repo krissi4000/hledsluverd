@@ -1,8 +1,8 @@
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, eq, inArray, isNull, max, or } from 'drizzle-orm';
 import type { ConnectorType, TariffKey } from '$lib/types';
 import { deriveTariffKey } from '../matching';
 import type { Db } from './client';
-import { availability, connectors, networks, prices, stations } from './schema';
+import { availability, connectors, networks, prices, scrapeRuns, stations } from './schema';
 
 /** Stall count where ours is per stall (supercharge.info: one plug per stall), else
  * null — see unknownStalls in $lib/availability. */
@@ -116,6 +116,10 @@ export async function rateCard(db: Db): Promise<RateCardEntry[]> {
 export interface StationRow {
 	slug: string;
 	name: string;
+	/** street and town (OCM/Virta/e1 style), searched by the homepage text box */
+	address: string | null;
+	lat: number;
+	lng: number;
 	networkSlug: string;
 	networkName: string;
 	price: number | null;
@@ -170,6 +174,9 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 		rows.push({
 			slug: s.slug,
 			name: s.name,
+			address: s.address,
+			lat: s.location.y,
+			lng: s.location.x,
 			networkSlug: net.slug,
 			networkName: net.name,
 			price: price?.priceIskPerKwh ?? null,
@@ -296,6 +303,20 @@ export interface MapStation {
 	/** per-stall count, set only where it can be compared with TomTom's total */
 	stallCount: number | null;
 	tomtomId: string | null;
+	/** for the card's Google photos (Places UI Kit) */
+	googlePlaceId: string | null;
+}
+
+/** An active station's coordinates — for its Street View photo (/stod/[slug]/mynd). */
+export async function stationLocation(
+	db: Db,
+	slug: string
+): Promise<{ lat: number; lng: number } | null> {
+	const [st] = await db
+		.select({ location: stations.location })
+		.from(stations)
+		.where(and(eq(stations.slug, slug), eq(stations.isActive, true)));
+	return st ? { lat: st.location.y, lng: st.location.x } : null;
 }
 
 /** Every active station, priced for its dominant mode — feeds /kort. */
@@ -349,7 +370,8 @@ export async function mapStations(db: Db): Promise<MapStation[]> {
 			totalCount: a?.totalCount ?? null,
 			availabilityFetchedAt: a?.fetchedAt ?? null,
 			stallCount: perStallCount(s, all),
-			tomtomId: s.externalIds.tomtom ?? null
+			tomtomId: s.externalIds.tomtom ?? null,
+			googlePlaceId: s.externalIds.google ?? null
 		});
 	}
 	return rows.sort((a, b) => a.name.localeCompare(b.name, 'is'));
@@ -398,4 +420,14 @@ export async function trendSeries(db: Db, mode: 'AC' | 'DC'): Promise<TrendSerie
 		.filter((n) => byNetwork.has(n.id))
 		.map((n) => ({ networkSlug: n.slug, networkName: n.name, points: byNetwork.get(n.id)! }))
 		.sort((a, b) => a.networkName.localeCompare(b.networkName, 'is'));
+}
+
+/** When any scraper last ran successfully: the footer's "prices last fetched" line.
+ * Null when no scrape has succeeded yet (the footer then says nothing). */
+export async function lastPriceFetch(db: Db): Promise<Date | null> {
+	const [row] = await db
+		.select({ t: max(scrapeRuns.startedAt) })
+		.from(scrapeRuns)
+		.where(inArray(scrapeRuns.status, ['ok', 'changed']));
+	return row?.t ?? null;
 }

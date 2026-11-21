@@ -10,6 +10,7 @@ import {
 	rateCard,
 	stationDetail,
 	stationList,
+	stationLocation,
 	trendSeries
 } from './queries';
 
@@ -421,6 +422,14 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect(await stationDetail(db, 'gamla-n1')).toBeNull();
 	});
 
+	it('stationLocation gives an active station its coordinates, null otherwise', async () => {
+		const loc = (await stationLocation(db, 'hellisheidi-on'))!;
+		expect(loc.lat).toBeCloseTo(64.03, 6);
+		expect(loc.lng).toBeCloseTo(-21.4, 6);
+		expect(await stationLocation(db, 'engin-stod')).toBeNull();
+		expect(await stationLocation(db, 'gamla-n1')).toBeNull();
+	});
+
 	it('mapStations returns every active station with a headline price and coordinates', async () => {
 		const list = await mapStations(db);
 		expect(list.map((s) => s.slug).sort()).toEqual([
@@ -438,12 +447,12 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect(laugardalur.price).toBe(39);
 	});
 
-	it('mapStations joins the availability cache and the tomtom stamp', async () => {
+	it('mapStations joins the availability cache and the tomtom and google stamps', async () => {
 		const st = await db.select().from(stations);
 		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
 		await db
 			.update(stations)
-			.set({ externalIds: { tomtom: 'tt-42' } })
+			.set({ externalIds: { tomtom: 'tt-42', google: 'ChIJ-hellisheidi' } })
 			.where(eq(stations.id, hellisheidi.id));
 		await db.insert(availability).values({
 			stationId: hellisheidi.id,
@@ -456,10 +465,12 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		const list = await mapStations(db);
 		const row = list.find((s) => s.slug === 'hellisheidi-on')!;
 		expect(row.tomtomId).toBe('tt-42');
+		expect(row.googlePlaceId).toBe('ChIJ-hellisheidi');
 		expect(row.freeCount).toBe(2);
 		expect(row.totalCount).toBe(3);
 		const bare = list.find((s) => s.slug === 'stadarskali-n1')!;
 		expect(bare.tomtomId).toBeNull();
+		expect(bare.googlePlaceId).toBeNull();
 		expect(bare.freeCount).toBeNull();
 	});
 

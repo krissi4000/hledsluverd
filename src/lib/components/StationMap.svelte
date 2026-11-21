@@ -52,7 +52,8 @@
 		userLocation = $bindable(null),
 		center = [-18.8, 65.0] as [number, number],
 		zoom = 5.2,
-		fallbackText
+		fallbackText,
+		cardExtra = () => 0
 	}: {
 		stations: PinStation[];
 		selectedId?: number | null;
@@ -61,6 +62,8 @@
 		center?: [number, number];
 		zoom?: number;
 		fallbackText: string;
+		/** px a station's card grows above its usual height (a photo on top) */
+		cardExtra?: (stationId: number) => number;
 	} = $props();
 
 	let mapEl = $state<HTMLDivElement>();
@@ -193,7 +196,7 @@
 		const { clientWidth: w, clientHeight: h } = map.getContainer();
 		const pt = map.project([s.lng, s.lat]);
 		const narrow = w < 640;
-		const cardTop = h - (narrow ? 290 : 320);
+		const cardTop = h - (narrow ? 290 : 320) - cardExtra(s.id);
 		const covered = pt.y > cardTop - 30 && (narrow || pt.x < 400);
 		if (covered) {
 			map.easeTo({
