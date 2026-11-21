@@ -87,7 +87,7 @@ for (const site of plan.toInsert) {
 	console.log(
 		`ADD    ${name} — ${site.street}, ${site.city} (${site.stallCount}×${site.powerKw} kW)`
 	);
-	notices.push(`Ný stöð: ${name} — Tesla hefur engan skrapara, settu verð á /admin`);
+	notices.push(`Ný stöð: ${name} — Tesla hefur engan skrapara, skráðu verð á /admin`);
 	if (dryRun) continue;
 	await db.transaction(async (tx) => {
 		let slug = slugify(`${name}-tesla`);
@@ -126,7 +126,7 @@ for (const s of plan.unclaimed) {
 	);
 	if (review)
 		notices.push(
-			`Athuga: ${s.name} — ekki lengur á supercharge.info. Lokuð? Slökktu á henni á /admin`
+			`Athuga: ${s.name} — ekki lengur á supercharge.info. Lokuð? Óvirkjaðu hana á /admin`
 		);
 }
 await db.$client.end();

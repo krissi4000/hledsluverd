@@ -102,7 +102,7 @@ for (const target of targets) {
 
 	// deactivated stations are already reviewed
 	for (const s of plan.unclaimed.filter((u) => u.isActive)) {
-		notices.push(`Athuga: ${s.name} — ekki á korti e1. Lokuð? Slökktu á henni á /admin`);
+		notices.push(`Athuga: ${s.name} — ekki á korti e1. Lokuð? Óvirkjaðu hana á /admin`);
 		console.log(
 			`REVIEW ${s.name} — not on e1's map (closed or no longer ${net.name}? deactivate on /admin)`
 		);

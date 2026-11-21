@@ -32,8 +32,10 @@
 					</td>
 					<td>
 						{#if h.consecutiveFailures >= 3}<strong class="bad"
-								>{h.consecutiveFailures} {m.admin_failures()}</strong
-							>{:else if h.consecutiveFailures > 0}{h.consecutiveFailures} {m.admin_failures()}{/if}
+								>{m.admin_failures({ n: h.consecutiveFailures })}</strong
+							>{:else if h.consecutiveFailures > 0}{m.admin_failures({
+								n: h.consecutiveFailures
+							})}{/if}
 					</td>
 					<td class="msg">{h.lastMessage ?? ''}</td>
 				</tr>

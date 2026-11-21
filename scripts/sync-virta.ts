@@ -131,7 +131,9 @@ for (const { site, station, distanceM } of plan.conflicts) {
 	console.log(
 		`CONFLICT ${site.name} (virta ${site.id}, ${label(site.id)}) — ${Math.round(distanceM)} m from ${station.name} of another network; not added. Wrong network on our station?`
 	);
-	notices.push(`Athuga: ${site.name} (Virta) er ofan á ${station.name} — rangt net á stöðinni?`);
+	notices.push(
+		`Athuga: ${site.name} (Virta) er ofan á ${station.name} — rangt fyrirtæki á stöðinni?`
+	);
 }
 
 for (const site of plan.unclassified) {
@@ -145,7 +147,7 @@ for (const s of plan.vanished) {
 	console.log(
 		`REVIEW ${s.name} — virta ${s.externalIds.virta} is gone from Virta's map (deactivate on /admin?)`
 	);
-	notices.push(`Athuga: ${s.name} — horfin af korti Virta. Lokuð? Slökktu á henni á /admin`);
+	notices.push(`Athuga: ${s.name} — horfin af korti Virta. Lokuð? Óvirkjaðu hana á /admin`);
 }
 
 await db.$client.end();
