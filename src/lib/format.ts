@@ -25,3 +25,14 @@ export function ageParts(from: Date, now = new Date()): { n: number; unit: 'min'
 	if (h < 24) return { n: h, unit: 'h' };
 	return { n: Math.round(h / 24), unit: 'd' };
 }
+
+/** An estimated amount: rounded to 10 kr (no false precision), "." thousands separator — "2.480 kr". */
+export function formatEstimateIsk(value: number): string {
+	const rounded = Math.round(value / 10) * 10;
+	return `${String(rounded).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kr`;
+}
+
+/** "15:05" — UTC, which is Iceland's time all year (no daylight saving). */
+export function formatTime(d: Date): string {
+	return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}

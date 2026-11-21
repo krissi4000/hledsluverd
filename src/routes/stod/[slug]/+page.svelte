@@ -6,10 +6,11 @@
 	import { unknownStalls } from '$lib/availability';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
+	import ReportForm from '$lib/components/ReportForm.svelte';
 	import { networkColor, ownBrandPriceOnly } from '$lib/networks';
 	import { ageParts, formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
 
-	let { data } = $props();
+	let { data, form } = $props();
 	let canvas = $state<HTMLCanvasElement>();
 
 	const st = $derived(data.station);
@@ -166,6 +167,8 @@
 			<div class="chart"><canvas bind:this={canvas} data-testid="station-trend"></canvas></div>
 		</section>
 	{/if}
+
+	<ReportForm result={form} />
 </article>
 
 <style>

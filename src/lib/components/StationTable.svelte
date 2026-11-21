@@ -1,13 +1,23 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk, formatDate, formatNumber, isStale, ageParts } from '$lib/format';
+	import {
+		formatIsk,
+		formatDate,
+		formatEstimateIsk,
+		formatNumber,
+		isStale,
+		ageParts
+	} from '$lib/format';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { ownBrandPriceOnly } from '$lib/networks';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import CarFilter, { type CarPill } from '$lib/components/CarFilter.svelte';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
+	import StationSearch from '$lib/components/StationSearch.svelte';
+	import { formatKm } from '$lib/geo';
 	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
 	import { unknownStalls } from '$lib/availability';
 	import { NETWORK_PARAM } from '$lib/filter-params';
@@ -21,19 +31,34 @@
 		networkDefaults,
 		networkOptions,
 		car,
+		search,
+		near,
+		list,
 		plateLookup = false
 	}: {
-		/** carKw: the speed the chosen car gets at the station (set when a car filters the list) */
-		stations: (StationRow & { carKw?: number | null })[];
+		/** carKw: the speed the chosen car gets at the station; effectivePrice/session: what
+		 * it pays there with per-minute fees, ≈ a 10→80 % charge (set when a car is chosen) */
+		stations: (StationRow & {
+			carKw?: number | null;
+			effectivePrice?: number | null;
+			effectiveApprox?: boolean;
+			session?: { costIsk: number; minutes: number } | null;
+			/** km from the visitor (set when they asked for stations near them) */
+			distanceKm?: number | null;
+		})[];
 		mode: 'AC' | 'DC';
 		connector: string | null;
 		/** slugs of the networks shown */
 		networks: string[];
 		networkDefaults: string[];
 		networkOptions: { slug: string; name: string }[];
-		car: CarPill | null;
+		car: (CarPill & { batteryKwh: number | null }) | null;
 		/** offer registration-plate lookup in the car search */
 		plateLookup?: boolean;
+		search: string;
+		near: { lat: number; lng: number } | null;
+		/** shown under the filters instead of the table (the nearby cards) */
+		list?: Snippet;
 	} = $props();
 
 	function age(d: Date): string {
@@ -103,9 +128,21 @@
 			<span class="filter-label" aria-hidden="true">{m.filter_car()}</span>
 			<CarFilter {car} {href} {plateLookup} />
 		</div>
+		<StationSearch {search} {near} {href} />
 	</nav>
 
-	{#if stations.length === 0}
+	{#if !list && (near || car)}
+		<p class="estimate-note" data-testid="estimate-note">
+			{near ? m.sorted_by_distance() : m.sorted_by_effective()}
+			{#if car}{car.batteryKwh
+					? m.estimate_note({ kwh: formatNumber(car.batteryKwh) })
+					: m.estimate_note_no_battery()}{/if}
+		</p>
+	{/if}
+
+	{#if list}
+		{@render list()}
+	{:else if stations.length === 0}
 		<p class="empty surface">{m.no_results()}</p>
 	{:else}
 		<div class="table-wrap surface">
@@ -129,6 +166,9 @@
 										<span class="net"
 											>{s.networkName}{#if s.carKw}{' · '}<span class="car-kw"
 													>{m.finder_up_to({ kw: Math.round(s.carKw) })}</span
+												>{/if}{#if s.distanceKm != null}{' · '}<span
+													class="distance"
+													data-testid="distance">{formatKm(s.distanceKm)}</span
 												>{/if}</span
 										>
 									</span>
@@ -175,6 +215,29 @@
 									<!-- a per-minute fee from minute 0 hits every charge, so it stays visible -->
 									{#if s.minuteFeeIsk && !s.minuteFeeAfterMin}<small class="fee"
 											>{m.minute_fee({ fee: formatNumber(s.minuteFeeIsk) })}</small
+										>{/if}
+									<!-- what the chosen car pays with per-minute fees; only when it differs -->
+									{#if s.effectivePrice != null && Math.abs(s.effectivePrice - s.price) >= 0.05}<small
+											class="effective"
+											class:stale={s.verifiedAt !== null && isStale(s.verifiedAt)}
+											data-testid="effective-price"
+											>{s.effectiveApprox ? '≈ ' : ''}{m.effective_price({
+												price: formatNumber(s.effectivePrice)
+											})}</small
+										>{/if}
+									{#if s.session}<small
+											class="session"
+											class:stale={s.verifiedAt !== null && isStale(s.verifiedAt)}
+											data-testid="session-cost"
+											>≈ {s.session.minutes < 90
+												? m.session_cost({
+														cost: formatEstimateIsk(s.session.costIsk),
+														min: Math.round(s.session.minutes)
+													})
+												: m.session_cost_h({
+														cost: formatEstimateIsk(s.session.costIsk),
+														h: formatNumber(Math.round(s.session.minutes / 6) / 10)
+													})}</small
 										>{/if}
 									{#if ownBrandPriceOnly(s.networkSlug)}<small
 											class="brand-only"
@@ -280,6 +343,10 @@
 		color: var(--muted);
 		font-size: 0.82rem;
 	}
+	.distance {
+		color: var(--text);
+		font-weight: 600;
+	}
 	.car-kw {
 		color: var(--accent-text);
 		font-weight: 600;
@@ -364,6 +431,25 @@
 	.fee {
 		font-size: 0.78rem;
 		color: var(--text);
+	}
+	.effective {
+		font-size: 0.8rem;
+		font-weight: 650;
+		color: var(--accent-text);
+	}
+	.session {
+		font-size: 0.78rem;
+		color: var(--muted);
+	}
+	.effective.stale,
+	.session.stale {
+		color: var(--stale);
+	}
+	.estimate-note {
+		margin: -0.25rem 0 1rem;
+		font-size: 0.82rem;
+		color: var(--muted);
+		max-width: 60rem;
 	}
 	.brand-only {
 		display: block;

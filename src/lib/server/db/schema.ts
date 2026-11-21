@@ -43,6 +43,8 @@ export const stations = pgTable(
 				n1?: string;
 				supercharge?: number;
 				e1?: number;
+				/** Google Maps place ID (npm run match:google), for the map card's photos */
+				google?: string;
 			}>()
 			.notNull()
 			.default({}),
@@ -144,3 +146,27 @@ export const scrapeRuns = pgTable('scrape_runs', {
 	status: text('status', { enum: ['ok', 'changed', 'failed'] }).notNull(),
 	message: text('message')
 });
+
+export const REPORT_KINDS = ['price', 'closed', 'availability', 'other'] as const;
+export const REPORT_STATUSES = ['open', 'resolved'] as const;
+
+/** Visitor reports from the station page ("Tilkynna rangt verð"); worked off in /admin. */
+export const reports = pgTable(
+	'reports',
+	{
+		id: serial('id').primaryKey(),
+		stationId: integer('station_id')
+			.notNull()
+			.references(() => stations.id, { onDelete: 'cascade' }),
+		kind: text('kind', { enum: REPORT_KINDS }).notNull(),
+		/** the price the visitor says is right, kr/kWh (optional) */
+		correctPriceIsk: doublePrecision('correct_price_isk'),
+		comment: text('comment'),
+		/** optional, only so an admin can reply; never shown publicly */
+		email: text('email'),
+		status: text('status', { enum: REPORT_STATUSES }).notNull().default('open'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		resolvedAt: timestamp('resolved_at', { withTimezone: true })
+	},
+	(t) => [index('reports_status_idx').on(t.status, t.createdAt)]
+);

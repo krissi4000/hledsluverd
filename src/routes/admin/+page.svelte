@@ -1,6 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
 	import { formatDate, formatNumber, isStale } from '$lib/format';
+
+	const kindLabel: Record<string, () => string> = {
+		price: () => m.report_kind_price(),
+		closed: () => m.report_kind_closed(),
+		availability: () => m.report_kind_availability(),
+		other: () => m.report_kind_other()
+	};
 	import { TARIFF_KEYS } from '$lib/types';
 
 	let { data, form } = $props();
@@ -15,6 +22,42 @@
 
 {#if form?.saved}<p class="ok">{m.admin_saved()}</p>{/if}
 {#if form?.error}<p class="err">{form.error}</p>{/if}
+
+<section aria-label={m.admin_reports()}>
+	<h3>{m.admin_reports()} ({data.reports.length})</h3>
+	{#if data.reports.length === 0}
+		<p class="muted">{m.admin_no_reports()}</p>
+	{:else}
+		<table class="surface" data-testid="admin-reports">
+			<tbody>
+				{#each data.reports as r (r.id)}
+					<tr>
+						<td class="nowrap">{r.createdAt.toLocaleString('is-IS')}</td>
+						<td
+							><a href="/stod/{r.stationSlug}">{r.stationName}</a>
+							<span class="muted">· {r.networkName}</span></td
+						>
+						<td>
+							<strong>{kindLabel[r.kind]()}</strong
+							>{#if r.correctPriceIsk !== null}{' · '}{formatNumber(r.correctPriceIsk)} kr/kWh{/if}
+							{#if r.comment}<div class="msg">{r.comment}</div>{/if}
+							{#if r.email}<div class="msg"><a href="mailto:{r.email}">{r.email}</a></div>{/if}
+						</td>
+						<td class="actions">
+							<a class="btn btn-sm" href="/admin?stod={r.stationId}#price-form"
+								>{m.admin_report_price_form()}</a
+							>
+							<form method="POST" action="?/resolveReport">
+								<input type="hidden" name="reportId" value={r.id} />
+								<button class="btn btn-sm">{m.admin_resolve()}</button>
+							</form>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
+</section>
 
 <section aria-label={m.admin_scrapers()}>
 	<h3>{m.admin_scrapers()}</h3>
@@ -70,19 +113,24 @@
 		</tbody>
 	</table>
 
-	<h3>{m.admin_add_price()}</h3>
+	<h3 id="price-form">{m.admin_add_price()}</h3>
 	<form method="POST" action="?/price" class="grid surface" data-testid="admin-price-form">
 		<label
 			>{m.th_network()}
 			<select name="networkId" required>
-				{#each data.networks as n (n.id)}<option value={n.id}>{n.name}</option>{/each}
+				{#each data.networks as n (n.id)}<option
+						value={n.id}
+						selected={n.id === data.preselect?.networkId}>{n.name}</option
+					>{/each}
 			</select>
 		</label>
 		<label
 			>{m.admin_station_optional()}
 			<select name="stationId">
 				<option value=""></option>
-				{#each data.stations as s (s.id)}<option value={s.id}>{s.networkName} — {s.name}</option
+				{#each data.stations as s (s.id)}<option
+						value={s.id}
+						selected={s.id === data.preselect?.stationId}>{s.networkName} — {s.name}</option
 					>{/each}
 			</select>
 		</label>
@@ -154,6 +202,15 @@
 		font-size: 0.8rem;
 		opacity: 0.7;
 		max-width: 24rem;
+	}
+	.nowrap {
+		white-space: nowrap;
+	}
+	.actions {
+		display: flex;
+		gap: 0.4rem;
+		justify-content: flex-end;
+		align-items: center;
 	}
 	.inactive {
 		opacity: 0.45;

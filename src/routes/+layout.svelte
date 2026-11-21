@@ -4,13 +4,15 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import * as m from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { formatDate, formatTime } from '$lib/format';
 
-	let { children } = $props();
+	let { children, data } = $props();
 	const other = () => (getLocale() === 'is' ? 'en' : 'is');
 
 	const links = [
 		{ href: '/kort', label: () => m.nav_map() },
-		{ href: '/verdthroun', label: () => m.nav_trends() }
+		{ href: '/verdthroun', label: () => m.nav_trends() },
+		{ href: '/um', label: () => m.nav_about() }
 	];
 
 	const isCurrent = (href: string) =>
@@ -68,6 +70,37 @@
 <main>
 	{@render children()}
 </main>
+
+<footer class="site-footer">
+	<div class="foot">
+		<p class="foot-links">
+			<a href="/um">{m.footer_about()}</a>
+			<span aria-hidden="true">·</span>
+			<a href="/um#samband">{m.footer_contact()}</a>
+		</p>
+		<p>{m.footer_independent()}</p>
+		{#if data.lastPriceFetch}
+			<p data-testid="last-price-fetch">
+				{m.footer_last_fetch({
+					date: formatDate(data.lastPriceFetch),
+					time: formatTime(data.lastPriceFetch)
+				})}
+			</p>
+		{/if}
+		<p class="credits">
+			{m.footer_stations_data()}
+			<a href="https://openchargemap.org" rel="noopener external">Open Charge Map</a>
+			(<a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener external license"
+				>CC BY 4.0</a
+			>), Virta, e1,
+			<a href="https://supercharge.info" rel="noopener external">supercharge.info</a>
+			· {m.footer_availability_data()} TomTom · {m.footer_cars_data()}
+			{m.footer_cars_source()}
+			· {m.footer_map_data()}
+			<a href="https://www.openstreetmap.org/copyright" rel="noopener external">© OpenStreetMap</a>
+		</p>
+	</div>
+</footer>
 
 <style>
 	.site-header {
@@ -169,6 +202,36 @@
 	}
 	.lang:hover {
 		background: var(--surface-2);
+		color: var(--text);
+	}
+
+	.site-footer {
+		border-top: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: 0.82rem;
+	}
+	.foot {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 1.25rem 1rem 2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+	.foot p {
+		margin: 0;
+		line-height: 1.5;
+	}
+	.foot a {
+		color: inherit;
+	}
+	.foot-links {
+		display: flex;
+		gap: 0.5rem;
+		font-weight: 600;
+	}
+	.foot-links a {
 		color: var(--text);
 	}
 

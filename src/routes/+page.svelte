@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import RateCard from '$lib/components/RateCard.svelte';
 	import StationTable from '$lib/components/StationTable.svelte';
+	import NearbyList from '$lib/components/NearbyList.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
@@ -43,5 +44,17 @@
 	networkDefaults={data.networkDefaults}
 	networkOptions={data.networkOptions}
 	car={data.car}
+	search={data.search}
+	near={data.near}
+	list={data.nearby ? nearbyList : undefined}
 	plateLookup={data.plateLookup}
 />
+
+{#snippet nearbyList()}
+	<NearbyList
+		stations={data.nearby ?? []}
+		hasCar={data.car !== null}
+		battery={data.battery}
+		photos={data.streetView}
+	/>
+{/snippet}
