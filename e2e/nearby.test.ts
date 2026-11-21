@@ -58,7 +58,10 @@ test('a battery size prices the full charge; the card opens its explanation', as
 	await expect(explainer).toBeVisible();
 	await expect(card.locator('[data-testid="breakdown"]')).toContainText('60 kWh');
 	// a static picture with a text alternative, no slider to operate
-	await expect(explainer.locator('svg[role="img"]')).toHaveAttribute('aria-label', /≈ [\d.]+ kr/);
+	await expect(explainer.locator('svg[role="img"]')).toHaveAttribute(
+		'aria-label',
+		/^Kostnaður hleðslunnar með tímanum: um [\d.]+ kr eftir um .+\.$/
+	);
 	await expect(explainer.locator('[role="slider"]')).toHaveCount(0);
 	await card.locator('[data-testid="explain-toggle"]').click();
 	await expect(explainer).toHaveCount(0);

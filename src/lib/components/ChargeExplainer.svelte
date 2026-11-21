@@ -58,7 +58,9 @@
 				: feeAt > 0
 					? m.explain_chart_alt_fee({ min: feeAt })
 					: m.explain_chart_alt_fee_all()
-		].join(' ')
+		]
+			.filter(Boolean)
+			.join(' ')
 	);
 
 	const kw = (v: number) => formatNumber(Math.round(v * 10) / 10);
