@@ -11,6 +11,8 @@ import {
 import { currentPrices } from '$lib/server/db/queries';
 import { openReports, resolveReport } from '$lib/server/reports';
 import { networks, stations } from '$lib/server/db/schema';
+import * as m from '$lib/paraglide/messages';
+import type { SeoMeta } from '$lib/seo';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -59,7 +61,8 @@ export const load: PageServerLoad = async ({ url }) => {
 					a.networkName.localeCompare(b.networkName, 'is') ||
 					(a.stationName ?? '').localeCompare(b.stationName ?? '', 'is') ||
 					a.tariffKey.localeCompare(b.tariffKey)
-			)
+			),
+		seo: { title: `${m.admin_title()} — ${m.site_title()}`, noindex: true } satisfies SeoMeta
 	};
 };
 

@@ -6,6 +6,10 @@ import { stationDetail, trendSeries } from '$lib/server/db/queries';
 import { refreshAvailability } from '$lib/server/availability-refresh';
 import { ntfy } from '$lib/server/scrapers/runner';
 import { createRateLimiter, submitReport } from '$lib/server/reports';
+import { stationDescription } from '$lib/server/share';
+import { shareContext } from '$lib/server/share-context';
+import { stationOgImage } from '$lib/server/og/model';
+import type { SeoMeta } from '$lib/seo';
 import type { Actions, PageServerLoad } from './$types';
 
 // In-process limits (one node process): 5 reports an hour per IP, 60 an hour in total.
@@ -38,7 +42,13 @@ export const load: PageServerLoad = async ({ params }) => {
 	const series = station.hostPriced
 		? []
 		: (await trendSeries(db, mode)).filter((s) => s.networkSlug === station!.network.slug);
-	return { station, series, now: Date.now() };
+	const ctx = shareContext();
+	const seo: SeoMeta = {
+		title: `${station.name} — ${m.site_title()}`,
+		description: stationDescription(station, ctx),
+		image: stationOgImage(station, ctx)
+	};
+	return { station, series, now: Date.now(), seo };
 };
 
 export const actions: Actions = {

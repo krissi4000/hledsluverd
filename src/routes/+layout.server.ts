@@ -1,5 +1,7 @@
+import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { lastPriceFetch } from '$lib/server/db/queries';
+import { siteOrigin } from '$lib/server/site';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async () => {
@@ -10,5 +12,5 @@ export const load: LayoutServerLoad = async () => {
 	} catch {
 		lastFetch = null;
 	}
-	return { lastPriceFetch: lastFetch };
+	return { lastPriceFetch: lastFetch, siteOrigin: siteOrigin(env.ORIGIN) };
 };

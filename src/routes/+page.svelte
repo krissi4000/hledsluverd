@@ -1,5 +1,4 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages';
 	import RateCard from '$lib/components/RateCard.svelte';
 	import StationTable from '$lib/components/StationTable.svelte';
 	import NearbyList from '$lib/components/NearbyList.svelte';
@@ -29,11 +28,6 @@
 		else localStorage.removeItem(CAR_KEY);
 	});
 </script>
-
-<svelte:head>
-	<title>{m.site_title()} — {m.site_tagline()}</title>
-	<meta name="description" content={m.site_tagline()} />
-</svelte:head>
 
 <RateCard cards={data.cards} />
 <StationTable

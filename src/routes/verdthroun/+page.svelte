@@ -49,11 +49,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.trends_title()} — {m.site_title()}</title>
-	<meta name="description" content={m.trends_note()} />
-</svelte:head>
-
 <section aria-label={m.trends_title()}>
 	<h2>{m.trends_title()}</h2>
 	<p class="note">{m.trends_note()}</p>

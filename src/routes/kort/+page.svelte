@@ -83,11 +83,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{m.map_title()} — {m.site_title()}</title>
-	<meta name="description" content={m.map_title()} />
-</svelte:head>
-
 <svelte:window
 	onkeydown={(e) => {
 		if (e.key === 'Escape') filtersOpen = false;

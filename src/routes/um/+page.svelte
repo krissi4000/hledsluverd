@@ -9,11 +9,6 @@
 	const manual = $derived(data.sources.filter((s) => s.method === 'manual'));
 </script>
 
-<svelte:head>
-	<title>{m.um_title()} — {m.site_title()}</title>
-	<meta name="description" content={m.um_intro()} />
-</svelte:head>
-
 <article class="about">
 	<h2>{m.um_title()}</h2>
 	<p class="lead">{m.um_intro()}</p>

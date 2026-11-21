@@ -5,9 +5,23 @@
 	import * as m from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { formatDate, formatTime } from '$lib/format';
+	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { OG_FALLBACK_PATH } from '$lib/seo';
 
 	let { children, data } = $props();
 	const other = () => (getLocale() === 'is' ? 'en' : 'is');
+
+	// Defaults for every route; a route's load overrides them by returning `seo`.
+	const seo = $derived.by(() => {
+		const s = page.data.seo ?? {};
+		const fallbackTitle = `${m.site_title()} — ${m.site_tagline()}`;
+		return {
+			title: s.title ?? fallbackTitle,
+			description: s.description ?? m.seo_default_description(),
+			image: s.image ?? { path: OG_FALLBACK_PATH, alt: fallbackTitle },
+			noindex: s.noindex ?? page.error !== null
+		};
+	});
 
 	const links = [
 		{ href: '/kort', label: () => m.nav_map() },
@@ -23,6 +37,7 @@
 	<link rel="icon" href={favicon} />
 	<meta name="theme-color" content="#15803d" />
 </svelte:head>
+<SeoHead {seo} origin={data.siteOrigin} path={page.data.seo?.path ?? page.url.pathname} />
 
 <header class="site-header">
 	<div class="bar">

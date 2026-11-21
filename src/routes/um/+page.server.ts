@@ -2,6 +2,8 @@ import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { networks } from '$lib/server/db/schema';
 import { priceSources } from '$lib/server/price-sources';
+import * as m from '$lib/paraglide/messages';
+import type { SeoMeta } from '$lib/seo';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -14,6 +16,10 @@ export const load: PageServerLoad = async () => {
 		// credit Google only for the photos actually shown: Street View on the nearby
 		// cards, Places UI Kit on the map's station card
 		streetView: Boolean(env.GOOGLE_MAPS_API_KEY),
-		placePhotos: Boolean(env.GOOGLE_MAPS_BROWSER_KEY)
+		placePhotos: Boolean(env.GOOGLE_MAPS_BROWSER_KEY),
+		seo: {
+			title: `${m.um_title()} — ${m.site_title()}`,
+			description: m.um_intro()
+		} satisfies SeoMeta
 	};
 };
