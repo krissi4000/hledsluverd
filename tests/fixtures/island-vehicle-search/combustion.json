@@ -1,0 +1,18 @@
+{
+	"data": {
+		"publicVehicleSearch": {
+			"permno": "EF789",
+			"vin": "WF02XXERK2R000000",
+			"make": "FORD",
+			"vehicleCommercialName": "PUMA",
+			"color": "Grár",
+			"firstRegDate": "2024-05-21T00:00:00.000Z",
+			"newRegDate": "2024-05-21T00:00:00.000Z",
+			"vehicleStatus": "Í lagi",
+			"co2": null,
+			"weightedCo2": null,
+			"co2WLTP": 129,
+			"weightedCo2WLTP": null
+		}
+	}
+}

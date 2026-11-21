@@ -74,5 +74,20 @@
 	"filter_car": "Car",
 	"car_remove": "Remove {car} from the filter",
 	"finder_search": "Search for a car…",
-	"finder_up_to": "up to {kw} kW"
+	"finder_up_to": "up to {kw} kW",
+	"finder_search_plate": "Search for a car or plate…",
+	"plate_lookup": "Look up plate {plate}",
+	"plate_loading": "Looking up {plate} in the vehicle registry…",
+	"plate_source": "From the Icelandic vehicle registry",
+	"plate_variant_source": "The version is worked out with open data from Traficom (CC BY 4.0) and the European Environment Agency.",
+	"plate_deregistered": "deregistered",
+	"plate_pick": "Pick your version. The registry does not record the battery or charger.",
+	"plate_make_only": "We don’t know “{model}” as an electric car. If it is one, pick it here:",
+	"plate_phev": "This is a plug-in hybrid. Only fully electric cars are listed so far — filter by plug type instead.",
+	"plate_not_electric": "According to the vehicle registry this is not an electric car.",
+	"plate_unknown": "No electric {make} in our list matches this car. Try searching for it by name.",
+	"plate_not_found": "Plate {plate} was not found in the vehicle registry.",
+	"plate_invalid": "That is not a valid registration plate.",
+	"plate_busy": "Too many lookups right now. Search for the car by name or try again later.",
+	"plate_error": "The plate lookup failed. Search for the car by name."
 }

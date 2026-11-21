@@ -1,0 +1,16 @@
+{
+	"errors": [
+		{
+			"message": "Internal server error",
+			"path": [
+				"publicVehicleSearch"
+			],
+			"extensions": {
+				"code": "https://httpstatuses.org/500"
+			}
+		}
+	],
+	"data": {
+		"publicVehicleSearch": null
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"data": {
+		"publicVehicleSearch": {
+			"permno": "AB123",
+			"vin": "VR3UKZKXZPJ000000",
+			"make": "PEUGEOT",
+			"vehicleCommercialName": "2008",
+			"color": "Svartur",
+			"firstRegDate": "2023-09-07T00:00:00.000Z",
+			"newRegDate": "2023-09-07T00:00:00.000Z",
+			"vehicleStatus": "Í lagi",
+			"co2": null,
+			"weightedCo2": null,
+			"co2WLTP": null,
+			"weightedCo2WLTP": null
+		}
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"data": {
+		"publicVehicleSearch": {
+			"permno": "CD456",
+			"vin": "YV1UZH7V0R1000000",
+			"make": "VOLVO",
+			"vehicleCommercialName": "XC60",
+			"color": "Hvítur",
+			"firstRegDate": "2024-04-17T00:00:00.000Z",
+			"newRegDate": "2024-04-17T00:00:00.000Z",
+			"vehicleStatus": "Í lagi",
+			"co2": null,
+			"weightedCo2": null,
+			"co2WLTP": 163,
+			"weightedCo2WLTP": 23
+		}
+	}
+}

@@ -22,6 +22,7 @@ main() {
 	npx playwright install chromium # instant no-op unless playwright was bumped
 	npm run build
 	npm run db:migrate # drizzle.config.ts reads .env via dotenv from cwd
+	npm run seed:cars  # sync the cars table with the committed seeds/cars.json
 
 	# The old process may briefly serve replaced build/ chunks until this
 	# restart — accepted for v1 (no zero-downtime requirement).

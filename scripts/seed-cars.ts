@@ -1,53 +1,35 @@
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
+import { notInArray } from 'drizzle-orm';
 import { createDb } from '../src/lib/server/db/client';
 import { cars } from '../src/lib/server/db/schema';
-import { parseOpenEvData, type OpenEvVehicle } from '../src/lib/server/cars-import';
+import { parseCarSeeds } from '../src/lib/server/car-seeds';
 
-// Pinned release — bump deliberately, re-run to refresh (upserts by slug).
-const DATASET_URL =
-	'https://github.com/open-ev-data/open-ev-data-dataset/releases/download/v1.24.0/open-ev-data-v1.24.0.json';
-
-async function loadDataset(): Promise<{ vehicles: OpenEvVehicle[] }> {
-	const localPath = process.argv[2];
-	if (localPath) return JSON.parse(readFileSync(localPath, 'utf8'));
-	const res = await fetch(DATASET_URL, { redirect: 'follow' });
-	if (!res.ok) throw new Error(`dataset download failed: HTTP ${res.status}`);
-	return (await res.json()) as { vehicles: OpenEvVehicle[] };
-}
-
+// Syncs the cars table with seeds/cars.json: upserts every entry by slug and deletes cars
+// no longer in the file. Idempotent; re-run after editing the file.
 async function main() {
 	const url = process.env.DATABASE_URL;
 	if (!url) throw new Error('DATABASE_URL missing');
-	const db = createDb(url);
-	const parsed = parseOpenEvData(await loadDataset());
-	let upserted = 0;
-	let conflicts = 0;
-	for (const c of parsed.cars) {
-		try {
-			await db
-				.insert(cars)
-				.values(c)
-				.onConflictDoUpdate({ target: cars.slug, set: { ...c } });
-			upserted++;
-		} catch (e) {
-			// The slug conflict is handled by onConflictDoUpdate, so the only expected
-			// throw is the (make, model, variant) unique violation (SQLSTATE 23505) —
-			// a duplicate across distinct unique_codes. Skip those, keep the first.
-			// Anything else is a real failure: fail loud rather than exit 0 silently.
-			// drizzle wraps driver errors (DrizzleQueryError), so the SQLSTATE sits on .cause
-			const err = e as { code?: string; cause?: { code?: string } };
-			if ((err.code ?? err.cause?.code) !== '23505') throw e;
-			conflicts++;
-			console.warn(`SKIP ${c.slug}: duplicate (make, model, variant)`);
-		}
-	}
-	for (const w of parsed.warnings) console.warn(`WARN ${w}`);
-	console.log(
-		`cars: ${upserted} upserted, ${conflicts} constraint conflicts skipped, ` +
-			`${parsed.skippedNonEuropean} non-European skipped, ` +
-			`${parsed.skippedNoMappedPorts} without usable ports skipped`
+	const seeds = parseCarSeeds(
+		JSON.parse(readFileSync(new URL('../seeds/cars.json', import.meta.url), 'utf8'))
 	);
+	const db = createDb(url);
+	const removed = await db.transaction(async (tx) => {
+		for (const c of seeds) {
+			await tx.insert(cars).values(c).onConflictDoUpdate({ target: cars.slug, set: c });
+		}
+		return tx
+			.delete(cars)
+			.where(
+				notInArray(
+					cars.slug,
+					seeds.map((c) => c.slug)
+				)
+			)
+			.returning({ slug: cars.slug });
+	});
+	for (const r of removed) console.log(`REMOVED ${r.slug}`);
+	console.log(`cars: ${seeds.length} upserted, ${removed.length} removed`);
 	await db.$client.end();
 }
 

@@ -74,5 +74,20 @@
 	"filter_car": "Bíll",
 	"car_remove": "Fjarlægja {car} úr síu",
 	"finder_search": "Leita að bíl…",
-	"finder_up_to": "allt að {kw} kW"
+	"finder_up_to": "allt að {kw} kW",
+	"finder_search_plate": "Leita að bíl eða bílnúmeri…",
+	"plate_lookup": "Fletta upp bílnúmerinu {plate}",
+	"plate_loading": "Fletti upp {plate} í ökutækjaskrá…",
+	"plate_source": "Úr ökutækjaskrá Samgöngustofu",
+	"plate_variant_source": "Útgáfan er greind með opnum gögnum frá Traficom (CC BY 4.0) og Umhverfisstofnun Evrópu.",
+	"plate_deregistered": "afskráður",
+	"plate_pick": "Veldu þína útgáfu. Ökutækjaskrá segir ekki til um rafhlöðu eða hleðslubúnað.",
+	"plate_make_only": "Við þekkjum „{model}“ ekki sem rafbíl. Ef þetta er rafbíll, veldu hann hér:",
+	"plate_phev": "Þetta er tengiltvinnbíll. Hér eru enn sem komið er aðeins hreinir rafbílar — leitaðu frekar eftir hleðslutengi.",
+	"plate_not_electric": "Samkvæmt ökutækjaskrá er þetta ekki rafbíll.",
+	"plate_unknown": "Enginn rafbíll frá {make} á okkar lista passar við bílinn. Prófaðu að leita að honum eftir nafni.",
+	"plate_not_found": "Bílnúmerið {plate} fannst ekki í ökutækjaskrá.",
+	"plate_invalid": "Þetta er ekki gilt bílnúmer.",
+	"plate_busy": "Of margar uppflettingar í bili. Leitaðu að bílnum eftir nafni eða reyndu aftur síðar.",
+	"plate_error": "Ekki tókst að fletta upp bílnúmerinu. Leitaðu að bílnum eftir nafni."
 }
