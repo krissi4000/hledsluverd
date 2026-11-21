@@ -37,6 +37,7 @@
 	networks={data.networks}
 	networkDefaults={data.networkDefaults}
 	networkOptions={data.networkOptions}
+	hidden={data.hidden}
 	car={data.car}
 	search={data.search}
 	near={data.near}

@@ -1,47 +1,68 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
-	import { formatIsk } from '$lib/format';
+	import { formatDate, formatIsk, isStale } from '$lib/format';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { cheapestDc, ownBrandPriceOnly } from '$lib/networks';
 	import type { RateCardEntry } from '$lib/server/db/queries';
 
 	let { cards }: { cards: RateCardEntry[] } = $props();
 
+	// the badge goes to the lowest price every car can pay, never Tesla's Tesla-only price
 	const cheapest = $derived(cheapestDc(cards));
+	const stale = (d: Date | null) => d !== null && isStale(d);
 </script>
 
 <section aria-label={m.rate_card_title()}>
 	<h2>{m.rate_card_title()}</h2>
 	<ul class="cards">
 		{#each cards as card (card.networkSlug)}
-			{@const best = card === cheapest}
-			<li class="card surface" class:best data-testid="rate-card">
+			{@const isBest = card === cheapest}
+			{@const dcStale = stale(card.dcVerifiedAt)}
+			{@const acStale = stale(card.acVerifiedAt)}
+			<li class="card surface" class:best={isBest} data-testid="rate-card">
 				<div class="head">
 					<NetworkLogo slug={card.networkSlug} name={card.networkName} size={32} />
 					<span class="network">{card.networkName}</span>
-					{#if best}<span class="badge">{m.cheapest()}</span>{/if}
+					{#if isBest}<span
+							class="badge"
+							class:stale={dcStale}
+							title={m.cheapest_title()}
+							data-testid="cheapest-badge">{m.cheapest()}</span
+						>{/if}
 				</div>
 				<div class="dc">
 					{#if card.dc !== null}
-						<strong class="num" data-testid="rate-dc"
-							>{card.dcFrom
-								? m.price_from({ price: formatIsk(card.dc) })
-								: formatIsk(card.dc)}</strong
+						<span class="price" class:stale={dcStale}
+							><strong class="num" data-testid="rate-dc"
+								>{card.dcFrom
+									? m.price_from({ price: formatIsk(card.dc) })
+									: formatIsk(card.dc)}</strong
+							><span class="per">{m.price_per_kwh()}</span></span
 						>
 						<span class="unit">DC</span>
 						{#if ownBrandPriceOnly(card.networkSlug)}<small
-								class="brand-only"
+								class="note"
 								title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
 							>{/if}
 					{:else}
 						<span class="none">—</span>
 					{/if}
 				</div>
-				<div class="ac num">
+				<div class="ac num" class:stale={acStale}>
 					{#if card.ac !== null}{card.acFrom
 							? m.price_from({ price: formatIsk(card.ac) })
-							: formatIsk(card.ac)} AC{/if}
+							: formatIsk(card.ac)}{m.price_per_kwh()} AC{/if}
 				</div>
+				{#if card.hostLower}<small
+						class="note host-lower"
+						title={m.host_lower_title({ network: card.networkName })}
+						data-testid="host-lower">{m.host_lower()}</small
+					>{/if}
+				{#if dcStale && card.dcVerifiedAt}<small class="verified stale"
+						>{m.verified_on({ date: formatDate(card.dcVerifiedAt) })}</small
+					>{:else if acStale && card.acVerifiedAt}<small class="verified stale"
+						>{m.verified_on({ date: formatDate(card.acVerifiedAt) })}</small
+					>{/if}
 			</li>
 		{/each}
 	</ul>
@@ -89,6 +110,26 @@
 		top: -0.6rem;
 		right: 0.75rem;
 	}
+	/* a "cheapest" claim on a price unverified for 30+ days carries the amber warning */
+	.badge.stale {
+		background: var(--stale);
+	}
+	.price {
+		display: inline-flex;
+		align-items: baseline;
+	}
+	.price.stale,
+	.ac.stale {
+		color: var(--stale);
+	}
+	.per {
+		color: var(--muted);
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+	.price.stale .per {
+		color: inherit;
+	}
 	.dc {
 		display: flex;
 		align-items: baseline;
@@ -106,10 +147,16 @@
 		font-size: 0.8rem;
 		font-weight: 600;
 	}
-	.brand-only {
+	.note {
 		flex-basis: 100%;
 		color: var(--muted);
 		font-size: 0.75rem;
+	}
+	.host-lower {
+		margin-top: -0.4rem;
+		cursor: help;
+		text-decoration: underline dotted;
+		text-underline-offset: 2px;
 	}
 	.none {
 		font-size: 1.5rem;

@@ -86,7 +86,10 @@ export const orkanScraper: Scraper = {
 		if (rows.length === 0) throw new Error('Orkan parse: no Rafmagn rows — layout changed?');
 		const [net] = await db.select().from(networks).where(eq(networks.slug, 'orkan'));
 		if (!net) throw new Error('orkan network missing');
-		const sts = await db.select().from(stations).where(eq(stations.networkId, net.id));
+		// inactive = closed or merged into another station: no price, no "missing" warning
+		const sts = (await db.select().from(stations).where(eq(stations.networkId, net.id))).filter(
+			(s) => s.isActive
+		);
 		const readings: ScrapedReading[] = [];
 		const warnings: string[] = [];
 		const matchedStations = new Set<number>();

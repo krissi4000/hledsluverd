@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Chart from 'chart.js/auto';
 	import * as m from '$lib/paraglide/messages';
-	import { formatDate, formatIsk } from '$lib/format';
+	import { formatDate, formatIskPerKwh } from '$lib/format';
 	import { networkColor } from '$lib/networks';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 
@@ -94,7 +94,7 @@
 									/>{s.networkName}</span
 								></td
 							>
-							<td class="num">{formatIsk(last.y)}</td>
+							<td class="num">{formatIskPerKwh(last.y)}</td>
 							<td>{m.trends_since({ date: formatDate(new Date(last.t)) })}</td>
 						</tr>
 					{/each}

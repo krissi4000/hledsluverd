@@ -4,12 +4,14 @@
 # (e1 public map) and Ísorka/Virta sites classified in seeds/virta-sites.json,
 # refreshes their connectors. The scripts push an ntfy note
 # when something needs a human (a new Tesla station to price, a station that
-# disappeared from its source). Shares deploy.lock with deploy.sh and scrapes.
+# disappeared from its source). Last, review:duplicates pushes any new pair of
+# likely duplicate stations for a human to merge or dismiss on /admin.
+# Shares deploy.lock with deploy.sh and scrapes.
 set -u
 cd /srv/hledsluverd/app || exit 1
 
 rc=0
-for job in sync:superchargers sync:e1 sync:virta; do
+for job in sync:superchargers sync:e1 sync:virta review:duplicates; do
 	if ! flock -w 900 /srv/hledsluverd/deploy.lock npm run --silent "$job"; then
 		rc=1
 		if [ -n "${NTFY_TOPIC:-}" ]; then

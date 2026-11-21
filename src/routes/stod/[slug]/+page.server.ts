@@ -1,4 +1,4 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import * as m from '$lib/paraglide/messages';
@@ -6,6 +6,7 @@ import { stationDetail, trendSeries } from '$lib/server/db/queries';
 import { refreshAvailability } from '$lib/server/availability-refresh';
 import { ntfy } from '$lib/server/scrapers/runner';
 import { createRateLimiter, submitReport } from '$lib/server/reports';
+import { resolveStationSlug } from '$lib/server/stations-admin';
 import { stationDescription } from '$lib/server/share';
 import { shareContext } from '$lib/server/share-context';
 import { stationOgImage } from '$lib/server/og/model';
@@ -19,7 +20,12 @@ const global = createRateLimiter({ limit: 60, windowMs: 60 * 60 * 1000 });
 
 export const load: PageServerLoad = async ({ params }) => {
 	let station = await stationDetail(db, params.slug);
-	if (!station) error(404, m.station_not_found());
+	if (!station) {
+		// a merged duplicate or a renamed station: send old links to the station that stays
+		const target = await resolveStationSlug(db, params.slug);
+		if (target) redirect(301, `/stod/${target}`);
+		error(404, m.station_not_found());
+	}
 	// one station, one call, never throws: worth the small wait for live availability
 	if (env.TOMTOM_API_KEY && station.tomtomId) {
 		const n = await refreshAvailability(
@@ -38,10 +44,12 @@ export const load: PageServerLoad = async ({ params }) => {
 	const mode = station.connectors.some((c) => c.type !== 'Type2')
 		? ('DC' as const)
 		: ('AC' as const);
-	// the network's trend says nothing about a price the site's owner sets
-	const series = station.hostPriced
-		? []
-		: (await trendSeries(db, mode)).filter((s) => s.networkSlug === station!.network.slug);
+	// the network's trend says nothing about a price the site's owner sets, nor about a
+	// station that isn't open yet
+	const series =
+		station.hostPriced || station.underConstruction
+			? []
+			: (await trendSeries(db, mode)).filter((s) => s.networkSlug === station!.network.slug);
 	const ctx = shareContext();
 	const seo: SeoMeta = {
 		title: `${station.name} — ${m.site_title()}`,

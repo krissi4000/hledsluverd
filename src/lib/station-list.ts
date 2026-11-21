@@ -64,6 +64,8 @@ export interface SortableStation {
 	/** price with per-minute fees folded in for the chosen car (null = unknown) */
 	effectivePrice?: number | null;
 	distanceKm?: number | null;
+	/** not open yet: listed after every open station, whatever the order */
+	underConstruction?: boolean;
 }
 
 const byNullable = (a: number | null | undefined, b: number | null | undefined) =>
@@ -73,6 +75,7 @@ const byNullable = (a: number | null | undefined, b: number | null | undefined) 
  * Sort order: by distance when the visitor shared a position; else by the chosen car's
  * effective price (a station whose effective price can't be worked out comes after
  * those that can, by raw price); else by raw price. Unknown prices last, then name.
+ * Stations that aren't open yet come after all of them.
  */
 export function sortStations<T extends SortableStation>(
 	rows: T[],
@@ -87,5 +90,7 @@ export function sortStations<T extends SortableStation>(
 			: by === 'effective'
 				? (a: T, b: T) => byNullable(effective(a), effective(b)) || price(a, b) || name(a, b)
 				: (a: T, b: T) => price(a, b) || name(a, b);
-	return [...rows].sort(cmp);
+	const openFirst = (a: T, b: T) =>
+		Number(a.underConstruction ?? false) - Number(b.underConstruction ?? false);
+	return [...rows].sort((a, b) => openFirst(a, b) || cmp(a, b));
 }

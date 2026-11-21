@@ -164,7 +164,8 @@ export const n1Scraper: Scraper = {
 		const [net] = await db.select().from(networks).where(eq(networks.slug, 'n1'));
 		if (!net) throw new Error('n1 network missing');
 		const sts = (await db.select().from(stations).where(eq(stations.networkId, net.id))).filter(
-			(s) => s.externalIds.n1 != null
+			// inactive = closed or merged into another station: its price would never show
+			(s) => s.externalIds.n1 != null && s.isActive
 		);
 		if (listPrice === null && sts.length === 0) {
 			throw new Error(

@@ -6,6 +6,7 @@ import { connectors, networks, stations } from '../src/lib/server/db/schema';
 import { ntfy } from '../src/lib/server/scrapers/runner';
 import { VIRTA_BASE, virtaFetch } from '../src/lib/server/scrapers/isorka';
 import { slugify } from '../src/lib/server/slug';
+import { overridesByStation } from '../src/lib/server/stations-admin';
 import {
 	VIRTA_TILES,
 	parseVirtaClassification,
@@ -44,9 +45,11 @@ const withLatLng = <S extends { location: { x: number; y: number } }>(s: S) => (
 	lat: s.location.y,
 	lng: s.location.x
 });
-const ours = (await db.select().from(stations).where(eq(stations.networkId, net.id))).map(
-	withLatLng
-);
+// A duplicate merged on /admin pairs with nothing new; it stays only to keep its own stamp.
+const ours = (await db.select().from(stations).where(eq(stations.networkId, net.id)))
+	.filter((s) => s.mergedIntoId === null || s.externalIds.virta != null)
+	.map(withLatLng);
+const overrides = await overridesByStation(db);
 const others = (
 	await db
 		.select()
@@ -89,6 +92,10 @@ for (const { site, station, distanceM, hostPriced } of plan.matched) {
 			})
 			.where(eq(stations.id, station.id));
 		if (site.connectors.length === 0) return; // keep OCM's rather than leave none
+		if (overrides.get(station.id)?.connectors) {
+			console.log(`  ↳ connectors kept: overridden on /admin`);
+			return;
+		}
 		await tx.delete(connectors).where(eq(connectors.stationId, station.id));
 		await tx
 			.insert(connectors)

@@ -2,7 +2,8 @@
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import * as m from '$lib/paraglide/messages';
-	import { ageParts, formatNumber } from '$lib/format';
+	import { formatIskPerKwh, formatNumber } from '$lib/format';
+	import { updatedText } from '$lib/age';
 	import type { LatLng } from '$lib/geo';
 	import { networkColor, networkInitials, networkLogo } from '$lib/networks';
 	import { priceRanks, rankColors } from '$lib/price-scale';
@@ -22,6 +23,8 @@
 		totalCount?: number | null;
 		availabilityFetchedAt?: Date | null;
 		stallCount?: number | null;
+		/** not open yet: a muted pin with no price or availability */
+		underConstruction?: boolean;
 	}
 
 	// Pins have no room for an age label, so they only carry availability that is
@@ -33,16 +36,15 @@
 		s: PinStation
 	): { free: number; total: number; unknown: number; age: string } | null {
 		const { freeCount: free, totalCount: total, availabilityFetchedAt: at } = s;
+		if (s.underConstruction) return null;
 		if (free == null || total == null || total === 0 || !at) return null;
 		if (Date.now() - at.getTime() > PIN_AVAILABILITY_MAX_AGE_MS) return null;
-		const p = ageParts(at);
-		const age =
-			p.unit === 'min'
-				? m.age_min({ n: p.n })
-				: p.unit === 'h'
-					? m.age_h({ n: p.n })
-					: m.age_d({ n: p.n });
-		return { free, total, unknown: unknownStalls(s.stallCount ?? null, total), age };
+		return {
+			free,
+			total,
+			unknown: unknownStalls(s.stallCount ?? null, total),
+			age: updatedText(at)
+		};
 	}
 
 	let {
@@ -108,7 +110,7 @@
 			// Higher z-index for earlier stations so DOM-first is visually on top (Playwright-friendly)
 			wrap.style.zIndex = String(stations.length - i);
 			const el = document.createElement('button');
-			el.className = 'pin';
+			el.className = s.underConstruction ? 'pin pin-uc' : 'pin';
 			el.dataset.testid = 'map-pin';
 			el.type = 'button';
 			const rank = ranks.get(s.id);
@@ -118,7 +120,17 @@
 				el.style.setProperty('--pin-border', c.border);
 			}
 			const avail = pinAvailability(s);
-			const title = [s.name, s.networkName, s.mode].filter(Boolean).join(' · ');
+			const title = [
+				s.name,
+				s.networkName,
+				s.underConstruction
+					? m.under_construction()
+					: s.price !== null
+						? `${formatIskPerKwh(s.price)} ${s.mode ?? ''}`.trim()
+						: s.mode
+			]
+				.filter(Boolean)
+				.join(' · ');
 			el.title = avail
 				? `${title} · ${m.pin_free({ free: avail.free, total: avail.total })} (${avail.age})` +
 					(avail.unknown
@@ -141,7 +153,10 @@
 			}
 			const label = document.createElement('span');
 			label.className = 'pin-price';
-			if (s.price === null) {
+			if (s.underConstruction) {
+				label.textContent = m.under_construction();
+				label.className = 'pin-price pin-uc-label';
+			} else if (s.price === null) {
 				label.textContent = '?';
 			} else {
 				label.textContent = formatNumber(s.price);
@@ -296,6 +311,17 @@
 	}
 	:global(.pin-wrap.selected .pin)::after {
 		border-color: var(--text, #111a15);
+	}
+	/* not open yet: muted, below every open pin (mapStations sorts it last) */
+	:global(.pin.pin-uc) {
+		--pin-bg: var(--surface-2, #f1f3f2);
+		--pin-border: rgb(0 0 0 / 18%);
+		color: var(--muted, #5d6b63);
+		opacity: 0.85;
+	}
+	:global(.pin-uc-label) {
+		font-size: 0.65rem;
+		font-weight: 600;
 	}
 	:global(.pin-unit) {
 		margin-left: 1px;

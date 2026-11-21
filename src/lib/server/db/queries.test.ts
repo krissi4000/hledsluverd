@@ -337,6 +337,10 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	it('stationList surfaces cached availability and leaves it null when absent', async () => {
 		const st = await db.select().from(stations);
 		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		await db
+			.update(stations)
+			.set({ externalIds: { tomtom: 'tt-hellisheidi' } })
+			.where(eq(stations.id, hellisheidi.id));
 		await db.insert(availability).values({
 			stationId: hellisheidi.id,
 			freeCount: 3,
@@ -398,6 +402,10 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 	it('stationDetail lists both modes for a mixed station and includes availability', async () => {
 		const st = await db.select().from(stations);
 		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		await db
+			.update(stations)
+			.set({ externalIds: { tomtom: 'tt-hellisheidi' } })
+			.where(eq(stations.id, hellisheidi.id));
 		await db
 			.insert(connectors)
 			.values({ stationId: hellisheidi.id, type: 'Type2', powerKw: 22, count: 2 });
@@ -521,5 +529,146 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect((await currentPrices(db)).find((p) => p.stationId === stadarskali.id)!.hostPriced).toBe(
 			true
 		);
+	});
+	it('a station that is not open yet shows no price or availability, sorts last and leaves the rate card', async () => {
+		const st = await db.select().from(stations);
+		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		// name says "Í uppsetningu"; it carries a cheap station price and a TomTom reading
+		await db
+			.update(stations)
+			.set({ name: 'Hellisheiði (Í uppsetningu)', externalIds: { tomtom: 'tt-h' } })
+			.where(eq(stations.id, hellisheidi.id));
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			stationId: hellisheidi.id,
+			tariffKey: 'DC_150',
+			priceIskPerKwh: 20,
+			source: 'scraper'
+		});
+		await db.insert(availability).values({
+			stationId: hellisheidi.id,
+			freeCount: 2,
+			totalCount: 2,
+			perType: null,
+			fetchedAt: new Date(),
+			source: 'tomtom'
+		});
+
+		const list = await stationList(db, 'DC');
+		expect(list.map((s) => s.slug)).toEqual(['stadarskali-n1', 'hellisheidi-on']);
+		expect(list[1]).toMatchObject({
+			underConstruction: true,
+			price: null,
+			freeCount: null,
+			totalCount: null
+		});
+
+		const onCard = (await rateCard(db)).find((c) => c.networkSlug === 'on')!;
+		expect(onCard.dc).toBe(44); // not the unopened station's 20
+
+		const pin = (await mapStations(db)).find((s) => s.slug === 'hellisheidi-on')!;
+		expect(pin).toMatchObject({ underConstruction: true, price: null, tomtomId: null });
+		expect((await mapStations(db)).at(-1)!.slug).toBe('hellisheidi-on');
+
+		const detail = (await stationDetail(db, 'hellisheidi-on'))!;
+		expect(detail.underConstruction).toBe(true);
+		expect(detail.prices).toEqual([]);
+		expect(detail.availability).toBeNull();
+		expect(detail.tomtomId).toBeNull();
+	});
+
+	it("an admin's under-construction flag beats the name both ways", async () => {
+		const st = await db.select().from(stations);
+		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		await db
+			.update(stations)
+			.set({ name: 'Hellisheiði (Í uppsetningu)', underConstruction: false })
+			.where(eq(stations.id, hellisheidi.id));
+		const open = (await stationList(db, 'DC')).find((s) => s.slug === 'hellisheidi-on')!;
+		expect(open).toMatchObject({ underConstruction: false, price: 55 });
+
+		await db
+			.update(stations)
+			.set({ underConstruction: true })
+			.where(eq(stations.slug, 'stadarskali-n1'));
+		const closed = (await stationList(db, 'DC')).find((s) => s.slug === 'stadarskali-n1')!;
+		expect(closed).toMatchObject({ underConstruction: true, price: null });
+	});
+
+	it('a TomTom id stamped on two networks’ stations yields no availability for either', async () => {
+		const st = await db.select().from(stations);
+		const hellisheidi = st.find((s) => s.slug === 'hellisheidi-on')!;
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		for (const s of [hellisheidi, stadarskali]) {
+			await db
+				.update(stations)
+				.set({ externalIds: { tomtom: 'shared' } })
+				.where(eq(stations.id, s.id));
+			await db.insert(availability).values({
+				stationId: s.id,
+				freeCount: 1,
+				totalCount: 2,
+				perType: null,
+				fetchedAt: new Date(),
+				source: 'tomtom'
+			});
+		}
+		const list = await stationList(db, 'DC');
+		expect(list.every((s) => s.freeCount === null && s.availabilityFetchedAt === null)).toBe(true);
+		const pins = await mapStations(db);
+		expect(pins.filter((p) => p.tomtomId !== null)).toEqual([]);
+		const detail = (await stationDetail(db, 'stadarskali-n1'))!;
+		expect(detail.availability).toBeNull();
+		expect(detail.tomtomId).toBeNull();
+
+		// the same id on two stations of ONE network is a duplicate, not an ambiguity
+		await db.update(stations).set({ networkId: on }).where(eq(stations.id, stadarskali.id));
+		const after = (await stationDetail(db, 'stadarskali-n1'))!;
+		expect(after.availability).toMatchObject({ freeCount: 1, totalCount: 2 });
+	});
+
+	it('a station moved to another network stops showing its old network’s station prices', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		// filed under ON by mistake, it picked up an ON station price
+		await db.update(stations).set({ networkId: on }).where(eq(stations.id, stadarskali.id));
+		await insertPriceIfChanged(db, {
+			networkId: on,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 30,
+			source: 'scraper'
+		});
+		expect((await stationList(db, 'DC')).find((s) => s.slug === 'stadarskali-n1')!.price).toBe(30);
+		// corrected to N1: N1's price applies, the stale ON row no longer does
+		await db.update(stations).set({ networkId: n1 }).where(eq(stations.id, stadarskali.id));
+		expect((await stationList(db, 'DC')).find((s) => s.slug === 'stadarskali-n1')!.price).toBe(70);
+		expect((await currentPrices(db)).find((p) => p.stationId === stadarskali.id)).toBeUndefined();
+		expect((await rateCard(db)).find((c) => c.networkSlug === 'on')!.dc).toBe(44);
+	});
+
+	it('rateCard flags a network whose host-priced stations undercut its card', async () => {
+		const st = await db.select().from(stations);
+		const stadarskali = st.find((s) => s.slug === 'stadarskali-n1')!;
+		expect((await rateCard(db)).find((c) => c.networkSlug === 'n1')!.hostLower).toBe(false);
+		await db.update(stations).set({ hostPriced: true }).where(eq(stations.id, stadarskali.id));
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 90,
+			source: 'scraper'
+		});
+		// dearer host price: nothing to explain
+		expect((await rateCard(db)).find((c) => c.networkSlug === 'n1')!.hostLower).toBe(false);
+		await insertPriceIfChanged(db, {
+			networkId: n1,
+			stationId: stadarskali.id,
+			tariffKey: 'DC',
+			priceIskPerKwh: 60,
+			source: 'scraper'
+		});
+		const card = (await rateCard(db)).find((c) => c.networkSlug === 'n1')!;
+		expect(card).toMatchObject({ dc: 70, hostLower: true });
 	});
 });

@@ -8,21 +8,13 @@
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
 	import ReportForm from '$lib/components/ReportForm.svelte';
 	import { networkColor, ownBrandPriceOnly } from '$lib/networks';
-	import { ageParts, formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
+	import { formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
+	import { updatedText, verifiedText } from '$lib/age';
 
 	let { data, form } = $props();
 	let canvas = $state<HTMLCanvasElement>();
 
 	const st = $derived(data.station);
-
-	function age(d: Date): string {
-		const p = ageParts(d);
-		return p.unit === 'min'
-			? m.age_min({ n: p.n })
-			: p.unit === 'h'
-				? m.age_h({ n: p.n })
-				: m.age_d({ n: p.n });
-	}
 
 	$effect(() => {
 		if (!canvas || data.series.length === 0) return;
@@ -62,7 +54,11 @@
 	<header class="head">
 		<NetworkLogo slug={st.network.slug} name={st.network.name} size={56} />
 		<div class="title">
-			<h2>{st.name}</h2>
+			<h2>
+				{st.name}{#if st.underConstruction}
+					<span class="badge uc" data-testid="under-construction">{m.under_construction()}</span
+					>{/if}
+			</h2>
 			<p class="meta">
 				{#if st.network.websiteUrl}<a href={st.network.websiteUrl} rel="noopener external"
 						>{st.network.name}</a
@@ -82,7 +78,7 @@
 						<span class="mode">{p.mode === 'DC' ? m.mode_label_dc() : m.mode_label_ac()}</span>
 						<span class="amount">
 							<strong class="num">{formatIsk(p.priceIskPerKwh)}</strong><span class="unit"
-								>/kWh</span
+								>{m.price_per_kwh()}</span
 							>
 						</span>
 						{#if p.minuteFeeIsk}<small class="fee"
@@ -98,11 +94,15 @@
 								title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
 							>{/if}
 						<small class="verified" class:stale={isStale(p.verifiedAt)}
-							>{m.verified_on({ date: formatDate(p.verifiedAt) })}</small
+							>{verifiedText(p.verifiedAt)}</small
 						>
 					</div>
 				{:else}
-					<p class="muted"><em>{m.price_unknown()}</em></p>
+					{#if st.underConstruction}
+						<p class="muted" data-testid="under-construction-note">{m.under_construction_note()}</p>
+					{:else}
+						<p class="muted"><em>{m.price_unknown()}</em></p>
+					{/if}
 				{/each}
 				{#if st.hostPriced}
 					<p class="muted host-priced" data-testid="station-host-priced">
@@ -121,8 +121,8 @@
 								unknown={unknownStalls(st.stallCount, st.availability.totalCount)}
 								total={st.availability.totalCount}
 							/>
-							<small class="verified">{age(st.availability.fetchedAt)}</small>
-						{:else}—{/if}
+							<small class="verified">{updatedText(st.availability.fetchedAt)}</small>
+						{:else}<span title={m.avail_unknown_title()}>—</span>{/if}
 					</p>
 				</div>
 				<div>
@@ -177,6 +177,12 @@
 	.title {
 		flex: 1 1 16rem;
 		min-width: 0;
+	}
+	.badge.uc {
+		vertical-align: middle;
+		margin-left: 0.4rem;
+		background: var(--surface-2);
+		color: var(--muted);
 	}
 	.title h2 {
 		margin: 0;

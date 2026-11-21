@@ -96,6 +96,15 @@ describe('sortStations', () => {
 		]);
 	});
 
+	it('lists stations that are not open yet after every open one, even unpriced ones', () => {
+		const uc = [
+			{ name: 'A', price: null, underConstruction: true },
+			{ name: 'B', price: null, underConstruction: false },
+			{ name: 'C', price: 30 }
+		];
+		expect(sortStations(uc, 'price').map((r) => r.name)).toEqual(['C', 'B', 'A']);
+	});
+
 	it('breaks ties by Icelandic name order and does not mutate the input', () => {
 		const tie = [
 			{ name: 'Ö', price: 1 },

@@ -2,14 +2,8 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import {
-		formatIsk,
-		formatDate,
-		formatEstimateIsk,
-		formatNumber,
-		isStale,
-		ageParts
-	} from '$lib/format';
+	import { formatIsk, formatEstimateIsk, formatNumber, isStale } from '$lib/format';
+	import { updatedText, verifiedText } from '$lib/age';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import { ownBrandPriceOnly } from '$lib/networks';
@@ -20,7 +14,7 @@
 	import { formatKm } from '$lib/geo';
 	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
 	import { unknownStalls } from '$lib/availability';
-	import { NETWORK_PARAM } from '$lib/filter-params';
+	import { NETWORK_PARAM, toggleParam } from '$lib/filter-params';
 	import type { StationRow } from '$lib/server/db/queries';
 
 	let {
@@ -30,6 +24,7 @@
 		networks,
 		networkDefaults,
 		networkOptions,
+		hidden = [],
 		car,
 		search,
 		near,
@@ -52,6 +47,8 @@
 		networks: string[];
 		networkDefaults: string[];
 		networkOptions: { slug: string; name: string }[];
+		/** networks toggled off, with how many stations each hides */
+		hidden?: { slug: string; name: string; count: number }[];
 		car: (CarPill & { batteryKwh: number | null }) | null;
 		/** offer registration-plate lookup in the car search */
 		plateLookup?: boolean;
@@ -60,15 +57,6 @@
 		/** shown under the filters instead of the table (the nearby cards) */
 		list?: Snippet;
 	} = $props();
-
-	function age(d: Date): string {
-		const p = ageParts(d);
-		return p.unit === 'min'
-			? m.age_min({ n: p.n })
-			: p.unit === 'h'
-				? m.age_h({ n: p.n })
-				: m.age_d({ n: p.n });
-	}
 
 	function href(params: Record<string, string | null>): string {
 		const u = new URL(page.url);
@@ -81,7 +69,29 @@
 </script>
 
 <section aria-label={m.stations_title()}>
-	<h2>{m.stations_title()}</h2>
+	<div class="title-row">
+		<h2>{m.stations_title()}</h2>
+		{#if hidden.length > 0}
+			<!-- the list is never "all" while a toggle hides some: say what and how many -->
+			<small class="hidden-nets" data-testid="hidden-networks"
+				>{m.stations_hidden()}
+				{#each hidden as h, i (h.slug)}{#if i > 0},
+					{/if}<a
+						href={href({
+							[NETWORK_PARAM]: toggleParam(
+								networks,
+								h.slug,
+								networkOptions.map((o) => o.slug),
+								networkDefaults
+							)
+						})}
+						title={m.stations_hidden_show({ name: h.name })}
+						data-sveltekit-noscroll
+						data-sveltekit-keepfocus>{h.name} ({h.count})</a
+					>{/each}</small
+			>
+		{/if}
+	</div>
 
 	<nav class="filters surface">
 		<div class="filter-row">
@@ -175,12 +185,20 @@
 								</div>
 							</td>
 							<td data-label={m.th_price()} class="price">
-								{#if s.price !== null}
+								{#if s.underConstruction}
+									<span
+										class="badge uc"
+										title={m.under_construction_note()}
+										data-testid="under-construction">{m.under_construction()}</span
+									>
+								{:else if s.price !== null}
 									{@const stale = s.verifiedAt !== null && isStale(s.verifiedAt)}
 									{@const idleFee = s.minuteFeeIsk && s.minuteFeeAfterMin ? s.minuteFeeIsk : null}
 									<span class="price-wrap" class:stale>
 										<button type="button" class="price-info" aria-describedby="price-tip-{s.slug}">
-											<strong class="num" data-testid="price">{formatIsk(s.price)}</strong>
+											<strong class="num" data-testid="price">{formatIsk(s.price)}</strong><span
+												class="per">{m.price_per_kwh()}</span
+											>
 											<svg
 												class="info-icon"
 												viewBox="0 0 24 24"
@@ -208,7 +226,7 @@
 													})}</span
 												>{/if}
 											{#if s.verifiedAt}<span class="tip-line tip-verified" class:stale
-													>{m.verified_on({ date: formatDate(s.verifiedAt) })}</span
+													>{verifiedText(s.verifiedAt)}</span
 												>{/if}
 										</span>
 									</span>
@@ -261,19 +279,51 @@
 										total={s.totalCount}
 									/>
 									{#if s.availabilityFetchedAt}<small class="verified"
-											>{age(s.availabilityFetchedAt)}</small
+											>{updatedText(s.availabilityFetchedAt)}</small
 										>{/if}
-								{:else}<span class="muted">—</span>{/if}
+								{:else}<span class="muted" title={m.avail_unknown_title()}>—</span>{/if}
 							</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
 		</div>
+		<p class="legend" data-testid="avail-legend">{m.avail_legend()}</p>
 	{/if}
 </section>
 
 <style>
+	.title-row {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0 1rem;
+	}
+	.hidden-nets {
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+	.hidden-nets a {
+		color: inherit;
+	}
+	.legend {
+		margin: 0.5rem 0 0;
+		color: var(--muted);
+		font-size: 0.8rem;
+	}
+	.per {
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 600;
+	}
+	.price-wrap.stale .per {
+		color: var(--stale);
+	}
+	.badge.uc {
+		background: var(--surface-2);
+		color: var(--muted);
+		cursor: help;
+	}
 	.filters {
 		display: flex;
 		flex-direction: column;

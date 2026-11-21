@@ -4,6 +4,7 @@ import { createDb } from '../src/lib/server/db/client';
 import { connectors, networks, stations } from '../src/lib/server/db/schema';
 import { ntfy } from '../src/lib/server/scrapers/runner';
 import { slugify } from '../src/lib/server/slug';
+import { overridesByStation } from '../src/lib/server/stations-admin';
 import {
 	SUPERCHARGE_INFO_URL,
 	parseSuperchargeSites,
@@ -30,7 +31,11 @@ if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 const db = createDb(process.env.DATABASE_URL);
 const [tesla] = await db.select().from(networks).where(eq(networks.slug, 'tesla'));
 if (!tesla) throw new Error('tesla network missing — run seed:networks');
-const ours = await db.select().from(stations).where(eq(stations.networkId, tesla.id));
+// A duplicate merged on /admin pairs with nothing new; it stays only to keep its own stamp.
+const ours = (await db.select().from(stations).where(eq(stations.networkId, tesla.id))).filter(
+	(s) => s.mergedIntoId === null || s.externalIds.supercharge != null
+);
+const overrides = await overridesByStation(db);
 const ourConnectors = ours.length
 	? await db
 			.select()
@@ -73,7 +78,9 @@ for (const { site, station, distanceM } of plan.matched) {
 			.set({ externalIds: { ...st.externalIds, supercharge: site.id } })
 			.where(eq(stations.id, st.id));
 		const stalls = stallsFor(site);
-		if (stalls) {
+		if (stalls && overrides.get(st.id)?.connectors) {
+			console.log(`  ↳ connectors kept: overridden on /admin`);
+		} else if (stalls) {
 			await tx
 				.delete(connectors)
 				.where(and(eq(connectors.stationId, st.id), eq(connectors.type, 'CCS2')));

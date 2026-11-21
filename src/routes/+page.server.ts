@@ -22,7 +22,7 @@ import {
 	sortStations
 } from '$lib/station-list';
 import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
-import { NETWORK_PARAM, defaultNetworks, parseShown } from '$lib/filter-params';
+import { NETWORK_PARAM, defaultNetworks, hiddenNetworks, parseShown } from '$lib/filter-params';
 import { homeDescription } from '$lib/server/share';
 import { shareContext } from '$lib/server/share-context';
 import { homeOgImage } from '$lib/server/og/model';
@@ -63,14 +63,15 @@ export const load: PageServerLoad = async ({ url }) => {
 	const battery = car?.batteryKwh ?? typedBattery;
 	const carMaxKw = car ? (mode === 'AC' ? car.maxAcKw : car.maxDcKw) : null;
 
-	const filtered = allStations
-		.filter(
-			(s) =>
-				(!connector || s.connectors.some((c) => c.type === connector)) &&
-				networks.includes(s.networkSlug) &&
-				(!car || s.connectors.some((c) => c.type === carPlug)) &&
-				matchesSearch(search, [s.name, s.address])
-		)
+	// every filter but the network toggles, so a hidden network can say how many it hides
+	const matching = allStations.filter(
+		(s) =>
+			(!connector || s.connectors.some((c) => c.type === connector)) &&
+			(!car || s.connectors.some((c) => c.type === carPlug)) &&
+			matchesSearch(search, [s.name, s.address])
+	);
+	const filtered = matching
+		.filter((s) => networks.includes(s.networkSlug))
 		.map((s) => {
 			const fitting = s.connectors.filter((c) => c.type === carPlug);
 			const tariff =
@@ -104,13 +105,16 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	// With a position the page shows the nearby cards instead of the table: the nearest
 	// stations, ranked by distance and price (fees folded in where the charge is known).
+	// A station that isn't open yet is no answer to "where can I charge", so it's left out.
 	const nearby = near
 		? rankNearby(
-				filtered.map((s) => ({
-					...s,
-					distanceKm: s.distanceKm!,
-					rankPrice: s.fullCharge ? s.fullCharge.costIsk / s.fullCharge.billedKwh : s.price
-				}))
+				filtered
+					.filter((s) => !s.underConstruction)
+					.map((s) => ({
+						...s,
+						distanceKm: s.distanceKm!,
+						rankPrice: s.fullCharge ? s.fullCharge.costIsk / s.fullCharge.billedKwh : s.price
+					}))
 			)
 		: null;
 
@@ -144,6 +148,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		// the nearby cards show Google Street View photos only when a key is configured
 		streetView: Boolean(env.GOOGLE_MAPS_API_KEY),
 		networkOptions,
+		hidden: hiddenNetworks(networkOptions, networks, matching),
 		seo: seoFor(cards)
 	};
 };

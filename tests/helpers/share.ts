@@ -26,6 +26,7 @@ export function card(
 		ac: null,
 		acFrom: false,
 		acVerifiedAt: null,
+		hostLower: false,
 		...over
 	};
 }
@@ -54,6 +55,7 @@ export function station(over: Partial<StationDetail> = {}): StationDetail {
 		lng: -21.87,
 		network: { slug: 'orkan', name: 'Orkan', websiteUrl: null },
 		hostPriced: false,
+		underConstruction: false,
 		connectors: [
 			{ type: 'CCS2', powerKw: 150, count: 2 },
 			{ type: 'Type2', powerKw: 22, count: 2 }

@@ -6,6 +6,11 @@ export function formatIsk(value: number): string {
 	return `${formatNumber(value)} kr`;
 }
 
+/** A per-kWh price in plain text (titles, tooltips): "49 kr/kWh". */
+export function formatIskPerKwh(value: number): string {
+	return `${formatIsk(value)}/kWh`;
+}
+
 export function formatDate(d: Date): string {
 	return `${d.getUTCDate()}.${d.getUTCMonth() + 1}.${d.getUTCFullYear()}`;
 }
@@ -35,4 +40,11 @@ export function formatEstimateIsk(value: number): string {
 /** "15:05" — UTC, which is Iceland's time all year (no daylight saving). */
 export function formatTime(d: Date): string {
 	return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}
+
+/** A relative age stops meaning much after a few days; older verifications show the date. */
+export const RELATIVE_AGE_MAX_MS = 3 * 24 * 60 * 60 * 1000;
+
+export function showRelativeAge(at: Date, now = new Date()): boolean {
+	return now.getTime() - at.getTime() < RELATIVE_AGE_MAX_MS;
 }

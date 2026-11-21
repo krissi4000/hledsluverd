@@ -11,6 +11,17 @@
 	import { TARIFF_KEYS } from '$lib/types';
 
 	let { data, form } = $props();
+
+	type Reason = (typeof data.duplicates)[number]['reasons'][number];
+	const reasonText = (r: Reason) =>
+		r.kind === 'shared-id'
+			? m.admin_reason_shared_id({ key: r.key })
+			: r.kind === 'same-name'
+				? m.admin_reason_same_name()
+				: r.kind === 'similar-name'
+					? m.admin_reason_similar_name()
+					: m.admin_reason_same_spot();
+	const ucValue = (v: boolean | null) => (v === null ? '' : v ? 'yes' : 'no');
 </script>
 
 <h2>{m.admin_title()}</h2>
@@ -82,6 +93,202 @@
 	</table>
 </section>
 
+<section aria-label={m.admin_duplicates()}>
+	<h3>{m.admin_duplicates()}</h3>
+	<p class="help">{m.admin_duplicates_help()}</p>
+	{#if data.duplicates.length === 0}
+		<p class="muted">{m.admin_duplicates_none()}</p>
+	{:else}
+		<table class="surface" data-testid="admin-duplicates">
+			<tbody>
+				{#each data.duplicates as d (`${d.a.id}:${d.b.id}`)}
+					<tr>
+						<td>{d.a.networkName}</td>
+						<td>
+							<a href="/stod/{d.a.slug}">{d.a.name}</a> <span class="muted">#{d.a.id}</span><br />
+							<a href="/stod/{d.b.slug}">{d.b.name}</a> <span class="muted">#{d.b.id}</span>
+						</td>
+						<td class="msg">{d.distanceM} m · {d.reasons.map(reasonText).join(', ')}</td>
+						<td>
+							<div class="dup-actions">
+								<form method="POST" action="?/merge">
+									<input type="hidden" name="survivorId" value={d.a.id} />
+									<input type="hidden" name="mergedId" value={d.b.id} />
+									<button class="btn btn-sm">{m.admin_keep({ id: d.a.id })}</button>
+								</form>
+								<form method="POST" action="?/merge">
+									<input type="hidden" name="survivorId" value={d.b.id} />
+									<input type="hidden" name="mergedId" value={d.a.id} />
+									<button class="btn btn-sm">{m.admin_keep({ id: d.b.id })}</button>
+								</form>
+								<form method="POST" action="?/dismiss">
+									<input type="hidden" name="a" value={d.a.id} />
+									<input type="hidden" name="b" value={d.b.id} />
+									<button class="btn btn-sm">{m.admin_not_duplicate()}</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
+</section>
+
+{#if data.conflicts.length > 0}
+	<section aria-label={m.admin_conflicts()}>
+		<h3>{m.admin_conflicts()}</h3>
+		<p class="help">{m.admin_conflicts_help()}</p>
+		<table class="surface" data-testid="admin-conflicts">
+			<tbody>
+				{#each data.conflicts as c, i (i)}
+					<tr>
+						<td>{c.station.networkName}</td>
+						<td><a href="/stod/{c.station.slug}">{c.station.name}</a></td>
+						<td class="msg">
+							{#if c.kind === 'name'}
+								{m.admin_conflict_name({ brands: c.brands.join(', ') })}
+							{:else}
+								{m.admin_conflict_colocated({
+									m: c.distanceM,
+									other: c.other.name,
+									network: c.other.networkName
+								})}
+							{/if}
+						</td>
+						<td
+							><a class="btn btn-sm" href="?leidretta={c.station.id}#leidretta">{m.admin_edit()}</a
+							></td
+						>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</section>
+{/if}
+
+{#if data.sharedTomtom.length > 0}
+	<section aria-label={m.admin_tomtom()}>
+		<h3>{m.admin_tomtom()}</h3>
+		<p class="help">{m.admin_tomtom_help()}</p>
+		<table class="surface" data-testid="admin-tomtom">
+			<tbody>
+				{#each data.sharedTomtom as t (t.tomtomId)}
+					<tr>
+						<td class="msg">{t.tomtomId}</td>
+						<td>
+							{#each t.stations as s, i (s.id)}
+								{#if i > 0}<br />{/if}
+								<a href="/stod/{s.slug}">{s.name}</a> <span class="muted">({s.networkName})</span>
+							{/each}
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</section>
+{/if}
+
+{#if data.underConstruction.length > 0}
+	<section aria-label={m.under_construction()}>
+		<h3>{m.under_construction()}</h3>
+		<p class="help">{m.admin_uc_help()}</p>
+		<table class="surface" data-testid="admin-under-construction">
+			<tbody>
+				{#each data.underConstruction as s (s.id)}
+					<tr>
+						<td>{s.networkName}</td>
+						<td><a href="/stod/{s.slug}">{s.name}</a></td>
+						<td class="msg">{s.byHand ? m.admin_uc_flagged() : m.admin_uc_detected()}</td>
+						<td><a class="btn btn-sm" href="?leidretta={s.id}#leidretta">{m.admin_edit()}</a></td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</section>
+{/if}
+
+<section aria-label={m.admin_override()} id="leidretta">
+	<h3>{m.admin_override()}</h3>
+	<p class="help">{m.admin_override_help()}</p>
+	<form method="GET" class="pick">
+		<select name="leidretta" aria-label={m.th_station()}>
+			<option value=""></option>
+			{#each data.stations as s (s.id)}
+				<option value={s.id} selected={data.edit?.id === s.id}>{s.networkName} — {s.name}</option>
+			{/each}
+		</select>
+		<button class="btn btn-sm">{m.admin_edit()}</button>
+	</form>
+	{#if data.edit}
+		{@const e = data.edit}
+		<form method="POST" action="?/override" class="grid surface" data-testid="admin-override-form">
+			<input type="hidden" name="stationId" value={e.id} />
+			<p class="current">
+				<a href="/stod/{e.slug}">{e.name}</a> · {e.networkName} · {e.connectors || '—'}
+			</p>
+			<label>
+				{m.admin_override_name()}
+				<input name="name" value={e.override?.name ?? ''} placeholder={e.name} />
+			</label>
+			<label>
+				{m.th_network()}
+				<select name="networkId">
+					<option value="">{m.admin_override_unchanged()}</option>
+					{#each data.networks as n (n.id)}
+						<option value={n.id} selected={e.override?.networkId === n.id}>{n.name}</option>
+					{/each}
+				</select>
+			</label>
+			<label>
+				{m.admin_override_connectors()}
+				<input name="connectors" value={e.override?.connectors ?? ''} placeholder={e.connectors} />
+			</label>
+			<label>
+				{m.under_construction()}
+				<select name="underConstruction">
+					<option value="" selected={ucValue(e.underConstruction) === ''}
+						>{m.admin_uc_auto()}</option
+					>
+					<option value="yes" selected={ucValue(e.underConstruction) === 'yes'}
+						>{m.admin_yes()}</option
+					>
+					<option value="no" selected={ucValue(e.underConstruction) === 'no'}>{m.admin_no()}</option
+					>
+				</select>
+			</label>
+			<label>
+				{m.admin_override_note()}
+				<input name="note" value={e.override?.note ?? ''} />
+			</label>
+			<button class="btn btn-primary">{m.admin_save()}</button>
+		</form>
+	{/if}
+
+	{#if data.overrides.length > 0}
+		<h4>{m.admin_overrides()}</h4>
+		<table class="surface" data-testid="admin-overrides">
+			<tbody>
+				{#each data.overrides as o (o.station?.id)}
+					{#if o.station}
+						<tr>
+							<td><a href="/stod/{o.station.slug}">{o.station.name}</a></td>
+							<td class="msg">
+								{[o.name, o.networkName, o.connectors].filter(Boolean).join(' · ')}
+								{#if o.note}<br /><em>{o.note}</em>{/if}
+							</td>
+							<td>
+								<a class="btn btn-sm" href="?leidretta={o.station.id}#leidretta">{m.admin_edit()}</a
+								>
+							</td>
+						</tr>
+					{/if}
+				{/each}
+			</tbody>
+		</table>
+	{/if}
+</section>
+
 <section aria-label={m.admin_prices()}>
 	<h3>{m.admin_prices()}</h3>
 	<table class="surface" data-testid="admin-prices">
@@ -92,7 +299,7 @@
 					<td>{p.stationName ?? m.admin_network_wide()}</td>
 					<td>{p.tariffKey}</td>
 					<td>
-						{formatNumber(p.priceIskPerKwh)} kr{#if p.minuteFeeIsk}
+						{formatNumber(p.priceIskPerKwh)} kr/kWh{#if p.minuteFeeIsk}
 							+ {formatNumber(p.minuteFeeIsk)} kr/mín{#if p.minuteFeeAfterMin}
 								({p.minuteFeeAfterMin} mín){/if}{/if}
 					</td>
@@ -149,7 +356,13 @@
 			{#each data.stations as s (s.id)}
 				<tr class:inactive={!s.isActive}>
 					<td>{s.networkName}</td>
-					<td>{s.name}</td>
+					<td>
+						{s.name}
+						{#if s.mergedInto}
+							<span class="muted">· {m.admin_merged_into({ name: s.mergedInto })}</span>
+						{/if}
+					</td>
+					<td><a class="btn btn-sm" href="?leidretta={s.id}#leidretta">{m.admin_edit()}</a></td>
 					<td>
 						<form method="POST" action="?/stationActive">
 							<input type="hidden" name="stationId" value={s.id} />
@@ -207,6 +420,27 @@
 		justify-content: flex-end;
 		align-items: center;
 	}
+	.help {
+		margin: -0.25rem 0 0.75rem;
+		color: var(--muted);
+		font-size: 0.85rem;
+		max-width: 48rem;
+	}
+	.dup-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+	.pick {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+	.current {
+		grid-column: 1 / -1;
+		margin: 0;
+		font-size: 0.9rem;
+	}
 	.inactive {
 		opacity: 0.45;
 	}
@@ -217,6 +451,7 @@
 		gap: 0.75rem;
 		align-items: end;
 		max-width: 60rem;
+		margin-bottom: 1.5rem;
 	}
 	label {
 		display: flex;

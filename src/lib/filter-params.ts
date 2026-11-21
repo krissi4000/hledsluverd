@@ -50,3 +50,18 @@ function sameSet(a: readonly string[], b: readonly string[]): boolean {
 	const sb = new Set(b);
 	return sa.size === sb.size && [...sa].every((x) => sb.has(x));
 }
+
+/**
+ * The networks a list leaves out, with how many of their stations it hides, so a heading
+ * never claims "all" while a toggle (Tesla, by default) hides some.
+ */
+export function hiddenNetworks(
+	options: readonly { slug: string; name: string }[],
+	shown: readonly string[],
+	stations: readonly { networkSlug: string }[]
+): { slug: string; name: string; count: number }[] {
+	return options
+		.filter((o) => !shown.includes(o.slug))
+		.map((o) => ({ ...o, count: stations.filter((s) => s.networkSlug === o.slug).length }))
+		.filter((o) => o.count > 0);
+}
