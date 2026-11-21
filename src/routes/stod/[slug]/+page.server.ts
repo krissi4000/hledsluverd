@@ -1,6 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
+import * as m from '$lib/paraglide/messages';
 import { stationDetail, trendSeries } from '$lib/server/db/queries';
 import { refreshAvailability } from '$lib/server/availability-refresh';
 import { ntfy } from '$lib/server/scrapers/runner';
@@ -14,7 +15,7 @@ const global = createRateLimiter({ limit: 60, windowMs: 60 * 60 * 1000 });
 
 export const load: PageServerLoad = async ({ params }) => {
 	let station = await stationDetail(db, params.slug);
-	if (!station) error(404, 'Stöð finnst ekki');
+	if (!station) error(404, m.station_not_found());
 	// one station, one call, never throws: worth the small wait for live availability
 	if (env.TOMTOM_API_KEY && station.tomtomId) {
 		const n = await refreshAvailability(
