@@ -48,3 +48,21 @@ const OWN_BRAND_PRICED = new Set(['tesla']);
 export function ownBrandPriceOnly(slug: string): boolean {
 	return OWN_BRAND_PRICED.has(slug);
 }
+
+/**
+ * The network that gets the "cheapest" claim: lowest DC price among networks every
+ * car can pay. Own-brand-only prices (Tesla's app price) never win: they are not a
+ * price most drivers can get. Ties go to the earlier entry, so on the rate card's
+ * sorted list this is the first eligible card. Used by the rate card badge, the meta
+ * descriptions and the share images, so they always name the same network.
+ */
+export function cheapestDc<T extends { networkSlug: string; dc: number | null }>(
+	cards: readonly T[]
+): T | null {
+	let best: T | null = null;
+	for (const c of cards) {
+		if (c.dc === null || ownBrandPriceOnly(c.networkSlug)) continue;
+		if (best === null || c.dc < best.dc!) best = c;
+	}
+	return best;
+}

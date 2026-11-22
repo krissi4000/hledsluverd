@@ -2,17 +2,19 @@
 	import * as m from '$lib/paraglide/messages';
 	import { formatIsk } from '$lib/format';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
-	import { ownBrandPriceOnly } from '$lib/networks';
+	import { cheapestDc, ownBrandPriceOnly } from '$lib/networks';
 	import type { RateCardEntry } from '$lib/server/db/queries';
 
 	let { cards }: { cards: RateCardEntry[] } = $props();
+
+	const cheapest = $derived(cheapestDc(cards));
 </script>
 
 <section aria-label={m.rate_card_title()}>
 	<h2>{m.rate_card_title()}</h2>
 	<ul class="cards">
-		{#each cards as card, i (card.networkSlug)}
-			{@const best = i === 0 && card.dc !== null}
+		{#each cards as card (card.networkSlug)}
+			{@const best = card === cheapest}
 			<li class="card surface" class:best data-testid="rate-card">
 				<div class="head">
 					<NetworkLogo slug={card.networkSlug} name={card.networkName} size={32} />

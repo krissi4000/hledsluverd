@@ -23,6 +23,10 @@ import {
 } from '$lib/station-list';
 import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
 import { NETWORK_PARAM, defaultNetworks, parseShown } from '$lib/filter-params';
+import { homeDescription } from '$lib/server/share';
+import { shareContext } from '$lib/server/share-context';
+import { homeOgImage } from '$lib/server/og/model';
+import type { SeoMeta } from '$lib/seo';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -139,6 +143,14 @@ export const load: PageServerLoad = async ({ url }) => {
 		},
 		// the nearby cards show Google Street View photos only when a key is configured
 		streetView: Boolean(env.GOOGLE_MAPS_API_KEY),
-		networkOptions
+		networkOptions,
+		seo: seoFor(cards)
 	};
 };
+
+// Filters (?bill=, ?afl=, …) are views of the same page: the share card describes the
+// whole comparison, and the canonical URL stays /.
+function seoFor(cards: Awaited<ReturnType<typeof rateCard>>): SeoMeta {
+	const ctx = shareContext();
+	return { description: homeDescription(cards, ctx), image: homeOgImage(cards, ctx) };
+}

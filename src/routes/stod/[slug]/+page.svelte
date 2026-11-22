@@ -58,11 +58,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{st.name} — {m.site_title()}</title>
-	<meta name="description" content="{st.name} · {st.network.name}" />
-</svelte:head>
-
 <article>
 	<header class="head">
 		<NetworkLogo slug={st.network.slug} name={st.network.name} size={56} />

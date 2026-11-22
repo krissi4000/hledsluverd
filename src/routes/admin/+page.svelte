@@ -13,11 +13,6 @@
 	let { data, form } = $props();
 </script>
 
-<svelte:head>
-	<title>{m.admin_title()} — {m.site_title()}</title>
-	<meta name="robots" content="noindex" />
-</svelte:head>
-
 <h2>{m.admin_title()}</h2>
 
 {#if form?.saved}<p class="ok">{m.admin_saved()}</p>{/if}

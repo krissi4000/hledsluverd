@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { networkColor, networkInitials, networkLogo } from './networks';
+import { cheapestDc, networkColor, networkInitials, networkLogo } from './networks';
 
 const seeded: { slug: string }[] = JSON.parse(
 	readFileSync(new URL('../../seeds/networks.json', import.meta.url), 'utf8')
@@ -37,5 +37,31 @@ describe('networkInitials', () => {
 
 	it('never returns an empty string', () => {
 		expect(networkInitials('  ')).toBe('?');
+	});
+});
+
+describe('cheapestDc', () => {
+	const card = (networkSlug: string, dc: number | null) => ({ networkSlug, dc });
+
+	it('skips own-brand-only prices, even when they are lowest', () => {
+		const cards = [card('tesla', 27), card('orkan', 49), card('on', 62)];
+		expect(cheapestDc(cards)?.networkSlug).toBe('orkan');
+	});
+
+	it('skips networks without a DC price', () => {
+		expect(cheapestDc([card('e1', null), card('on', 62)])?.networkSlug).toBe('on');
+	});
+
+	it('does not depend on the input order', () => {
+		expect(cheapestDc([card('on', 62), card('orkan', 49)])?.networkSlug).toBe('orkan');
+	});
+
+	it('keeps the earlier entry on a tie, matching the rate card order', () => {
+		expect(cheapestDc([card('on', 49), card('orkan', 49)])?.networkSlug).toBe('on');
+	});
+
+	it('returns null when no network qualifies', () => {
+		expect(cheapestDc([card('tesla', 27), card('e1', null)])).toBeNull();
+		expect(cheapestDc([])).toBeNull();
 	});
 });

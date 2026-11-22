@@ -219,5 +219,18 @@
 	"plate_not_found": "Bílnúmerið {plate} fannst ekki í ökutækjaskrá.",
 	"plate_invalid": "Þetta er ekki gilt bílnúmer.",
 	"plate_busy": "Of margar uppflettingar í bili. Leitaðu að bílnum eftir nafni eða reyndu aftur síðar.",
-	"plate_error": "Ekki tókst að fletta upp bílnúmerinu. Leitaðu að bílnum eftir nafni."
+	"plate_error": "Ekki tókst að fletta upp bílnúmerinu. Leitaðu að bílnum eftir nafni.",
+	"seo_default_description": "Berðu saman verð á hleðslu rafbíla hjá öllum hleðslufyrirtækjum á Íslandi: hraðhleðsla og hæg hleðsla, kort af stöðvum og verðþróun.",
+	"seo_home_description": "Ódýrasta hraðhleðslan í dag: {network}, {price} – berðu saman verð allra hleðslufyrirtækja á Íslandi.",
+	"seo_home_description_stale": "Ódýrasta skráða hraðhleðslan: {network}, {price} (staðfest {date}) – berðu saman verð allra hleðslufyrirtækja á Íslandi.",
+	"seo_map_description": "Allar hleðslustöðvar á Íslandi á einu korti, með verði á kWh og stöðu hleðslutækja.",
+	"seo_trends_description": "Hvernig hefur verð á hleðslu rafbíla þróast? Lægsta verð hvers hleðslufyrirtækis á kWh frá því að gagnasöfnun hófst árið 2026.",
+	"seo_station_description": "{name} ({network}). {prices}. {connectors}",
+	"seo_station_description_named": "{name}. {prices}. {connectors}",
+	"seo_connectors": "Tengi: {list}.",
+	"og_home_heading": "Lægsta verð á hraðhleðslu (DC)",
+	"og_prices_on": "Verð {date}",
+	"og_stale": "óstaðfest í meira en 30 daga",
+	"og_no_prices": "Ekkert verð skráð enn",
+	"og_home_alt": "Lægsta verð á hraðhleðslu {date}: {list}"
 }
