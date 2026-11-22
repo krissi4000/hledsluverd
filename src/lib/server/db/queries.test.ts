@@ -136,6 +136,37 @@ describe.skipIf(!TEST_DB_URL)('read queries', () => {
 		expect(list[0].price).toBe(39);
 	});
 
+	it('lists and map rows carry the other kind of charging a station also offers', async () => {
+		// Type2 posts beside the fast chargers: ON has an AC price, N1 has none
+		const [hellisheidi, stadarskali] = await Promise.all(
+			['hellisheidi-on', 'stadarskali-n1'].map(async (slug) => {
+				const [st] = await db.select().from(stations).where(eq(stations.slug, slug));
+				return st.id;
+			})
+		);
+		await db.insert(connectors).values([
+			{ stationId: hellisheidi, type: 'Type2', powerKw: 22, count: 2 },
+			{ stationId: stadarskali, type: 'Type2', powerKw: 22, count: 1 }
+		]);
+
+		const dc = await stationList(db, 'DC');
+		const bySlug = (rows: typeof dc, slug: string) => rows.find((s) => s.slug === slug)!;
+		expect(bySlug(dc, 'hellisheidi-on').other).toMatchObject({ mode: 'AC', price: 39 });
+		// slow charging there too, but nobody has said what it costs: nothing to show
+		expect(bySlug(dc, 'stadarskali-n1').other).toBeNull();
+
+		const ac = await stationList(db, 'AC');
+		// listed as slow now, its fast price comes along: the 200 kW post's DC_150 tier
+		expect(bySlug(ac, 'hellisheidi-on').other).toMatchObject({ mode: 'DC', price: 55 });
+		expect(bySlug(ac, 'laugardalur-on').other).toBeNull(); // slow only
+
+		const map = await mapStations(db);
+		const pin = map.find((s) => s.slug === 'hellisheidi-on')!;
+		expect(pin).toMatchObject({ mode: 'DC', price: 55 });
+		expect(pin.other).toMatchObject({ mode: 'AC', price: 39 });
+		expect(map.find((s) => s.slug === 'laugardalur-on')!.other).toBeNull();
+	});
+
 	it('excludes inactive stations', async () => {
 		const all = [...(await stationList(db, 'DC')), ...(await stationList(db, 'AC'))];
 		expect(all.find((s) => s.slug === 'gamla-n1')).toBeUndefined();

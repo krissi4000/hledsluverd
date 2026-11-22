@@ -49,26 +49,24 @@
 	});
 </script>
 
-<section aria-label={m.trends_title()}>
-	<h2>{m.trends_title()}</h2>
+<section aria-labelledby="trends-title">
+	<h1 id="trends-title">{m.trends_title()}</h1>
 	<p class="note">{m.trends_note()}</p>
 
-	<nav class="filters">
-		<span class="pills" role="group" aria-label={m.filter_mode()}>
-			<a
-				class="pill"
-				href="/verdthroun"
-				class:active={data.mode === 'DC'}
-				aria-current={data.mode === 'DC' ? 'page' : undefined}>{m.mode_dc()}</a
-			>
-			<a
-				class="pill"
-				href="/verdthroun?afl=AC"
-				class:active={data.mode === 'AC'}
-				aria-current={data.mode === 'AC' ? 'page' : undefined}>{m.mode_ac()}</a
-			>
-		</span>
-	</nav>
+	<span class="seg" role="group" aria-label={m.filter_mode()}>
+		<a
+			href="/verdthroun"
+			class:active={data.mode === 'DC'}
+			aria-current={data.mode === 'DC' ? 'page' : undefined}
+			data-sveltekit-noscroll>{m.mode_dc()}</a
+		>
+		<a
+			href="/verdthroun?afl=AC"
+			class:active={data.mode === 'AC'}
+			aria-current={data.mode === 'AC' ? 'page' : undefined}
+			data-sveltekit-noscroll>{m.mode_ac()}</a
+		>
+	</span>
 
 	{#if data.series.length === 0}
 		<p class="empty surface">{m.trends_no_data()}</p>
@@ -105,13 +103,16 @@
 </section>
 
 <style>
+	h1 {
+		margin-bottom: 0.4rem;
+	}
 	.note {
+		max-width: 40rem;
+		margin: 0 0 1rem;
 		color: var(--muted);
 		font-size: 0.9rem;
-		margin-top: -0.25rem;
-		max-width: 44rem;
 	}
-	.filters {
+	.seg {
 		margin-bottom: 1rem;
 	}
 	.panel {
@@ -141,9 +142,7 @@
 		border-bottom: 1px solid var(--border);
 	}
 	th {
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
+		font-size: 0.8rem;
 		color: var(--muted);
 		background: var(--surface-2);
 	}

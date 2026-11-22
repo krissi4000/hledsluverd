@@ -5,183 +5,207 @@
 	import { cheapestDc, ownBrandPriceOnly } from '$lib/networks';
 	import type { RateCardEntry } from '$lib/server/db/queries';
 
-	let { cards }: { cards: RateCardEntry[] } = $props();
+	// Each network's price at a glance: one row per network, fast and slow side by side.
+	let {
+		cards,
+		carMake = null
+	}: {
+		/** cheapest DC first (rateCard's order) */
+		cards: RateCardEntry[];
+		/** the chosen car's make: its own brand's member price (Tesla's) counts for it */
+		carMake?: string | null;
+	} = $props();
 
 	// the badge goes to the lowest price every car can pay, never Tesla's Tesla-only price
 	const cheapest = $derived(cheapestDc(cards));
+	// a price only one brand's cars get sorts after everyone's, unless the car is that brand
+	const brandOnly = (slug: string) => ownBrandPriceOnly(slug) && slug !== carMake?.toLowerCase();
+	const rows = $derived(
+		[...cards].sort((a, b) => Number(brandOnly(a.networkSlug)) - Number(brandOnly(b.networkSlug)))
+	);
 	const stale = (d: Date | null) => d !== null && isStale(d);
+	const price = (value: number, from: boolean) =>
+		from ? m.price_from({ price: formatIsk(value) }) : formatIsk(value);
 </script>
 
-<section aria-label={m.rate_card_title()}>
-	<h2>{m.rate_card_title()}</h2>
-	<ul class="cards">
-		{#each cards as card (card.networkSlug)}
-			{@const isBest = card === cheapest}
-			{@const dcStale = stale(card.dcVerifiedAt)}
-			{@const acStale = stale(card.acVerifiedAt)}
-			<li class="card surface" class:best={isBest} data-testid="rate-card">
-				<div class="head">
-					<NetworkLogo slug={card.networkSlug} name={card.networkName} size={32} />
-					<span class="network">{card.networkName}</span>
-					{#if isBest}<span
-							class="badge"
-							class:stale={dcStale}
-							title={m.cheapest_title()}
-							data-testid="cheapest-badge">{m.cheapest()}</span
-						>{/if}
-				</div>
-				<div class="dc">
-					{#if card.dc !== null}
-						<span class="price" class:stale={dcStale}
-							><strong class="num" data-testid="rate-dc"
-								>{card.dcFrom
-									? m.price_from({ price: formatIsk(card.dc) })
-									: formatIsk(card.dc)}</strong
-							><span class="per">{m.price_per_kwh()}</span></span
-						>
-						<span class="unit">DC</span>
-						{#if ownBrandPriceOnly(card.networkSlug)}<small
-								class="note"
-								title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
-							>{/if}
-					{:else}
-						<span class="none">—</span>
-					{/if}
-				</div>
-				<div class="ac num" class:stale={acStale}>
-					{#if card.ac !== null}{card.acFrom
-							? m.price_from({ price: formatIsk(card.ac) })
-							: formatIsk(card.ac)}{m.price_per_kwh()} AC{/if}
-				</div>
-				{#if card.hostLower}<small
-						class="note host-lower"
-						title={m.host_lower_title({ network: card.networkName })}
-						data-testid="host-lower">{m.host_lower()}</small
-					>{/if}
-				{#if dcStale && card.dcVerifiedAt}<small class="verified stale"
-						>{m.verified_on({ date: formatDate(card.dcVerifiedAt) })}</small
-					>{:else if acStale && card.acVerifiedAt}<small class="verified stale"
-						>{m.verified_on({ date: formatDate(card.acVerifiedAt) })}</small
-					>{/if}
-			</li>
-		{/each}
-	</ul>
+<section class="rates surface" aria-labelledby="rates-title">
+	<header class="head">
+		<h2 id="rates-title">{m.rate_card_title()}</h2>
+		<span class="unit">{m.rates_unit()}</span>
+	</header>
+	<table>
+		<thead>
+			<tr>
+				<th scope="col"><span class="visually-hidden">{m.th_network()}</span></th>
+				<!-- phones get the short labels, so each heading keeps to one line -->
+				<th scope="col"
+					><span class="full">{m.mode_dc()}</span><span class="short">{m.mode_dc_short()}</span></th
+				>
+				<th scope="col"
+					><span class="full">{m.mode_ac()}</span><span class="short">{m.mode_ac_short()}</span></th
+				>
+			</tr>
+		</thead>
+		<tbody>
+			{#each rows as card (card.networkSlug)}
+				{@const isBest = card === cheapest}
+				{@const dcStale = stale(card.dcVerifiedAt)}
+				{@const acStale = stale(card.acVerifiedAt)}
+				<tr
+					data-testid="rate-card"
+					data-network={card.networkSlug}
+					class:brand-only={brandOnly(card.networkSlug)}
+				>
+					<th scope="row">
+						<span class="net">
+							<NetworkLogo slug={card.networkSlug} name={card.networkName} size={28} />
+							<span class="name">
+								{card.networkName}
+								{#if ownBrandPriceOnly(card.networkSlug)}<small title={m.tesla_price_only_title()}
+										>{m.tesla_price_only()}</small
+									>{:else if card.hostLower}<small
+										class="host-lower"
+										title={m.host_lower_title({ network: card.networkName })}
+										data-testid="host-lower">{m.host_lower()}</small
+									>{/if}
+							</span>
+						</span>
+					</th>
+					<td class="price">
+						{#if card.dc !== null}
+							<span class="cell">
+								<strong class="num" class:stale={dcStale} data-testid="rate-dc"
+									>{price(card.dc, card.dcFrom)}</strong
+								>
+								{#if isBest}<span
+										class="badge"
+										class:stale={dcStale}
+										title={m.cheapest_title()}
+										data-testid="cheapest-badge">{m.cheapest()}</span
+									>{/if}
+							</span>
+							{#if dcStale && card.dcVerifiedAt}<small class="verified stale"
+									>{m.verified_on({ date: formatDate(card.dcVerifiedAt) })}</small
+								>{/if}
+						{:else}<span class="none">—</span>{/if}
+					</td>
+					<td class="price">
+						{#if card.ac !== null}
+							<strong class="num" class:stale={acStale}>{price(card.ac, card.acFrom)}</strong>
+							{#if acStale && card.acVerifiedAt}<small class="verified stale"
+									>{m.verified_on({ date: formatDate(card.acVerifiedAt) })}</small
+								>{/if}
+						{:else}<span class="none">—</span>{/if}
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 </section>
 
 <style>
-	h2 {
-		margin-top: 0.5rem;
-	}
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
-		gap: 0.75rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.card {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-		padding: 0.85rem 1rem;
-	}
-	.card.best {
-		border-color: var(--accent);
-		box-shadow:
-			0 0 0 1px var(--accent),
-			var(--shadow);
+	.rates {
+		padding: 0.9rem 1rem 0.5rem;
 	}
 	.head {
 		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
+	}
+	h2 {
+		margin: 0;
+	}
+	.unit {
+		color: var(--muted);
+		font-size: 0.8rem;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	thead th {
+		white-space: nowrap;
+		padding: 0.35rem 0 0.45rem;
+		color: var(--muted);
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-align: left;
+		vertical-align: bottom;
+	}
+	tbody th,
+	td {
+		padding: 0.55rem 0;
+		border-top: 1px solid var(--border);
+		text-align: left;
+		vertical-align: middle;
+	}
+	tbody th {
+		font-weight: 600;
+		padding-right: 0.5rem;
+	}
+	td {
+		padding-left: 0.5rem;
+	}
+	.net {
+		display: flex;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.6rem;
 		min-width: 0;
 	}
-	.network {
-		font-weight: 650;
-		overflow: hidden;
-		text-overflow: ellipsis;
+	.name {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		line-height: 1.25;
+	}
+	.name small {
+		color: var(--muted);
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+	.host-lower {
+		cursor: help;
+		text-decoration: underline dotted;
+		text-underline-offset: 2px;
+	}
+	/* the badge sits beside the price, or under it when the column is narrow */
+	.cell {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.2rem 0.4rem;
+	}
+	.price strong {
+		font-size: 1.05rem;
+		font-weight: 700;
 		white-space: nowrap;
 	}
-	.badge {
-		position: absolute;
-		top: -0.6rem;
-		right: 0.75rem;
+	.price strong.stale {
+		color: var(--stale);
 	}
 	/* a "cheapest" claim on a price unverified for 30+ days carries the amber warning */
 	.badge.stale {
 		background: var(--stale);
 	}
-	.price {
-		display: inline-flex;
-		align-items: baseline;
-	}
-	.price.stale,
-	.ac.stale {
-		color: var(--stale);
-	}
-	.per {
-		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
-	}
-	.price.stale .per {
-		color: inherit;
-	}
-	.dc {
-		display: flex;
-		align-items: baseline;
-		gap: 0.35rem;
-		flex-wrap: wrap;
-	}
-	.dc strong {
-		font-size: 1.5rem;
-		font-weight: 750;
-		letter-spacing: -0.02em;
-		line-height: 1.1;
-	}
-	.unit {
-		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
-	}
-	.note {
-		flex-basis: 100%;
-		color: var(--muted);
-		font-size: 0.75rem;
-	}
-	.host-lower {
-		margin-top: -0.4rem;
-		cursor: help;
-		text-decoration: underline dotted;
-		text-underline-offset: 2px;
-	}
 	.none {
-		font-size: 1.5rem;
 		color: var(--muted);
-		line-height: 1.1;
 	}
-	.ac {
+	.full {
+		display: none;
+	}
+	@media (min-width: 480px) {
+		.full {
+			display: inline;
+		}
+		.short {
+			display: none;
+		}
+	}
+	/* Tesla's price is for Tesla cars: listed, but out of the way (amber still wins) */
+	.brand-only .price strong:not(.stale) {
+		font-weight: 600;
 		color: var(--muted);
-		font-size: 0.875rem;
-		min-height: 1.3em;
-	}
-
-	/* phones: horizontal scroller keeps the station list above the fold */
-	@media (max-width: 640px) {
-		.cards {
-			display: flex;
-			overflow-x: auto;
-			scroll-snap-type: x mandatory;
-			scroll-padding: 0 1rem;
-			margin: 0 -1rem;
-			padding: 0.7rem 1rem 0.5rem;
-		}
-		.card {
-			flex: 0 0 9.5rem;
-			scroll-snap-align: start;
-		}
 	}
 </style>

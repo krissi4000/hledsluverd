@@ -48,3 +48,9 @@ export const RELATIVE_AGE_MAX_MS = 3 * 24 * 60 * 60 * 1000;
 export function showRelativeAge(at: Date, now = new Date()): boolean {
 	return now.getTime() - at.getTime() < RELATIVE_AGE_MAX_MS;
 }
+
+/** The text with its spaces made non-breaking, so a narrow column wraps around it whole:
+ * "48 kr/kWh" never splits into "48" / "kr/kWh". */
+export function noBreak(s: string): string {
+	return s.replace(/ /g, '\u00a0');
+}

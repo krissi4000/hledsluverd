@@ -272,6 +272,38 @@ export function fullChargeSpeed(
 	return speed(avgKw, avgKw === byStation ? 'station' : avgKw === byCar ? 'car' : 'battery');
 }
 
+// ── An ordinary visit: what the nearby list ranks by ─────────────────────────────────
+//
+// Most visitors top up; they don't charge from empty to full. So the nearby ranking
+// compares what every visit pays per kWh, not the cost of a full charge.
+
+/**
+ * Average power of an ordinary visit, for spreading a per-minute fee over the kWh it
+ * buys: fullChargeSpeed's assumptions without the slow last 20 %, which a top-up stops
+ * short of. Null without a connector rating.
+ */
+export function visitKw(
+	mode: 'AC' | 'DC',
+	carMaxKw: number | null,
+	connectorKw: number | null
+): number | null {
+	if (connectorKw === null || !(connectorKw > 0)) return null;
+	const carKw = carMaxKw !== null && carMaxKw > 0 ? carMaxKw : null;
+	if (mode === 'AC') return Math.min(connectorKw, carKw ?? TYPICAL_AC_ONBOARD_KW);
+	return Math.min(connectorKw, carKw ?? Infinity) * FULL_DC_SHARE_OF_RATING;
+}
+
+/**
+ * kr/kWh every visit pays: the kWh price, plus a per-minute fee that runs from the first
+ * minute, spread over the kWh bought at `kw`. A fee that only starts after N minutes (an
+ * overstay fee) is left out: a top-up is over before it starts, and the card says it.
+ * Without a speed to spread a from-the-start fee over, the bare price stands.
+ */
+export function visitPricePerKwh(tariff: TariffForSession, kw: number | null): number {
+	if (tariff.minuteFeeAfterMin) return tariff.priceIskPerKwh;
+	return effectivePricePerKwh(tariff, kw, null) ?? tariff.priceIskPerKwh;
+}
+
 export interface FullChargeEstimate {
 	mode: 'AC' | 'DC';
 	/** usable battery, kWh: what goes into the battery from 0 to 100 % */

@@ -169,39 +169,44 @@
 {/snippet}
 
 {#if car}
-	<span class="pills">
-		<a
-			class="pill active has-logo"
-			href={href({ bill: null })}
-			data-sveltekit-noscroll
-			aria-label={m.car_remove({ car: carFullName(car) })}
-			data-testid="chosen-car"
+	<!-- the chosen car, the same size as the search it replaced; pressing it removes it -->
+	<a
+		class="chosen"
+		href={href({ bill: null })}
+		data-sveltekit-noscroll
+		aria-label={m.car_remove({ car: carFullName(car) })}
+		title={m.car_remove({ car: carFullName(car) })}
+		data-testid="chosen-car"
+	>
+		<CarLogo make={car.make} size={22} />
+		<span class="car-name"
+			><strong>{car.make} {car.model}</strong>
+			{#if carVariantLabel(car)}<span class="variant">{carVariantLabel(car)}</span>{/if}</span
 		>
-			<CarLogo make={car.make} size={20} />
-			<span class="car-name"
-				><strong>{car.make}</strong>
-				{car.model}
-				{#if carVariantLabel(car)}<span class="variant">{carVariantLabel(car)}</span>{/if}</span
-			>
-			<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"
-				><path
-					stroke="currentColor"
-					stroke-width="2.4"
-					stroke-linecap="round"
-					d="M6 6l12 12M18 6 6 18"
-				/></svg
-			>
-		</a>
-	</span>
+		<svg class="x" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+			><path
+				stroke="currentColor"
+				stroke-width="2.4"
+				stroke-linecap="round"
+				d="M6 6l12 12M18 6 6 18"
+			/></svg
+		>
+	</a>
 {:else}
 	<div class="search" bind:this={box} {onfocusout}>
-		<svg class="glass" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+		<svg class="glass" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
 			><path
 				fill="none"
 				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				d="m21 21-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"
+				stroke-width="1.8"
+				stroke-linejoin="round"
+				d="M5 16.5V12l1.8-4.6A2 2 0 0 1 8.7 6h6.6a2 2 0 0 1 1.9 1.4L19 12v4.5M5 16.5h14M5 16.5V18a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.5m8 0V18a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.5M5 12h14"
+			/><circle cx="8" cy="14.3" r="1" fill="currentColor" stroke="none" /><circle
+				cx="16"
+				cy="14.3"
+				r="1"
+				fill="currentColor"
+				stroke="none"
 			/></svg
 		>
 		<input
@@ -221,6 +226,28 @@
 			{onkeydown}
 			data-testid="car-search"
 		/>
+		{#if search}
+			<!-- our own clear button: the browser's differs per platform (blue on Android) -->
+			<button
+				type="button"
+				class="clear"
+				aria-label={m.search_clear()}
+				title={m.search_clear()}
+				onclick={() => {
+					search = '';
+					plate = null;
+					box?.querySelector('input')?.focus();
+				}}
+				><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+					><path
+						stroke="currentColor"
+						stroke-width="2.4"
+						stroke-linecap="round"
+						d="M6 6l12 12M18 6 6 18"
+					/></svg
+				></button
+			>
+		{/if}
 		{#if open && plate}
 			<ul class="hits" data-testid="plate-result">
 				{#if !plate.result}
@@ -286,23 +313,73 @@
 <style>
 	.search {
 		position: relative;
-		flex: 1 1 16rem;
-		max-width: 24rem;
+		width: 100%;
 		color: var(--muted);
 	}
 	.glass {
 		position: absolute;
-		left: 0.7rem;
+		left: 0.75rem;
 		top: 50%;
 		transform: translateY(-50%);
 		pointer-events: none;
 	}
 	input[type='search'] {
 		width: 100%;
-		min-height: 2rem;
-		padding-left: 2.1rem;
-		border-radius: 999px;
+		padding-left: 2.6rem;
+		padding-right: 2.6rem;
+	}
+	input[type='search']::-webkit-search-cancel-button {
+		display: none;
+	}
+	.clear {
+		position: absolute;
+		right: 0.4rem;
+		top: 50%;
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: none;
+		color: var(--muted);
+		transform: translateY(-50%);
+		cursor: pointer;
+	}
+	.clear:hover {
+		background: var(--surface-2);
+		color: var(--text);
+	}
+	.chosen {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		width: 100%;
+		min-height: var(--control-h);
+		padding: 0.3rem 0.75rem;
+		border: 1px solid var(--accent);
+		border-radius: var(--radius-control);
+		background: var(--accent-soft);
+		color: var(--accent-text);
+		text-decoration: none;
+	}
+	.chosen:hover {
+		background: #dcf1e3;
+	}
+	.chosen .car-name {
+		flex: 1;
+		min-width: 0;
+		line-height: 1.25;
+	}
+	.chosen .variant {
+		color: inherit;
+		opacity: 0.8;
 		font-size: 0.875rem;
+	}
+	.chosen .x {
+		flex: none;
+		opacity: 0.75;
 	}
 	.hits {
 		position: absolute;
@@ -318,7 +395,7 @@
 		overflow-y: auto;
 		background: var(--surface);
 		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
+		border-radius: var(--radius-control);
 		box-shadow: var(--shadow-lg);
 	}
 	.hits a,
@@ -401,15 +478,5 @@
 	}
 	.variant {
 		color: var(--muted);
-	}
-	.pill.active .variant {
-		color: inherit;
-		opacity: 0.75;
-	}
-	.car-name {
-		white-space: normal;
-	}
-	.pill svg {
-		opacity: 0.7;
 	}
 </style>

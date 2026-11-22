@@ -1,133 +1,100 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages';
-	import { NEAR_PARAM, SEARCH_MAX_LENGTH, SEARCH_PARAM, formatNear } from '$lib/station-list';
+	import { SEARCH_MAX_LENGTH, SEARCH_PARAM } from '$lib/station-list';
+	import { withParams } from '$lib/url';
 
-	let {
-		search,
-		near,
-		href
-	}: {
-		/** the current text search ('' = none) */
-		search: string;
-		/** set when the list is sorted by distance from the visitor */
-		near: { lat: number; lng: number } | null;
-		/** builds a link to the current page with the given query params changed */
-		href: (params: Record<string, string | null>) => string;
-	} = $props();
+	// A plain GET form, so it works without JS; Enter submits it.
+	let { search }: { /** the current text search ('' = none) */ search: string } = $props();
 
-	// "Nálægt mér" needs JS (the Geolocation API); until hydration the button stays inert
-	let ready = $state(false);
-	onMount(() => (ready = true));
-	let locating = $state(false);
-	let geoError = $state<string | null>(null);
-
-	// the GET form must carry the other filters along, or searching would reset them
+	// the form must carry the other filters along, or searching would reset them
 	const kept = $derived([...page.url.searchParams].filter(([k]) => k !== SEARCH_PARAM));
-
-	// Only ever called from a click: the browser asks for permission then, never on load.
-	function locate() {
-		geoError = null;
-		if (!('geolocation' in navigator)) {
-			geoError = m.near_unsupported();
-			return;
-		}
-		locating = true;
-		navigator.geolocation.getCurrentPosition(
-			(pos) => {
-				locating = false;
-				// rounded to ~100 m before it goes into the URL (and so into any server log)
-				const value = formatNear({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-				goto(href({ [NEAR_PARAM]: value }), { noScroll: true, keepFocus: true });
-			},
-			(err) => {
-				locating = false;
-				geoError = err.code === 1 ? m.near_denied() : m.near_unavailable();
-			},
-			{ enableHighAccuracy: false, timeout: 15000, maximumAge: 5 * 60 * 1000 }
-		);
-	}
 </script>
 
-<div class="filter-row">
-	<span class="filter-label" aria-hidden="true">{m.filter_search()}</span>
-	<div class="search-row">
-		<form method="GET" action={page.url.pathname} role="search" class="search">
-			{#each kept as [k, v], i (i)}<input type="hidden" name={k} value={v} />{/each}
-			<input
-				type="search"
-				name={SEARCH_PARAM}
-				value={search}
-				maxlength={SEARCH_MAX_LENGTH}
-				placeholder={m.search_placeholder()}
-				aria-label={m.search_label()}
-				data-testid="station-search"
-			/>
-			<button class="btn btn-sm">{m.search_submit()}</button>
-			{#if search}<a class="filter-reset" href={href({ [SEARCH_PARAM]: null })}
-					>{m.search_clear()}</a
-				>{/if}
-		</form>
-
-		{#if near}
-			<a
-				class="pill active"
-				href={href({ [NEAR_PARAM]: null })}
-				aria-label={m.near_clear()}
-				data-testid="near-active"
-				>{m.near_me()}
-				<span aria-hidden="true">×</span></a
-			>
-		{:else}
-			<button
-				type="button"
-				class="pill"
-				onclick={locate}
-				disabled={!ready || locating}
-				data-testid="near-me">{locating ? m.near_locating() : m.near_me()}</button
-			>
-		{/if}
-	</div>
-	{#if geoError}<p class="geo-error" role="alert">{geoError}</p>{/if}
-</div>
+<form method="GET" action={page.url.pathname} role="search" class="search">
+	{#each kept as [k, v], i (i)}<input type="hidden" name={k} value={v} />{/each}
+	<input
+		type="search"
+		name={SEARCH_PARAM}
+		value={search}
+		maxlength={SEARCH_MAX_LENGTH}
+		placeholder={m.search_placeholder()}
+		aria-label={m.search_label()}
+		data-testid="station-search"
+	/>
+	<button class="go" aria-label={m.search_submit()} title={m.search_submit()}>
+		<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+			><path
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				d="m21 21-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"
+			/></svg
+		>
+	</button>
+	{#if search}
+		<a
+			class="clear"
+			href={withParams(page.url, { [SEARCH_PARAM]: null })}
+			aria-label={m.search_clear()}
+			title={m.search_clear()}
+			data-testid="search-clear"
+			><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+				><path
+					stroke="currentColor"
+					stroke-width="2.4"
+					stroke-linecap="round"
+					d="M6 6l12 12M18 6 6 18"
+				/></svg
+			></a
+		>
+	{/if}
+</form>
 
 <style>
-	.search-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 0.75rem;
-	}
 	.search {
+		position: relative;
 		display: flex;
-		align-items: center;
-		gap: 0.4rem;
+		flex: 1 1 14rem;
 		margin: 0;
+		min-width: 0;
 	}
-	.search input[type='search'] {
-		width: 14rem;
-		max-width: 60vw;
-		padding: 0.35rem 0.6rem;
-		border: 1px solid var(--border-strong);
+	input[type='search'] {
+		width: 100%;
+		min-height: var(--control-h-sm);
+		padding-left: 2.4rem;
+		padding-right: 2.4rem;
+	}
+	/* the browser's own clear button would sit next to ours */
+	input[type='search']::-webkit-search-cancel-button {
+		display: none;
+	}
+	.go,
+	.clear {
+		position: absolute;
+		top: 50%;
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		border: 0;
 		border-radius: var(--radius-sm);
-		font: inherit;
-		font-size: 0.9rem;
-	}
-	button.pill {
-		font: inherit;
-		font-size: inherit;
+		background: none;
+		color: var(--muted);
+		transform: translateY(-50%);
 		cursor: pointer;
 	}
-	button.pill:disabled {
-		cursor: default;
-		opacity: 0.6;
+	.go {
+		left: 0.25rem;
 	}
-	.geo-error {
-		flex-basis: 100%;
-		margin: 0.25rem 0 0;
-		font-size: 0.85rem;
-		color: var(--danger);
+	.clear {
+		right: 0.25rem;
+	}
+	.go:hover,
+	.clear:hover {
+		background: var(--surface-2);
+		color: var(--text);
 	}
 </style>

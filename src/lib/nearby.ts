@@ -77,7 +77,8 @@ export function fuzzyScore(xDistance: number, xPrice: number): number {
 export interface Rankable {
 	name: string;
 	distanceKm: number;
-	/** kr/kWh the ranking compares (fees folded in where known); null = unknown price */
+	/** kr/kWh the ranking compares: what every visit pays (visitPricePerKwh, $lib/ev);
+	 * null = unknown price */
 	rankPrice: number | null;
 }
 
