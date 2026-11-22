@@ -31,6 +31,12 @@ async function main() {
 	let kept = 0;
 	let unmatched = 0;
 	let ambiguous = 0;
+	let taken = 0;
+	// A POI already stamped on another station is a second operator on the same forecourt
+	// (or a duplicate station): its live status can't belong to both, so never reuse it.
+	const owner = new Map(
+		sts.filter((s) => s.externalIds.tomtom).map((s) => [s.externalIds.tomtom!, s.slug])
+	);
 	for (const s of sts) {
 		if (s.externalIds.tomtom) {
 			kept++;
@@ -47,7 +53,13 @@ async function main() {
 				distM: Math.round(haversineKm(here, { lat: r.position.lat, lng: r.position.lon }) * 1000)
 			}))
 			.filter((c) => c.distM <= MAX_DIST_M);
-		if (candidates.length === 1) {
+		if (candidates.length === 1 && owner.has(candidates[0].id)) {
+			console.log(
+				`TAKEN ${s.slug} — the only charging POI (${candidates[0].id}, ${candidates[0].distM} m) is already ${owner.get(candidates[0].id)}'s; not stamped`
+			);
+			taken++;
+		} else if (candidates.length === 1) {
+			owner.set(candidates[0].id, s.slug);
 			await db
 				.update(stations)
 				.set({ externalIds: { ...s.externalIds, tomtom: candidates[0].id } })
@@ -70,7 +82,7 @@ async function main() {
 	}
 	console.log(
 		`\n${stamped} stamped, ${kept} already stamped, ${unmatched} unmatched, ` +
-			`${ambiguous} ambiguous — of ${sts.length} active stations`
+			`${ambiguous} ambiguous, ${taken} taken by another station — of ${sts.length} active stations`
 	);
 	await db.$client.end();
 }

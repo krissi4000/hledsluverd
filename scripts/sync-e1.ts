@@ -5,6 +5,7 @@ import { createDb } from '../src/lib/server/db/client';
 import { connectors, networks, stations } from '../src/lib/server/db/schema';
 import { ntfy } from '../src/lib/server/scrapers/runner';
 import { slugify } from '../src/lib/server/slug';
+import { overridesByStation } from '../src/lib/server/stations-admin';
 import { planSiteSync } from '../src/lib/server/site-sync';
 import {
 	E1_MATCH_M,
@@ -32,12 +33,16 @@ const json: unknown = await res.json();
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 const db = createDb(process.env.DATABASE_URL);
+const overrides = await overridesByStation(db);
 
 for (const target of targets) {
 	const [net] = await db.select().from(networks).where(eq(networks.slug, target.slug));
 	if (!net) throw new Error(`${target.slug} network missing — run seed:networks`);
 	const locations = parseE1Locations(json, target.e1PartnerIds!);
-	const ours = await db.select().from(stations).where(eq(stations.networkId, net.id));
+	// A duplicate merged on /admin pairs with nothing new; it stays only to keep its own stamp.
+	const ours = (await db.select().from(stations).where(eq(stations.networkId, net.id))).filter(
+		(s) => s.mergedIntoId === null || s.externalIds.e1 != null
+	);
 	const plan = planSiteSync(
 		locations,
 		ours.map((s) => ({ ...s, lat: s.location.y, lng: s.location.x })),
@@ -62,6 +67,10 @@ for (const target of targets) {
 				.set({ externalIds: { ...station.externalIds, e1: site.id } })
 				.where(eq(stations.id, station.id));
 			if (site.connectors.length === 0) return; // keep OCM's rather than leave none
+			if (overrides.get(station.id)?.connectors) {
+				console.log(`  ↳ connectors kept: overridden on /admin`);
+				return;
+			}
 			await tx.delete(connectors).where(eq(connectors.stationId, station.id));
 			await tx
 				.insert(connectors)

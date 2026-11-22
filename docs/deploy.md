@@ -275,7 +275,16 @@ WHERE slug = '<station-slug>';
 ```
 
 Re-running `match:tomtom` any time regenerates the AMBIGUOUS list; stations
-already stamped (by the script or by hand) are kept, never re-stamped.
+already stamped (by the script or by hand) are kept, never re-stamped. A POI
+already stamped on another station is reported TAKEN and not reused: one
+TomTom id on stations of two networks hides availability on both (listed on
+`/admin`).
+
+Station corrections (wrong name, network or connectors, "Í uppsetningu") are
+made on `/admin` → "Leiðrétta stöð", never with psql: they are stored in
+`station_overrides`, which `seed:ocm` and the syncs respect. Likely duplicate
+stations are listed on `/admin` (merge or dismiss); the daily sync pushes new
+ones to ntfy (`npm run review:duplicates -- --dry-run` lists them).
 
 ## 8. CI auto-deploy (GitHub Actions)
 
@@ -320,6 +329,8 @@ same script: `sudo -u hledsluverd bash /srv/hledsluverd/app/deploy/deploy.sh`.
 - **Scraper failures**: ntfy push after 3 consecutive failures per network is
   already built into the app (`NTFY_TOPIC`); scraper health is also on
   `/admin`.
+- **Duplicate stations**: the daily sync ends with `review:duplicates`, which
+  pushes each new likely-duplicate pair once; merge or dismiss it on `/admin`.
 
 ## 10. Backups: off-box copy + restore
 

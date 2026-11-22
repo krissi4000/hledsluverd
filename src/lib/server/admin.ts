@@ -63,6 +63,10 @@ export async function bumpVerified(db: Db, priceId: number): Promise<AdminResult
 	return rows.length === 1 ? { ok: true } : { ok: false, error: 'verðfærsla fannst ekki' };
 }
 
+/**
+ * Reactivating a merged duplicate undoes the merge link (its slug stops redirecting); the
+ * ids the merge moved stay on the survivor, and the pair shows up for review again.
+ */
 export async function setStationActive(
 	db: Db,
 	stationId: number,
@@ -70,7 +74,7 @@ export async function setStationActive(
 ): Promise<AdminResult> {
 	const rows = await db
 		.update(stations)
-		.set({ isActive })
+		.set(isActive ? { isActive, mergedIntoId: null } : { isActive })
 		.where(eq(stations.id, stationId))
 		.returning({ id: stations.id });
 	return rows.length === 1 ? { ok: true } : { ok: false, error: 'stöð fannst ekki' };

@@ -3,7 +3,8 @@
 	import StationMap from '$lib/components/StationMap.svelte';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
-	import { ageParts, formatIsk } from '$lib/format';
+	import { formatIsk } from '$lib/format';
+	import { updatedText } from '$lib/age';
 	import { ownBrandPriceOnly } from '$lib/networks';
 	import NetworkToggles from '$lib/components/NetworkToggles.svelte';
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
@@ -71,15 +72,6 @@
 			else u.searchParams.set(k, v);
 		}
 		return u.pathname + u.search;
-	}
-
-	function age(d: Date): string {
-		const p = ageParts(d);
-		return p.unit === 'min'
-			? m.age_min({ n: p.n })
-			: p.unit === 'h'
-				? m.age_h({ n: p.n })
-				: m.age_d({ n: p.n });
 	}
 </script>
 
@@ -201,6 +193,9 @@
 					<NetworkLogo slug={selected.networkSlug} name={selected.networkName} size={40} />
 					<div class="card-title">
 						<h3><a href="/stod/{selected.slug}">{selected.name}</a></h3>
+						{#if selected.underConstruction}<span class="badge uc" data-testid="under-construction"
+								>{m.under_construction()}</span
+							>{/if}
 						<p class="net">{selected.networkName}</p>
 					</div>
 					<button
@@ -222,8 +217,12 @@
 				<div class="stats">
 					<div>
 						<span class="label">{m.th_price()}</span>
-						{#if selected.price !== null}
-							<strong class="num">{formatIsk(selected.price)}</strong>
+						{#if selected.underConstruction}
+							<small class="muted uc-note">{m.under_construction_note()}</small>
+						{:else if selected.price !== null}
+							<strong class="num">{formatIsk(selected.price)}</strong><span class="per"
+								>{m.price_per_kwh()}</span
+							>
 							<span class="mode">{selected.mode}</span>
 							{#if ownBrandPriceOnly(selected.networkSlug)}<small
 									class="brand-only"
@@ -241,9 +240,9 @@
 								total={selected.totalCount}
 							/>
 							{#if selected.availabilityFetchedAt}<small class="muted"
-									>{age(selected.availabilityFetchedAt)}</small
+									>{updatedText(selected.availabilityFetchedAt)}</small
 								>{/if}
-						{:else}—{/if}
+						{:else}<span title={m.avail_unknown_title()}>—</span>{/if}
 					</div>
 				</div>
 				<p class="chips">
@@ -292,6 +291,20 @@
 	.card-title {
 		flex: 1;
 		min-width: 0;
+	}
+	.badge.uc {
+		margin-top: 0.2rem;
+		background: var(--surface-2);
+		color: var(--muted);
+	}
+	.per {
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 600;
+	}
+	.uc-note {
+		display: block;
+		max-width: 12rem;
 	}
 	.card h3 {
 		margin: 0;

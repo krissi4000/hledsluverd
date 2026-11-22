@@ -1,6 +1,7 @@
 import { haversineKm, type LatLng } from '$lib/geo';
 import type { ConnectorType } from '$lib/types';
 import { DECOMMISSIONED, VIRTA_NEAR_M } from './scrapers/isorka';
+import { DUPLICATE_SAME_NAME_M } from './duplicates';
 import { planSiteSync } from './site-sync';
 
 /**
@@ -147,7 +148,12 @@ export function parseVirtaClassification(json: unknown): Map<number, VirtaSiteEn
 	return out;
 }
 
-type OurStation = LatLng & { id: number; isActive: boolean; externalIds: { virta?: number } };
+type OurStation = LatLng & {
+	id: number;
+	name: string;
+	isActive: boolean;
+	externalIds: { virta?: number };
+};
 
 export interface VirtaPlan<T extends OurStation> {
 	/** paired with one of our stations; hostPriced null = unclassified, leave the flag alone */
@@ -169,7 +175,8 @@ type OtherStation = LatLng & { id: number; name: string };
 /**
  * What a sync should do. Classified own/host sites and sites we already carry are kept:
  * the stamped station keeps its site, and a station of ours that is unstamped, or stamped
- * with an id that left the list (a replaced post), pairs with a site within VIRTA_NEAR_M.
+ * with an id that left the list (a replaced post), pairs with a site within VIRTA_NEAR_M,
+ * or with a site of the same name within DUPLICATE_SAME_NAME_M (an OCM pin far off the post).
  * Anything left is a new station, unless another network already has one on the spot.
  */
 export function planVirtaSync<T extends OurStation>(
@@ -187,7 +194,11 @@ export function planVirtaSync<T extends OurStation>(
 		return status === 'host' ? true : status === 'own' ? false : null;
 	};
 	const wanted = sites.filter((s) => hostPriced(s.id) != null || stamped.has(s.id));
-	const plan = planSiteSync(wanted, ours, liveStamp, VIRTA_NEAR_M);
+	const plan = planSiteSync(wanted, ours, liveStamp, VIRTA_NEAR_M, {
+		maxM: DUPLICATE_SAME_NAME_M,
+		siteName: (s) => s.name,
+		stationName: (o) => o.name
+	});
 	const toInsert: VirtaPlan<T>['toInsert'] = [];
 	const conflicts: VirtaPlan<T>['conflicts'] = [];
 	for (const site of plan.toInsert) {

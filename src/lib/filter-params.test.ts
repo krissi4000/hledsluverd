@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { defaultNetworks, isDefault, parseShown, toggleParam } from './filter-params';
+import {
+	defaultNetworks,
+	hiddenNetworks,
+	isDefault,
+	parseShown,
+	toggleParam
+} from './filter-params';
 
 const nets = ['isorka', 'n1', 'on', 'orkan', 'tesla'];
 const def = defaultNetworks(nets);
@@ -48,5 +54,22 @@ describe('isDefault', () => {
 	it('ignores order', () => {
 		expect(isDefault(['on', 'isorka', 'orkan', 'n1'], def)).toBe(true);
 		expect(isDefault(['on'], def)).toBe(false);
+	});
+});
+
+describe('hiddenNetworks', () => {
+	const options = [
+		{ slug: 'on', name: 'ON' },
+		{ slug: 'tesla', name: 'Tesla' },
+		{ slug: 'e1', name: 'e1' }
+	];
+	const stations = [{ networkSlug: 'on' }, { networkSlug: 'tesla' }, { networkSlug: 'tesla' }];
+	it('counts the stations of each hidden network', () => {
+		expect(hiddenNetworks(options, ['on'], stations)).toEqual([
+			{ slug: 'tesla', name: 'Tesla', count: 2 }
+		]);
+	});
+	it('is empty when everything with stations is shown', () => {
+		expect(hiddenNetworks(options, ['on', 'tesla'], stations)).toEqual([]);
 	});
 });

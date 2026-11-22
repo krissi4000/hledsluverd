@@ -102,6 +102,7 @@ describe('planVirtaSync', () => {
 		new Map(entries.map(([id, status]) => [id, { id, name: '', status }]));
 	const ours = (id: number, lat: number, lng: number, virta?: number, isActive = true) => ({
 		id,
+		name: `stöð ${id}`,
 		lat,
 		lng,
 		isActive,
@@ -167,6 +168,23 @@ describe('planVirtaSync', () => {
 		);
 		expect(plan.conflicts.map((c) => [c.site.id, c.station.id])).toEqual([[165718, 77]]);
 		expect(plan.toInsert.map((t) => t.site.id)).toEqual([2]);
+	});
+
+	it('pairs a far-off OCM pin of the same name instead of adding the site twice, as with Kirkjubæjarklaustur', () => {
+		// sync:virta once added 181839 next to our OCM station 37, 226 m off the post
+		const klaustur = {
+			...site(181839, 63.79465, -18.03846),
+			name: 'Ísorka - Olís Kirkjubæjarklaustur'
+		};
+		const ocm = { ...ours(37, 63.79373, -18.04256), name: 'Ísorka - Olís Kirkjubæjarklaustur' };
+		const plan = planVirtaSync([klaustur], cls([[181839, 'own']]), [ocm]);
+		expect(plan.matched.map((m) => [m.station.id, m.site.id])).toEqual([[37, 181839]]);
+		expect(plan.toInsert).toEqual([]);
+		// a differently named station that far off is left alone
+		const other = planVirtaSync([klaustur], cls([[181839, 'own']]), [
+			{ ...ocm, name: 'Skaftárskáli' }
+		]);
+		expect(other.toInsert.map((t) => t.site.id)).toEqual([181839]);
 	});
 
 	it('reports unclassified new sites and stamped stations gone from the list', () => {

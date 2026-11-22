@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
 	formatIsk,
+	formatIskPerKwh,
 	formatDate,
 	formatEstimateIsk,
 	formatNumber,
 	formatTime,
 	isStale,
-	ageParts
+	ageParts,
+	showRelativeAge
 } from './format';
 
 describe('formatNumber', () => {
@@ -61,6 +63,22 @@ describe('formatEstimateIsk', () => {
 		expect(formatEstimateIsk(2485)).toBe('2.490 kr');
 		expect(formatEstimateIsk(12345)).toBe('12.350 kr');
 		expect(formatEstimateIsk(994)).toBe('990 kr');
+	});
+});
+
+describe('formatIskPerKwh', () => {
+	it('carries the unit', () => {
+		expect(formatIskPerKwh(49)).toBe('49 kr/kWh');
+		expect(formatIskPerKwh(62.5)).toBe('62,5 kr/kWh');
+	});
+});
+
+describe('showRelativeAge', () => {
+	const now = new Date('2026-11-09T12:00:00Z');
+	it('is relative for a few days, then a date', () => {
+		expect(showRelativeAge(new Date('2026-11-09T11:00:00Z'), now)).toBe(true);
+		expect(showRelativeAge(new Date('2026-11-06T13:00:00Z'), now)).toBe(true);
+		expect(showRelativeAge(new Date('2026-11-06T11:00:00Z'), now)).toBe(false);
 	});
 });
 

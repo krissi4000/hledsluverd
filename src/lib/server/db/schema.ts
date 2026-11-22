@@ -10,7 +10,9 @@ import {
 	jsonb,
 	geometry,
 	index,
-	unique
+	primaryKey,
+	unique,
+	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 import { CONNECTOR_TYPES, TARIFF_KEYS, type ConnectorType } from '$lib/types';
 
@@ -52,6 +54,13 @@ export const stations = pgTable(
 		// The site's owner (hotel, shop, landlord) sets this station's price, not the network.
 		// Its prices show on the station but stay out of the network's rate card and trend.
 		hostPriced: boolean('host_priced').notNull().default(false),
+		// Not open yet ("Í uppsetningu"): listed with a badge, but no price and no availability.
+		// NULL = detect from the name (isUnderConstructionName); true/false = an admin's call.
+		underConstruction: boolean('under_construction'),
+		// Set when an admin merged this duplicate into another station (it is then inactive).
+		// Its /stod/ slug redirects to the survivor. It keeps its OCM id, so seed:ocm and the
+		// syncs keep recognising it and never re-create the duplicate.
+		mergedIntoId: integer('merged_into_id').references((): AnyPgColumn => stations.id),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true })
 			.notNull()
@@ -59,6 +68,54 @@ export const stations = pgTable(
 			.$onUpdate(() => new Date())
 	},
 	(t) => [index('stations_location_idx').using('gist', t.location)]
+);
+
+/** Old /stod/ slugs of renamed stations → the station, so old links keep working. */
+export const stationSlugRedirects = pgTable('station_slug_redirects', {
+	oldSlug: text('old_slug').primaryKey(),
+	stationId: integer('station_id')
+		.notNull()
+		.references(() => stations.id, { onDelete: 'cascade' }),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+/**
+ * Human corrections to upstream data we can't fix at the source (OCM typos, a wrong
+ * operator, wrong connectors). Edited on /admin. seed:ocm and the syncs never overwrite
+ * an overridden field. NULL field = no override.
+ */
+export const stationOverrides = pgTable('station_overrides', {
+	stationId: integer('station_id')
+		.primaryKey()
+		.references(() => stations.id, { onDelete: 'cascade' }),
+	name: text('name'),
+	networkId: integer('network_id').references(() => networks.id),
+	connectors:
+		jsonb('connectors').$type<{ type: ConnectorType; powerKw: number; count: number }[]>(),
+	note: text('note'),
+	updatedAt: timestamp('updated_at', { withTimezone: true })
+		.notNull()
+		.defaultNow()
+		.$onUpdate(() => new Date())
+});
+
+/**
+ * Duplicate-candidate pairs already seen (stationAId < stationBId): notifiedAt keeps the
+ * daily ntfy note to new pairs only, dismissedAt hides a pair a human judged distinct.
+ */
+export const stationDuplicateReviews = pgTable(
+	'station_duplicate_reviews',
+	{
+		stationAId: integer('station_a_id')
+			.notNull()
+			.references(() => stations.id, { onDelete: 'cascade' }),
+		stationBId: integer('station_b_id')
+			.notNull()
+			.references(() => stations.id, { onDelete: 'cascade' }),
+		notifiedAt: timestamp('notified_at', { withTimezone: true }),
+		dismissedAt: timestamp('dismissed_at', { withTimezone: true })
+	},
+	(t) => [primaryKey({ columns: [t.stationAId, t.stationBId] })]
 );
 
 export const connectors = pgTable('connectors', {

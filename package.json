@@ -31,7 +31,8 @@
 		"sync:superchargers": "tsx scripts/sync-superchargers.ts",
 		"sync:e1": "tsx scripts/sync-e1.ts",
 		"sync:virta": "tsx scripts/sync-virta.ts",
-		"og:fallback": "tsx scripts/render-og-fallback.ts"
+		"og:fallback": "tsx scripts/render-og-fallback.ts",
+		"review:duplicates": "tsx scripts/review-duplicates.ts"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.20.2",
