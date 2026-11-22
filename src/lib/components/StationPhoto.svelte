@@ -36,9 +36,10 @@
 </div>
 
 <style>
+	/* a thumbnail: wide enough for Google's attribution to sit under it on one line */
 	.photo {
 		flex: none;
-		width: 6rem;
+		width: 4.75rem;
 	}
 	.frame {
 		position: relative;
@@ -79,7 +80,7 @@
 
 	@media (min-width: 641px) {
 		.photo {
-			width: 7.5rem;
+			width: 5.5rem;
 		}
 	}
 </style>

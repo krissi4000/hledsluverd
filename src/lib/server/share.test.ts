@@ -3,7 +3,6 @@ import { STALE, card, ctx, price, station } from '../../../tests/helpers/share';
 import {
 	connectorSummary,
 	homeDescription,
-	minuteFeeText,
 	namesNetwork,
 	stationDescription,
 	stationPriceViews
@@ -75,14 +74,6 @@ describe('connectorSummary', () => {
 	});
 });
 
-describe('minuteFeeText', () => {
-	it('matches the station page wording', () => {
-		expect(minuteFeeText(0.5, null, 'is')).toBe('+ 0,5 kr/mín');
-		expect(minuteFeeText(64, 60, 'is')).toBe('+ 64 kr/mín eftir 60 mín');
-		expect(minuteFeeText(null, 60, 'is')).toBeNull();
-	});
-});
-
 describe('stationPriceViews', () => {
 	it('gives every mode the station has connectors for a view, unknown when unpriced', () => {
 		const views = stationPriceViews(station({ prices: [price('AC', 30)] }), ctx());
@@ -112,8 +103,9 @@ describe('stationDescription', () => {
 		const st = station({
 			prices: [price('DC', 49, { minuteFeeIsk: 64, minuteFeeAfterMin: 60 }), price('AC', 30)]
 		});
-		expect(stationDescription(st, ctx())).toBe(
-			'Glæsibær (Orkan). DC-hraðhleðsla: 49 kr/kWh + 64 kr/mín eftir 60 mín · AC-hleðsla: 30 kr/kWh. Tengi: CCS2 ×2 · 150 kW, Type2 ×2 · 22 kW.'
+		// plain spaces: the no-break spaces in the fee are typography (see fees.test.ts)
+		expect(stationDescription(st, ctx()).replace(/\s/g, ' ')).toBe(
+			'Glæsibær (Orkan). DC-hraðhleðsla: 49 kr/kWh + 64 kr/mín eftir 1 klst · AC-hleðsla: 30 kr/kWh. Tengi: CCS2 ×2 · 150 kW, Type2 ×2 · 22 kW.'
 		);
 	});
 

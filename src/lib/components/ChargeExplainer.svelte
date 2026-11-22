@@ -10,12 +10,15 @@
 	let {
 		est,
 		speed,
-		duration
+		duration,
+		hasCar
 	}: {
 		est: FullChargeEstimate;
 		speed: FullChargeSpeed;
 		/** "59 mín" / "2 klst", the same wording as the card */
 		duration: (min: number) => string;
+		/** a car is chosen: its own limits apply, not the no-car assumptions */
+		hasCar: boolean;
 	} = $props();
 
 	let width = $state(0);
@@ -83,6 +86,16 @@
 		}
 		return m.explain_time_station({ time, kw: kw(speed.stationKw), avg });
 	});
+	// what the time rests on, when it isn't said above: no car (so the car is assumed to
+	// take what the station gives), and a per-minute fee that inherits the time's guess
+	const caveats = $derived(
+		[
+			!hasCar && !(est.mode === 'AC' && speed.limit === 'onboard') ? m.nearby_info_no_car() : '',
+			feeAt !== null ? m.explain_fee_estimate() : ''
+		]
+			.filter(Boolean)
+			.join(' ')
+	);
 
 	const feeDetail = $derived(
 		est.minuteFeeIsk === null
@@ -191,7 +204,9 @@
 				d="M12 7v5l3 2"
 			/></svg
 		>
-		<span>{why}</span>
+		<span
+			>{why}{#if caveats}{' '}{caveats}{/if}</span
+		>
 	</p>
 </div>
 

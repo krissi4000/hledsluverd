@@ -8,6 +8,8 @@ import * as m from '$lib/paraglide/messages';
 import type { Locale } from '$lib/paraglide/runtime';
 import { cheapestDc, ownBrandPriceOnly } from '$lib/networks';
 import { formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
+// the site's one wording for per-minute fees, so a preview says what the station page says
+import { minuteFeeText } from '$lib/fees';
 import { CONNECTOR_TYPES, type ConnectorType } from '$lib/types';
 import type { RateCardEntry, StationDetail } from './db/queries';
 
@@ -22,18 +24,6 @@ export interface ShareContext {
 export function perKwh(price: number, from: boolean, locale: Locale): string {
 	const p = formatIsk(price);
 	return `${from ? m.price_from({ price: p }, { locale }) : p}/kWh`;
-}
-
-/** Same wording as the station page: "+ 0,5 kr/mín" or "+ 60 kr/mín eftir 60 mín". */
-export function minuteFeeText(
-	fee: number | null,
-	afterMin: number | null,
-	locale: Locale
-): string | null {
-	if (!fee) return null;
-	return afterMin
-		? m.minute_fee_after({ fee: formatNumber(fee), min: afterMin }, { locale })
-		: m.minute_fee({ fee: formatNumber(fee) }, { locale });
 }
 
 /** "CCS2 ×4 · 50–150 kW", one entry per connector type in CONNECTOR_TYPES order. */

@@ -184,11 +184,77 @@ export interface StationRow {
 	stallCount: number | null;
 	/** not open yet: listed with a badge, never with a price or availability */
 	underConstruction: boolean;
+	/** the other kind of charging it also offers (slow beside fast, or fast beside slow),
+	 * when its price is known */
+	other: OtherModePrice | null;
+}
+
+/**
+ * The other kind of charging a station also offers, with its price, so a list that shows
+ * one kind (fast or slow, never mixed: their prices aren't comparable) can say what the
+ * other costs there too.
+ */
+export interface OtherModePrice {
+	mode: 'AC' | 'DC';
+	price: number;
+	minuteFeeIsk: number | null;
+	minuteFeeAfterMin: number | null;
+	verifiedAt: Date;
 }
 
 /** Not-yet-open stations go after every open one. */
 const openFirst = (a: { underConstruction: boolean }, b: { underConstruction: boolean }) =>
 	Number(a.underConstruction) - Number(b.underConstruction);
+
+/**
+ * A station's current price for one kind of charging: the tariff of its fastest
+ * connector of that kind, its own price before the network-wide one. Undefined when it
+ * has no connector of that kind; null when it has, but no price is known or the station
+ * isn't open yet.
+ */
+function modePrice(
+	s: { id: number; networkId: number },
+	all: readonly { type: string; powerKw: number }[],
+	cp: readonly CurrentPrice[],
+	mode: 'AC' | 'DC',
+	underConstruction: boolean
+): CurrentPrice | null | undefined {
+	const ofMode = all.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
+	if (ofMode.length === 0) return undefined;
+	if (underConstruction) return null;
+	const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
+	const own = cp.filter((p) => p.stationId === s.id);
+	const netWide = cp.filter((p) => p.networkId === s.networkId && p.stationId === null);
+	const tariffs = new Set<TariffKey>([...own, ...netWide].map((p) => p.tariffKey));
+	const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
+	// station-specific current price wins; network-wide price is the fallback
+	return own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key) ?? null;
+}
+
+/**
+ * The kind of charging other than `shown` that the station offers, with its price. Null
+ * when it offers no other kind, isn't open yet, or nobody has said what the other kind
+ * costs: a line saying "price unknown" under most rows would be noise, and the station
+ * page lists every connector anyway.
+ */
+function otherModePrice(
+	s: { id: number; networkId: number },
+	all: readonly { type: string; powerKw: number }[],
+	cp: readonly CurrentPrice[],
+	shown: 'AC' | 'DC',
+	underConstruction: boolean
+): OtherModePrice | null {
+	const mode = shown === 'AC' ? 'DC' : 'AC';
+	const p = modePrice(s, all, cp, mode, underConstruction);
+	if (!p) return null;
+	return {
+		mode,
+		price: p.priceIskPerKwh,
+		minuteFeeIsk: p.minuteFeeIsk,
+		minuteFeeAfterMin: p.minuteFeeAfterMin,
+		verifiedAt: p.verifiedAt
+	};
+}
 
 /**
  * Active stations that have a connector for the mode (AC → Type2; DC → CCS2/CHAdeMO),
@@ -215,19 +281,9 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 	const rows: StationRow[] = [];
 	for (const s of sts) {
 		const all = consByStation.get(s.id) ?? [];
-		const ofMode = all.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
-		if (ofMode.length === 0) continue;
-
-		const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
-		const own = cp.filter((p) => p.stationId === s.id);
-		const netWide = cp.filter((p) => p.networkId === s.networkId && p.stationId === null);
-		const tariffs = new Set<TariffKey>([...own, ...netWide].map((p) => p.tariffKey));
-		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
 		const uc = isUnderConstruction(s);
-		// station-specific current price wins; network-wide price is the fallback
-		const price = uc
-			? null
-			: (own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key) ?? null);
+		const price = modePrice(s, all, cp, mode, uc);
+		if (price === undefined) continue; // no connector for this kind of charging
 		const net = netById.get(s.networkId)!;
 		const a = trustedTomtomId(s, uc, ambiguous) ? availByStation.get(s.id) : undefined;
 
@@ -252,7 +308,8 @@ export async function stationList(db: Db, mode: 'AC' | 'DC'): Promise<StationRow
 			totalCount: a?.totalCount ?? null,
 			availabilityFetchedAt: a?.fetchedAt ?? null,
 			stallCount: perStallCount(s, all),
-			underConstruction: uc
+			underConstruction: uc,
+			other: otherModePrice(s, all, cp, mode, uc)
 		});
 	}
 	return rows.sort(
@@ -388,6 +445,9 @@ export interface MapStation {
 	googlePlaceId: string | null;
 	/** not open yet: no price, no availability, drawn under the other pins */
 	underConstruction: boolean;
+	/** slow charging beside a fast station's headline price (the pin shows the fast one),
+	 * when its price is known */
+	other: OtherModePrice | null;
 }
 
 /** An active station's coordinates — for its Street View photo (/stod/[slug]/mynd). */
@@ -425,16 +485,9 @@ export async function mapStations(db: Db): Promise<MapStation[]> {
 		const all = consByStation.get(s.id) ?? [];
 		if (all.length === 0) continue;
 		const mode: 'DC' | 'AC' = all.some((c) => c.type !== 'Type2') ? 'DC' : 'AC';
-		const ofMode = all.filter((c) => (mode === 'AC' ? c.type === 'Type2' : c.type !== 'Type2'));
-		const top = ofMode.reduce((a, b) => (b.powerKw > a.powerKw ? b : a));
-		const own = cp.filter((p) => p.stationId === s.id);
-		const netWide = cp.filter((p) => p.networkId === s.networkId && p.stationId === null);
-		const tariffs = new Set<TariffKey>([...own, ...netWide].map((p) => p.tariffKey));
-		const key = deriveTariffKey(top.type as ConnectorType, top.powerKw, tariffs);
 		const uc = isUnderConstruction(s);
-		const price = uc
-			? null
-			: (own.find((p) => p.tariffKey === key) ?? netWide.find((p) => p.tariffKey === key) ?? null);
+		// never undefined: the mode comes from the station's own connectors
+		const price = modePrice(s, all, cp, mode, uc) ?? null;
 		const net = netById.get(s.networkId)!;
 		const tomtomId = trustedTomtomId(s, uc, ambiguous);
 		const a = tomtomId ? availByStation.get(s.id) : undefined;
@@ -459,7 +512,8 @@ export async function mapStations(db: Db): Promise<MapStation[]> {
 			stallCount: perStallCount(s, all),
 			tomtomId,
 			googlePlaceId: s.externalIds.google ?? null,
-			underConstruction: uc
+			underConstruction: uc,
+			other: otherModePrice(s, all, cp, mode, uc)
 		});
 	}
 	return rows.sort((a, b) => openFirst(a, b) || a.name.localeCompare(b.name, 'is'));

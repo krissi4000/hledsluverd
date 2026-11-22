@@ -50,23 +50,32 @@
 	let {
 		stations,
 		selectedId = $bindable(null),
-		pickLocation = false,
 		userLocation = $bindable(null),
-		center = [-18.8, 65.0] as [number, number],
-		zoom = 5.2,
+		center,
+		zoom = 12,
 		fallbackText,
 		cardExtra = () => 0
 	}: {
 		stations: PinStation[];
 		selectedId?: number | null;
-		pickLocation?: boolean;
+		/** drawn as a blue dot */
 		userLocation?: LatLng | null;
+		/** [lng, lat] to start at; without one the map starts on all of Iceland */
 		center?: [number, number];
 		zoom?: number;
 		fallbackText: string;
 		/** px a station's card grows above its usual height (a photo on top) */
 		cardExtra?: (stationId: number) => number;
 	} = $props();
+
+	/** all of Iceland, whatever the screen's shape */
+	const ICELAND: [[number, number], [number, number]] = [
+		[-24.6, 63.25],
+		[-13.4, 66.6]
+	];
+	/** below this zoom (the whole country) pins drop their logo and live status to
+	 * overlap less; the price and AC/DC stay */
+	const COMPACT_BELOW_ZOOM = 7;
 
 	let mapEl = $state<HTMLDivElement>();
 	let map = $state<maplibregl.Map>();
@@ -75,6 +84,11 @@
 	let pinEls = new Map<number, HTMLElement>();
 	let userMarker: maplibregl.Marker | undefined;
 
+	/** for a "my location" button: move the view to a point */
+	export function flyTo(p: LatLng, toZoom = 12) {
+		map?.flyTo({ center: [p.lng, p.lat], zoom: toZoom });
+	}
+
 	$effect(() => {
 		if (!mapEl) return;
 		let m: maplibregl.Map;
@@ -82,18 +96,16 @@
 			m = new maplibregl.Map({
 				container: mapEl,
 				style: 'https://tiles.openfreemap.org/styles/liberty',
-				center,
-				zoom
+				...(center ? { center, zoom } : { bounds: ICELAND, fitBoundsOptions: { padding: 16 } })
 			});
 		} catch {
 			failed = true; // no WebGL — the SSR content still tells the whole story
 			return;
 		}
-		if (pickLocation) {
-			m.on('click', (e) => {
-				userLocation = { lat: e.lngLat.lat, lng: e.lngLat.lng };
-			});
-		}
+		const compact = () =>
+			m.getContainer().classList.toggle('compact', m.getZoom() < COMPACT_BELOW_ZOOM);
+		m.on('zoom', compact);
+		compact();
 		map = m;
 		return () => m.remove();
 	});
@@ -381,6 +393,16 @@
 	}
 	:global(.pin:hover) {
 		transform: scale(1.08);
+	}
+	/* the whole country at once: price and AC/DC only, so neighbours overlap less */
+	:global(.compact .pin-logo),
+	:global(.compact .pin-avail),
+	:global(.compact .pin-unknown) {
+		display: none;
+	}
+	:global(.compact .pin) {
+		padding: 2px 4px 2px 6px;
+		font-size: 0.72rem;
 	}
 	:global(.pin-wrap.selected) {
 		z-index: 9999 !important;

@@ -10,16 +10,16 @@
 </script>
 
 <article class="about">
-	<h2>{m.um_title()}</h2>
+	<h1>{m.um_title()}</h1>
 	<p class="lead">{m.um_intro()}</p>
 
-	<section class="panel surface">
-		<h3>{m.um_independent_title()}</h3>
+	<section id="ohadur">
+		<h2>{m.um_independent_title()}</h2>
 		<p>{m.um_independent()}</p>
 	</section>
 
-	<section class="panel surface" data-testid="um-price-sources">
-		<h3>{m.um_prices_title()}</h3>
+	<section id="verd" data-testid="um-price-sources">
+		<h2>{m.um_prices_title()}</h2>
 		<p>{m.um_prices_intro()}</p>
 		<ul class="sources">
 			{#each scraped as s (s.slug)}
@@ -46,25 +46,25 @@
 		<p>{m.um_host_priced()}</p>
 	</section>
 
-	<section class="panel surface">
-		<h3>{m.um_verified_title()}</h3>
+	<section id="stadfest">
+		<h2>{m.um_verified_title()}</h2>
 		<p>{m.um_verified()}</p>
 		<p><span class="stale-sample">{m.um_stale_sample()}</span> {m.um_stale()}</p>
 	</section>
 
-	<section class="panel surface">
-		<h3>{m.um_estimate_title()}</h3>
+	<section id="aaetlun">
+		<h2>{m.um_estimate_title()}</h2>
 		<p>{m.um_estimate()}</p>
 		<p>{m.um_nearby()}</p>
 	</section>
 
-	<section class="panel surface">
-		<h3>{m.um_avail_title()}</h3>
+	<section id="laust">
+		<h2>{m.um_avail_title()}</h2>
 		<p>{m.um_avail()}</p>
 	</section>
 
-	<section class="panel surface" data-testid="um-data-sources">
-		<h3>{m.um_stations_title()}</h3>
+	<section id="heimildir" data-testid="um-data-sources">
+		<h2>{m.um_stations_title()}</h2>
 		<p>{m.um_stations_intro()}</p>
 		<ul class="credits">
 			<li>
@@ -104,8 +104,8 @@
 		<p>{m.um_stations_sync()}</p>
 	</section>
 
-	<section class="panel surface" id="samband">
-		<h3>{m.um_contact_title()}</h3>
+	<section id="samband">
+		<h2>{m.um_contact_title()}</h2>
 		{#if data.contactEmail}
 			<p>
 				{m.um_contact_email()}
@@ -118,30 +118,29 @@
 
 <style>
 	.about {
-		max-width: 46rem;
+		max-width: 42rem;
 	}
-	h2 {
-		margin: 0.5rem 0 0.5rem;
-		font-size: 1.6rem;
+	h1 {
+		margin-bottom: 0.5rem;
 	}
 	.lead {
-		margin: 0 0 1.25rem;
+		margin: 0 0 1.5rem;
 		font-size: 1.05rem;
 		color: var(--muted);
 	}
-	.panel {
-		padding: 1rem 1.15rem;
-		margin-bottom: 1rem;
+	section {
+		padding: 1.25rem 0;
+		border-top: 1px solid var(--border);
+		scroll-margin-top: calc(var(--header-h) + 0.5rem);
 	}
-	.panel h3 {
-		margin: 0 0 0.5rem;
-		font-size: 1rem;
+	h2 {
+		margin-bottom: 0.5rem;
 	}
-	.panel p {
+	section p {
 		margin: 0 0 0.6rem;
-		line-height: 1.55;
+		line-height: 1.6;
 	}
-	.panel p:last-child {
+	section p:last-child {
 		margin-bottom: 0;
 	}
 	.sources,

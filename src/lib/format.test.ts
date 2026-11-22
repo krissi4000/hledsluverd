@@ -8,8 +8,17 @@ import {
 	formatTime,
 	isStale,
 	ageParts,
+	noBreak,
 	showRelativeAge
 } from './format';
+
+describe('noBreak', () => {
+	it('makes every space non-breaking', () => {
+		expect(noBreak('48 kr/kWh')).toBe('48\u00a0kr/kWh');
+		expect(noBreak('Hæg hleðsla')).toBe('Hæg\u00a0hleðsla');
+		expect(noBreak('49')).toBe('49');
+	});
+});
 
 describe('formatNumber', () => {
 	it('formats fractional values with an Icelandic comma', () => {

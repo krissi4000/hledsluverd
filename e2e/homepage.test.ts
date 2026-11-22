@@ -24,9 +24,19 @@ test('homepage renders the rate card and a station list sorted by price', async 
 	await expect(rows.last().locator('[data-testid="price"]')).toHaveCount(0);
 });
 
-test('rate card is sorted cheapest-first', async ({ page }) => {
+test('rate card is sorted cheapest-first, with Tesla-only prices after everyone else', async ({
+	page
+}) => {
 	await page.goto('/');
-	const dcs = await page.locator('[data-testid="rate-dc"]').allTextContents();
+	const rows = page.locator('[data-testid="rate-card"]');
+	const networks = await rows.evaluateAll((els) => els.map((e) => e.getAttribute('data-network')));
+	expect(networks.length).toBeGreaterThan(0);
+	// a price only Tesla cars get never sits among the prices every car can pay
+	const firstTesla = networks.indexOf('tesla');
+	if (firstTesla !== -1) expect(networks.slice(firstTesla)).toEqual(['tesla']);
+	const dcs = await page
+		.locator('[data-testid="rate-card"]:not([data-network="tesla"]) [data-testid="rate-dc"]')
+		.allTextContents();
 	expect(dcs.length).toBeGreaterThan(0);
 	const nums = dcs.map(parsePrice);
 	expect(nums).toEqual([...nums].sort((a, b) => a - b));
@@ -48,26 +58,31 @@ test('connector filter reduces or keeps the row count and every row matches', as
 test('language toggle switches to English and back, without JavaScript', async ({ browser }) => {
 	const ctx = await browser.newContext({ javaScriptEnabled: false });
 	const page = await ctx.newPage();
+	// the header's nav labels show which language is on
+	const mapLink = page.locator('header nav a[href="/kort"]');
 	await page.goto('/');
-	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await expect(mapLink).toHaveText('Kort');
 	await page.locator('[data-testid="lang-toggle"]').click();
-	await expect(page.locator('header .tagline')).toContainText('in one place');
+	await expect(mapLink).toHaveText('Map');
+	await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 	await page.locator('[data-testid="lang-toggle"]').click();
-	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await expect(mapLink).toHaveText('Kort');
 	await ctx.close();
 });
 
 test('language toggle switches to English and back, with JavaScript', async ({ page }) => {
+	const mapLink = page.locator('header nav a[href="/kort"]');
+	const trendsLink = page.locator('header nav a[href="/verdthroun"]');
 	await page.goto('/');
-	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await expect(mapLink).toHaveText('Kort');
 	await page.locator('[data-testid="lang-toggle"]').click();
-	await expect(page.locator('header .tagline')).toContainText('in one place');
+	await expect(mapLink).toHaveText('Map');
 	// client-side navigation must keep English (the hydrated runtime reads the cookie)
-	await page.locator('header nav a[href="/kort"]').click();
+	await mapLink.click();
 	await expect(page).toHaveURL(/\/kort/);
-	await expect(page.locator('header .tagline')).toContainText('in one place');
+	await expect(trendsLink).toHaveText('Price trends');
 	await page.locator('[data-testid="lang-toggle"]').click();
-	await expect(page.locator('header .tagline')).toContainText('á einum stað');
+	await expect(trendsLink).toHaveText('Verðþróun');
 });
 
 test('language redirect refuses to leave the site', async ({ request }) => {
@@ -112,7 +127,12 @@ test('trend page draws the chart and offers a no-JS table', async ({ page, brows
 test('station page shows prices, availability honesty and the trend graph', async ({ page }) => {
 	await page.goto('/');
 	await page.locator('[data-testid="station-row"] a').first().click();
-	await expect(page.locator('article h2')).toBeVisible();
+	await expect(page.locator('article h1')).toBeVisible();
+	// the way there is the page's main action
+	await expect(page.locator('article [data-testid="directions"]')).toHaveAttribute(
+		'href',
+		/^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=-?\d/
+	);
 	expect(await page.locator('[data-testid="station-price"]').count()).toBeGreaterThan(0);
 	// availability is best-effort: either n/m or the honest "—", never a bare 0
 	await expect(page.locator('[data-testid="station-availability"]')).toHaveText(/—|\d+\/\d+/);
@@ -156,6 +176,11 @@ test('network toggles: Tesla starts hidden, toggling shows and hides, reset rest
 	await expect(page.locator('[data-testid="station-row"][data-network="tesla"]')).toHaveCount(0);
 	const before = await rows.count();
 
+	// the rarer filters are folded away under "Síur" until asked for
+	const panel = page.locator('[data-testid="list-filters"]');
+	await expect(panel).toBeHidden();
+	await page.locator('[data-testid="filters-toggle"]').click();
+	await expect(panel).toBeVisible();
 	await tesla.click();
 	await expect(tesla).toHaveAttribute('data-on', 'true');
 	await expect(
@@ -169,7 +194,7 @@ test('network toggles: Tesla starts hidden, toggling shows and hides, reset rest
 	await expect(on).toHaveAttribute('data-on', 'false');
 	await expect(page.locator('[data-testid="station-row"][data-network="on"]')).toHaveCount(0);
 
-	await page.locator('[data-testid="network-reset"]').click();
+	await page.locator('[data-testid="filters-reset"]').click();
 	await expect(page).not.toHaveURL(/fyrirtaeki/);
 	await expect(tesla).toHaveAttribute('data-on', 'false');
 	await expect(on).toHaveAttribute('data-on', 'true');

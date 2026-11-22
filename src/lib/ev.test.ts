@@ -10,6 +10,8 @@ import {
 	fullChargeSpeed,
 	maxConnectorKw,
 	modeConnectors,
+	visitKw,
+	visitPricePerKwh,
 	type CarSpec
 } from './ev';
 
@@ -388,5 +390,49 @@ describe('estimateFullCharge', () => {
 	it('is null when power or battery is missing', () => {
 		expect(estimateFullCharge('DC', noFee, null, 60)).toBeNull();
 		expect(estimateFullCharge('DC', noFee, 80, null)).toBeNull();
+	});
+});
+
+describe('visitKw', () => {
+	it('DC: 80 % of the slower of car and charger, no battery cap', () => {
+		expect(visitKw('DC', null, 50)).toBe(40);
+		expect(visitKw('DC', 100, 150)).toBe(80);
+		expect(visitKw('DC', 250, 50)).toBe(40);
+	});
+
+	it('AC: the on-board charger (11 kW without a car) or the post, whichever is lower', () => {
+		expect(visitKw('AC', null, 22)).toBe(11);
+		expect(visitKw('AC', 7.4, 22)).toBe(7.4);
+		expect(visitKw('AC', 11, 3.7)).toBe(3.7);
+	});
+
+	it('is null without a connector rating', () => {
+		expect(visitKw('DC', 100, null)).toBeNull();
+		expect(visitKw('DC', 100, 0)).toBeNull();
+	});
+});
+
+describe('visitPricePerKwh', () => {
+	const tariff = (minuteFeeIsk: number | null, minuteFeeAfterMin: number | null) => ({
+		priceIskPerKwh: 60,
+		minuteFeeIsk,
+		minuteFeeAfterMin
+	});
+
+	it('is the bare kWh price without a fee', () => {
+		expect(visitPricePerKwh(tariff(null, null), 40)).toBe(60);
+	});
+
+	it('spreads a fee from the first minute over the kWh bought', () => {
+		// 0,5 kr/min at 40 kW: 30 kr an hour over 40 kWh
+		expect(visitPricePerKwh(tariff(0.5, null), 40)).toBeCloseTo(60.75);
+	});
+
+	it('leaves an overstay fee out: a top-up is over before it starts', () => {
+		expect(visitPricePerKwh(tariff(64, 60), 40)).toBe(60);
+	});
+
+	it('keeps the bare price when there is no speed to spread a fee over', () => {
+		expect(visitPricePerKwh(tariff(0.5, null), null)).toBe(60);
 	});
 });

@@ -9,7 +9,9 @@ import {
 	estimateFullCharge,
 	fullChargeSpeed,
 	maxConnectorKw,
-	modeConnectors
+	modeConnectors,
+	visitKw,
+	visitPricePerKwh
 } from '$lib/ev';
 import { haversineKm } from '$lib/geo';
 import { BATTERY_PARAM, parseBattery, rankNearby } from '$lib/nearby';
@@ -49,6 +51,9 @@ export const load: PageServerLoad = async ({ url }) => {
 	]);
 	// the car only fits a row through its plug for the mode whose price the row shows
 	const carPlug = car ? carPlugForMode(car, mode) : null;
+	// ...and the row's other kind of charging (slow beside fast) only counts through the
+	// car's plug for that kind: an AC-only car is never shown a fast-charging price
+	const otherPlug = car ? carPlugForMode(car, mode === 'AC' ? 'DC' : 'AC') : null;
 
 	// filter options come from the stations in view, not the rate card — most networks
 	// have stations long before they have verified prices
@@ -94,8 +99,16 @@ export const load: PageServerLoad = async ({ url }) => {
 				carKw: car ? effectiveKw(car, fitting) : null,
 				effectivePrice: est?.effectivePrice ?? null,
 				effectiveApprox: est?.effectiveApprox ?? false,
-				session: est?.session ?? null,
+				other:
+					!car || (otherPlug !== null && s.connectors.some((c) => c.type === otherPlug))
+						? s.other
+						: null,
 				distanceKm: near ? haversineKm(near, s) : null,
+				/** kr/kWh every visit pays here (what the nearby list ranks by) */
+				visitPrice:
+					near && tariff
+						? visitPricePerKwh(tariff, visitKw(mode, carMaxKw, maxConnectorKw(plugs)))
+						: null,
 				fullCharge,
 				/** what sets the full charge's time, for the card's explanation */
 				fullChargeSpeed: fullCharge ? speed : null
@@ -103,18 +116,16 @@ export const load: PageServerLoad = async ({ url }) => {
 		});
 	const stations = sortStations(filtered, near ? 'distance' : car ? 'effective' : 'price');
 
-	// With a position the page shows the nearby cards instead of the table: the nearest
-	// stations, ranked by distance and price (fees folded in where the charge is known).
+	// With a position the page shows the nearby cards instead of the list: the nearest
+	// stations, ranked by distance and the kWh price every visit pays. Most visitors top
+	// up, so a full charge's cost (and an overstay fee only it would run into) doesn't
+	// decide the order; it is one tap away on each card.
 	// A station that isn't open yet is no answer to "where can I charge", so it's left out.
 	const nearby = near
 		? rankNearby(
 				filtered
 					.filter((s) => !s.underConstruction)
-					.map((s) => ({
-						...s,
-						distanceKm: s.distanceKm!,
-						rankPrice: s.fullCharge ? s.fullCharge.costIsk / s.fullCharge.billedKwh : s.price
-					}))
+					.map((s) => ({ ...s, distanceKm: s.distanceKm!, rankPrice: s.visitPrice }))
 			)
 		: null;
 
@@ -132,11 +143,13 @@ export const load: PageServerLoad = async ({ url }) => {
 			variant: car.variant,
 			yearFrom: car.yearFrom,
 			yearTo: car.yearTo,
-			batteryKwh: car.batteryKwh
+			batteryKwh: car.batteryKwh,
+			/** the plug this car charges through in the mode shown (null: none for it) */
+			plug: carPlug
 		},
 		plateLookup: env.PLATE_LOOKUP === 'island',
 		cards,
-		// the table is not shown next to the nearby cards, so don't ship it
+		// the list is not shown with the nearby cards, so don't ship it
 		stations: nearby ? [] : stations,
 		nearby,
 		battery: {

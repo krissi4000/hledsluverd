@@ -8,13 +8,24 @@
 	import DirectionsLink from '$lib/components/DirectionsLink.svelte';
 	import ReportForm from '$lib/components/ReportForm.svelte';
 	import { networkColor, ownBrandPriceOnly } from '$lib/networks';
-	import { formatDate, formatIsk, formatNumber, isStale } from '$lib/format';
+	import { formatDate, formatIsk, isStale } from '$lib/format';
 	import { updatedText, verifiedText } from '$lib/age';
+	import { minuteFeeText } from '$lib/fees';
+	import { stationDisplayName } from '$lib/station-name';
 
 	let { data, form } = $props();
 	let canvas = $state<HTMLCanvasElement>();
 
 	const st = $derived(data.station);
+	const avail = $derived(
+		st.availability && st.availability.freeCount !== null && st.availability.totalCount !== null
+			? {
+					free: st.availability.freeCount,
+					total: st.availability.totalCount,
+					at: st.availability.fetchedAt
+				}
+			: null
+	);
 
 	$effect(() => {
 		if (!canvas || data.series.length === 0) return;
@@ -50,91 +61,87 @@
 	});
 </script>
 
-<article>
+<article class="station">
 	<header class="head">
-		<NetworkLogo slug={st.network.slug} name={st.network.name} size={56} />
+		<NetworkLogo slug={st.network.slug} name={st.network.name} size={48} />
 		<div class="title">
-			<h2>
-				{st.name}{#if st.underConstruction}
-					<span class="badge uc" data-testid="under-construction">{m.under_construction()}</span
+			<h1>
+				{stationDisplayName(st.name, st.network.name)}{#if st.underConstruction}
+					<span class="badge badge-muted" data-testid="under-construction"
+						>{m.under_construction()}</span
 					>{/if}
-			</h2>
+			</h1>
 			<p class="meta">
 				{#if st.network.websiteUrl}<a href={st.network.websiteUrl} rel="noopener external"
 						>{st.network.name}</a
-					>{:else}{st.network.name}{/if}{#if st.address}
-					<span class="dot" aria-hidden="true">·</span> {st.address}{/if}
+					>{:else}{st.network.name}{/if}{#if st.address}{' '}<span aria-hidden="true">·</span>
+					{st.address}{/if}
 			</p>
 		</div>
-		<DirectionsLink lat={st.lat} lng={st.lng} primary class="directions" />
+		<DirectionsLink lat={st.lat} lng={st.lng} class="go" />
 	</header>
 
 	<div class="cols">
-		<section class="info" aria-label={m.station_prices()}>
-			<div class="panel surface">
-				<h3>{m.station_prices()}</h3>
+		<div class="facts surface">
+			<section class="prices" aria-label={m.station_prices()}>
 				{#each st.prices as p (p.mode)}
 					<div class="price-row" data-testid="station-price">
 						<span class="mode">{p.mode === 'DC' ? m.mode_label_dc() : m.mode_label_ac()}</span>
-						<span class="amount">
+						<span class="amount" class:stale={isStale(p.verifiedAt)}>
 							<strong class="num">{formatIsk(p.priceIskPerKwh)}</strong><span class="unit"
 								>{m.price_per_kwh()}</span
 							>
 						</span>
-						{#if p.minuteFeeIsk}<small class="fee"
-								>{p.minuteFeeAfterMin
-									? m.minute_fee_after({
-											fee: formatNumber(p.minuteFeeIsk),
-											min: p.minuteFeeAfterMin
-										})
-									: m.minute_fee({ fee: formatNumber(p.minuteFeeIsk) })}</small
+						{#if p.minuteFeeIsk}<small class="line"
+								>{minuteFeeText(p.minuteFeeIsk, p.minuteFeeAfterMin)}</small
 							>{/if}
 						{#if ownBrandPriceOnly(st.network.slug)}<small
-								class="fee brand-only"
+								class="line muted"
 								title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
 							>{/if}
-						<small class="verified" class:stale={isStale(p.verifiedAt)}
+						<small class="line verified" class:stale={isStale(p.verifiedAt)}
 							>{verifiedText(p.verifiedAt)}</small
 						>
 					</div>
 				{:else}
 					{#if st.underConstruction}
-						<p class="muted" data-testid="under-construction-note">{m.under_construction_note()}</p>
+						<p class="muted none" data-testid="under-construction-note">
+							{m.under_construction_note()}
+						</p>
 					{:else}
-						<p class="muted"><em>{m.price_unknown()}</em></p>
+						<p class="muted none">{m.price_unknown()}</p>
 					{/if}
 				{/each}
 				{#if st.hostPriced}
-					<p class="muted host-priced" data-testid="station-host-priced">
-						<small>{m.station_host_priced({ network: st.network.name })}</small>
+					<p class="host-priced" data-testid="station-host-priced">
+						{m.station_host_priced({ network: st.network.name })}
 					</p>
 				{/if}
-			</div>
+			</section>
 
-			<div class="panel surface split">
+			<dl class="details">
 				<div>
-					<h3>{m.station_availability()}</h3>
-					<p class="avail" data-testid="station-availability">
-						{#if st.availability && st.availability.freeCount !== null && st.availability.totalCount !== null}
-							<strong class="num">{st.availability.freeCount}/{st.availability.totalCount}</strong
-							><UnknownStalls
-								unknown={unknownStalls(st.stallCount, st.availability.totalCount)}
-								total={st.availability.totalCount}
+					<dt>{m.station_availability()}</dt>
+					<dd class="avail" data-testid="station-availability">
+						{#if avail}
+							<strong class="num">{avail.free}/{avail.total}</strong><UnknownStalls
+								unknown={unknownStalls(st.stallCount, avail.total)}
+								total={avail.total}
 							/>
-							<small class="verified">{updatedText(st.availability.fetchedAt)}</small>
+							<small class="verified">{updatedText(avail.at)}</small>
 						{:else}<span title={m.avail_unknown_title()}>—</span>{/if}
-					</p>
+					</dd>
 				</div>
 				<div>
-					<h3>{m.th_connectors()}</h3>
-					<p class="chips">
+					<dt>{m.th_connectors()}</dt>
+					<dd class="chips">
 						{#each st.connectors as c, ci (ci)}
 							<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
 						{/each}
-					</p>
+					</dd>
 				</div>
-			</div>
-		</section>
+			</dl>
+		</div>
 
 		<div class="minimap surface" data-testid="station-map">
 			<StationMap
@@ -157,8 +164,8 @@
 	</div>
 
 	{#if data.series.length > 0}
-		<section class="panel surface trend" aria-label={m.station_trend({ network: st.network.name })}>
-			<h3>{m.station_trend({ network: st.network.name })}</h3>
+		<section class="trend surface" aria-labelledby="trend-title">
+			<h2 id="trend-title">{m.station_trend({ network: st.network.name })}</h2>
 			<div class="chart"><canvas bind:this={canvas} data-testid="station-trend"></canvas></div>
 		</section>
 	{/if}
@@ -170,24 +177,20 @@
 	.head {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
 		flex-wrap: wrap;
-		margin: 0.5rem 0 1.25rem;
+		gap: 0.75rem 1rem;
+		margin-bottom: 1.25rem;
 	}
 	.title {
-		flex: 1 1 16rem;
+		flex: 1 1 14rem;
 		min-width: 0;
 	}
-	.badge.uc {
-		vertical-align: middle;
-		margin-left: 0.4rem;
-		background: var(--surface-2);
-		color: var(--muted);
-	}
-	.title h2 {
+	h1 {
 		margin: 0;
-		font-size: 1.6rem;
-		line-height: 1.2;
+	}
+	h1 .badge {
+		margin-left: 0.4rem;
+		vertical-align: middle;
 	}
 	.meta {
 		margin: 0.2rem 0 0;
@@ -197,13 +200,16 @@
 		color: inherit;
 		font-weight: 600;
 	}
-	.dot {
-		margin: 0 0.3rem;
+	/* phones: the way there gets the full width under the name */
+	@media (max-width: 640px) {
+		.head :global(.go) {
+			flex: 1 0 100%;
+		}
 	}
 
 	.cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		gap: 1rem;
 		align-items: stretch;
 	}
@@ -211,52 +217,33 @@
 		.cols {
 			grid-template-columns: 1fr;
 		}
-		.head :global(.directions) {
-			flex: 1 0 100%;
-		}
 		.minimap {
-			height: 18rem;
+			height: 16rem;
 		}
-	}
-	.info {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-	.panel {
-		padding: 1rem 1.15rem;
-	}
-	.panel h3 {
-		margin: 0 0 0.6rem;
-		font-size: 0.78rem;
-		font-weight: 600;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	.split {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: 1.5rem;
-	}
-	.split p {
-		margin: 0;
 	}
 
+	.facts {
+		display: flex;
+		flex-direction: column;
+	}
+	.prices {
+		padding: 0.4rem 1.1rem;
+	}
 	.price-row {
 		display: grid;
 		grid-template-columns: 1fr auto;
 		align-items: baseline;
-		gap: 0.1rem 1rem;
-		padding: 0.6rem 0;
-		border-top: 1px solid var(--border);
+		gap: 0 1rem;
+		padding: 0.7rem 0;
 	}
-	.price-row:first-of-type {
-		border-top: none;
-		padding-top: 0;
+	.price-row + .price-row {
+		border-top: 1px solid var(--border);
 	}
 	.mode {
 		font-weight: 600;
+	}
+	.amount {
+		white-space: nowrap;
 	}
 	.amount strong {
 		font-size: 1.5rem;
@@ -268,33 +255,67 @@
 		color: var(--muted);
 		font-size: 0.85rem;
 	}
-	.brand-only {
-		color: var(--muted);
+	/* unverified for 30+ days: amber, price and all */
+	.amount.stale,
+	.amount.stale .unit {
+		color: var(--stale);
 	}
-	.fee,
-	.price-row .verified {
+	.line {
 		grid-column: 1 / -1;
-		font-size: 0.8rem;
+		font-size: 0.82rem;
+	}
+	.none {
+		margin: 0.7rem 0;
+	}
+	.host-priced {
+		margin: 0 0 0.7rem;
+		color: var(--muted);
+		font-size: 0.82rem;
 	}
 
+	.details {
+		margin: 0;
+		padding: 0.2rem 1.1rem 0.6rem;
+		border-top: 1px solid var(--border);
+	}
+	.details > div {
+		display: grid;
+		grid-template-columns: 9rem minmax(0, 1fr);
+		gap: 0.75rem;
+		padding: 0.6rem 0;
+	}
+	.details > div + div {
+		border-top: 1px solid var(--border);
+	}
+	dt {
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+	dd {
+		margin: 0;
+	}
 	.avail strong {
-		font-size: 1.5rem;
-		font-weight: 750;
+		font-size: 1.15rem;
+		font-weight: 700;
 	}
 	.chips {
 		line-height: 1.9;
 	}
 
 	.minimap {
-		min-height: 20rem;
+		min-height: 18rem;
 		overflow: hidden;
 	}
 
 	.trend {
 		margin-top: 1rem;
+		padding: 1rem 1.1rem;
+	}
+	.trend h2 {
+		font-size: 1rem;
 	}
 	.chart {
 		position: relative;
-		height: 16rem;
+		height: 15rem;
 	}
 </style>

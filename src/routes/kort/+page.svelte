@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import * as m from '$lib/paraglide/messages';
 	import StationMap from '$lib/components/StationMap.svelte';
 	import NetworkLogo from '$lib/components/NetworkLogo.svelte';
@@ -10,7 +11,12 @@
 	import ConnectorIcon from '$lib/components/ConnectorIcon.svelte';
 	import UnknownStalls from '$lib/components/UnknownStalls.svelte';
 	import GooglePlacePhoto from '$lib/components/GooglePlacePhoto.svelte';
+	import OtherPrice from '$lib/components/OtherPrice.svelte';
 	import { unknownStalls } from '$lib/availability';
+	import { stationDisplayName } from '$lib/station-name';
+	import { NEAR_PARAM, parseNear } from '$lib/station-list';
+	import type { LatLng } from '$lib/geo';
+	import { withParams } from '$lib/url';
 	import { page } from '$app/state';
 	import { CONNECTOR_TYPES } from '$lib/types';
 	import {
@@ -65,13 +71,33 @@
 		if (selectedId !== null) filtersOpen = false;
 	});
 
-	function href(next: Record<string, string | null>): string {
-		const u = new URL(page.url);
-		for (const [k, v] of Object.entries(next)) {
-			if (v === null) u.searchParams.delete(k);
-			else u.searchParams.set(k, v);
-		}
-		return u.pathname + u.search;
+	const href = (next: Record<string, string | null>) => withParams(page.url, next);
+
+	// Arriving from "Nálægt mér" (?nalaegt=, already rounded): start at the visitor, not
+	// at all of Iceland. The map button finds the position the same way, on a click only.
+	const start = parseNear(page.url.searchParams.get(NEAR_PARAM));
+	let userLocation = $state<LatLng | null>(start);
+	let map = $state<StationMap>();
+	let canLocate = $state(false);
+	let locating = $state(false);
+	let locateError = $state<string | null>(null);
+	onMount(() => (canLocate = 'geolocation' in navigator));
+
+	function locate() {
+		locateError = null;
+		locating = true;
+		navigator.geolocation.getCurrentPosition(
+			(pos) => {
+				locating = false;
+				userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+				map?.flyTo(userLocation, 12);
+			},
+			(err) => {
+				locating = false;
+				locateError = err.code === 1 ? m.near_denied() : m.near_unavailable();
+			},
+			{ enableHighAccuracy: false, timeout: 15000, maximumAge: 5 * 60 * 1000 }
+		);
 	}
 </script>
 
@@ -81,19 +107,23 @@
 	}}
 />
 
-<section aria-label={m.map_title()} class="wrap">
-	<h2 class="visually-hidden">{m.map_title()}</h2>
+<section aria-labelledby="map-title" class="wrap">
+	<h1 id="map-title" class="visually-hidden">{m.map_title()}</h1>
 	<noscript><p class="js-note">{m.map_js()}</p></noscript>
 	<div class="maparea" class:has-card={selected}>
 		<StationMap
+			bind:this={map}
 			stations={visible}
 			bind:selectedId
+			bind:userLocation
+			center={start ? [start.lng, start.lat] : undefined}
+			zoom={start ? 12 : undefined}
 			fallbackText={m.map_fallback()}
 			cardExtra={(id) =>
 				data.googleMapsKey && visible.find((s) => s.id === id)?.googlePlaceId ? PHOTO_ROOM_PX : 0}
 		/>
 
-		<div class="filter-ctl" class:open={filtersOpen}>
+		<div class="controls">
 			{#if filtersOpen}
 				<div
 					class="filter-panel"
@@ -104,19 +134,17 @@
 					data-sveltekit-keepfocus
 				>
 					<div class="panel-head">
-						<h3>{m.map_filters()}</h3>
+						<h2>{m.filters()}</h2>
 						{#if activeFilters > 0}
 							<a
-								class="filter-reset"
+								class="btn btn-ghost btn-sm"
 								href={href({ [NETWORK_PARAM]: null, afl: null, tengi: null })}
 								data-testid="map-filters-reset">{m.filter_reset()}</a
 							>
-						{:else}
-							<span class="filter-reset" aria-disabled="true">{m.filter_reset()}</span>
 						{/if}
 					</div>
-					<div class="panel-row">
-						<span class="filter-label" aria-hidden="true">{m.filter_mode()}</span>
+					<div class="group">
+						<span class="label" aria-hidden="true">{m.filter_mode()}</span>
 						<span class="pills" role="group" aria-label={m.filter_mode()}>
 							{#each MODES as mode (mode)}
 								{@const on = modes.includes(mode)}
@@ -132,8 +160,8 @@
 							{/each}
 						</span>
 					</div>
-					<div class="panel-row">
-						<span class="filter-label" aria-hidden="true">{m.th_connectors()}</span>
+					<div class="group">
+						<span class="label" aria-hidden="true">{m.th_connectors()}</span>
 						<span class="pills" role="group" aria-label={m.th_connectors()}>
 							{#each CONNECTOR_TYPES as t (t)}
 								<a
@@ -146,41 +174,63 @@
 							{/each}
 						</span>
 					</div>
-					<div class="panel-row">
-						<span class="filter-label" aria-hidden="true">{m.th_network()}</span>
+					<div class="group">
+						<span class="label" aria-hidden="true">{m.th_network()}</span>
 						<NetworkToggles
 							options={networkOptions}
 							shown={networks}
 							defaults={networkDefaults}
 							href={(v) => href({ [NETWORK_PARAM]: v })}
-							reset={false}
 						/>
 					</div>
 				</div>
 			{/if}
-			<button
-				type="button"
-				class="filter-btn"
-				aria-expanded={filtersOpen}
-				aria-controls="map-filters"
-				data-testid="map-filters-toggle"
-				onclick={() => (filtersOpen = !filtersOpen)}
-			>
-				<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
-					><path
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						d="M4 6h16M7 12h10M10 18h4"
-					/></svg
+			{#if locateError}<p class="locate-error" role="alert">{locateError}</p>{/if}
+			<div class="buttons">
+				{#if canLocate}
+					<button
+						type="button"
+						class="btn btn-float square"
+						onclick={locate}
+						disabled={locating}
+						aria-label={m.map_locate()}
+						title={m.map_locate()}
+						data-testid="map-locate"
+						><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
+							><circle cx="12" cy="12" r="3.2" fill="currentColor" /><path
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.5 0a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+							/></svg
+						></button
+					>
+				{/if}
+				<button
+					type="button"
+					class="btn btn-float"
+					class:on={filtersOpen}
+					aria-expanded={filtersOpen}
+					aria-controls="map-filters"
+					data-testid="map-filters-toggle"
+					onclick={() => (filtersOpen = !filtersOpen)}
 				>
-				{m.map_filters()}
-				{#if activeFilters > 0}<span
-						class="badge"
-						title={m.map_filters_active({ n: activeFilters })}>{activeFilters}</span
-					>{/if}
-			</button>
+					<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+						><path
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							d="M4 6h16M7 12h10M10 18h4"
+						/></svg
+					>
+					{m.filters()}
+					{#if activeFilters > 0}<span class="count" title={m.filters_active({ n: activeFilters })}
+							>{activeFilters}</span
+						>{/if}
+				</button>
+			</div>
 		</div>
 		{#if selected}
 			<aside class="card" data-testid="map-card">
@@ -192,15 +242,21 @@
 				<div class="card-head">
 					<NetworkLogo slug={selected.networkSlug} name={selected.networkName} size={40} />
 					<div class="card-title">
-						<h3><a href="/stod/{selected.slug}">{selected.name}</a></h3>
-						{#if selected.underConstruction}<span class="badge uc" data-testid="under-construction"
-								>{m.under_construction()}</span
-							>{/if}
-						<p class="net">{selected.networkName}</p>
+						<h2>
+							<a href="/stod/{selected.slug}"
+								>{stationDisplayName(selected.name, selected.networkName)}</a
+							>
+						</h2>
+						<p class="net">
+							{selected.networkName}{#if selected.underConstruction}
+								<span class="badge badge-muted" data-testid="under-construction"
+									>{m.under_construction()}</span
+								>{/if}
+						</p>
 					</div>
 					<button
 						type="button"
-						class="close"
+						class="btn btn-icon close"
 						aria-label={m.close()}
 						onclick={() => (selectedId = null)}
 					>
@@ -214,44 +270,53 @@
 						>
 					</button>
 				</div>
-				<div class="stats">
+				<dl class="stats">
 					<div>
-						<span class="label">{m.th_price()}</span>
-						{#if selected.underConstruction}
-							<small class="muted uc-note">{m.under_construction_note()}</small>
-						{:else if selected.price !== null}
-							<strong class="num">{formatIsk(selected.price)}</strong><span class="per"
-								>{m.price_per_kwh()}</span
-							>
-							<span class="mode">{selected.mode}</span>
-							{#if ownBrandPriceOnly(selected.networkSlug)}<small
-									class="brand-only"
-									title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
-								>{/if}
-						{:else}
-							<em class="muted">{m.price_unknown()}</em>
-						{/if}
+						<dt>{m.station_prices()}</dt>
+						<dd>
+							{#if selected.underConstruction}
+								<small class="muted">{m.under_construction_note()}</small>
+							{:else if selected.price !== null}
+								<strong class="num">{formatIsk(selected.price)}</strong><span class="per"
+									>{m.price_per_kwh()}</span
+								>
+								<span class="mode">{selected.mode}</span>
+								{#if ownBrandPriceOnly(selected.networkSlug)}<small
+										class="muted"
+										title={m.tesla_price_only_title()}>{m.tesla_price_only()}</small
+									>{/if}
+							{:else}
+								<span class="muted">{m.price_unknown()}</span>
+							{/if}
+							<!-- the pin shows the fast price; slow charging here too gets a line -->
+							{#if selected.other}<OtherPrice other={selected.other} />{/if}
+						</dd>
 					</div>
 					<div data-testid="card-availability">
-						<span class="label">{m.th_free()}</span>
-						{#if selected.freeCount !== null && selected.totalCount !== null}
-							<strong class="num">{selected.freeCount}/{selected.totalCount}</strong><UnknownStalls
-								unknown={unknownStalls(selected.stallCount, selected.totalCount)}
-								total={selected.totalCount}
-							/>
-							{#if selected.availabilityFetchedAt}<small class="muted"
-									>{updatedText(selected.availabilityFetchedAt)}</small
-								>{/if}
-						{:else}<span title={m.avail_unknown_title()}>—</span>{/if}
+						<dt>{m.th_free()}</dt>
+						<dd>
+							{#if selected.freeCount !== null && selected.totalCount !== null}
+								<strong class="num">{selected.freeCount}/{selected.totalCount}</strong
+								><UnknownStalls
+									unknown={unknownStalls(selected.stallCount, selected.totalCount)}
+									total={selected.totalCount}
+								/>
+								{#if selected.availabilityFetchedAt}<small class="muted"
+										>{updatedText(selected.availabilityFetchedAt)}</small
+									>{/if}
+							{:else}<span title={m.avail_unknown_title()}>—</span>{/if}
+						</dd>
 					</div>
-				</div>
+				</dl>
 				<p class="chips">
 					{#each selected.connectors as c, ci (ci)}
 						<span class="chip">{c.type} ×{c.count} · {c.powerKw} kW</span>
 					{/each}
 				</p>
-				<a class="btn btn-primary more" href="/stod/{selected.slug}">{m.map_details()} →</a>
-				<DirectionsLink lat={selected.lat} lng={selected.lng} class="more" />
+				<div class="card-actions">
+					<DirectionsLink lat={selected.lat} lng={selected.lng} />
+					<a class="btn" href="/stod/{selected.slug}">{m.map_details()}</a>
+				</div>
 			</aside>
 		{/if}
 	</div>
@@ -267,6 +332,10 @@
 		height: calc(100dvh - var(--header-h));
 		min-height: 24rem;
 	}
+	.js-note {
+		padding: 1rem;
+	}
+
 	.card {
 		position: absolute;
 		left: 1rem;
@@ -277,11 +346,11 @@
 		max-height: calc(100% - 2.5rem);
 		overflow-y: auto;
 		overscroll-behavior: contain;
+		padding: 1rem;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-lg);
-		padding: 1rem;
 	}
 	.card-head {
 		display: flex;
@@ -292,30 +361,16 @@
 		flex: 1;
 		min-width: 0;
 	}
-	.badge.uc {
-		margin-top: 0.2rem;
-		background: var(--surface-2);
-		color: var(--muted);
-	}
-	.per {
-		color: var(--muted);
-		font-size: 0.78rem;
-		font-weight: 600;
-	}
-	.uc-note {
-		display: block;
-		max-width: 12rem;
-	}
-	.card h3 {
+	.card h2 {
 		margin: 0;
 		font-size: 1.05rem;
 		line-height: 1.25;
 	}
-	.card h3 a {
+	.card h2 a {
 		color: var(--text);
 		text-decoration: none;
 	}
-	.card h3 a:hover {
+	.card h2 a:hover {
 		text-decoration: underline;
 	}
 	.net {
@@ -323,22 +378,12 @@
 		color: var(--muted);
 		font-size: 0.85rem;
 	}
+	.net .badge {
+		margin-left: 0.3rem;
+	}
 	.close {
 		align-self: flex-start;
-		display: grid;
-		place-items: center;
-		width: 2rem;
-		height: 2rem;
-		margin: -0.25rem -0.25rem 0 0;
-		border: none;
-		border-radius: 50%;
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
-	}
-	.close:hover {
-		background: var(--surface-2);
-		color: var(--text);
+		margin: -0.3rem -0.4rem 0 0;
 	}
 	.stats {
 		display: grid;
@@ -349,47 +394,46 @@
 		border-radius: var(--radius-sm);
 		background: var(--surface-2);
 	}
+	dt {
+		color: var(--muted);
+		font-size: 0.8rem;
+	}
+	dd {
+		margin: 0;
+	}
 	.stats strong {
 		font-size: 1.2rem;
 		font-weight: 750;
 	}
-	.label {
-		display: block;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	.brand-only {
-		display: block;
-		color: var(--muted);
-		font-size: 0.75rem;
-	}
-	.mode {
-		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
-	}
 	.stats small {
 		display: block;
+		font-size: 0.75rem;
+	}
+	.per {
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 600;
+	}
+	.mode {
+		margin-left: 0.2rem;
+		padding: 0 0.3rem;
+		border-radius: 4px;
+		background: var(--surface);
+		color: var(--muted);
 		font-size: 0.72rem;
+		font-weight: 700;
 	}
 	.chips {
 		margin: 0 0 0.75rem;
 	}
-	.card :global(.more) {
-		width: 100%;
-	}
-	.card :global(.more + .more) {
-		margin-top: 0.5rem;
-	}
-	.js-note {
-		padding: 1rem;
+	.card-actions {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.5rem;
 	}
 
 	/* bottom right, above MapLibre's attribution line */
-	.filter-ctl {
+	.controls {
 		position: absolute;
 		right: 0.75rem;
 		bottom: 2.6rem;
@@ -399,28 +443,20 @@
 		align-items: flex-end;
 		gap: 0.5rem;
 	}
-	.filter-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.45rem;
-		min-height: 2.5rem;
-		padding: 0 1rem;
-		border: 1px solid var(--border);
-		border-radius: 999px;
-		background: var(--surface);
-		color: var(--text);
-		box-shadow: var(--shadow-lg);
-		font: inherit;
-		font-size: 0.9rem;
-		font-weight: 650;
-		cursor: pointer;
+	.buttons {
+		display: flex;
+		gap: 0.5rem;
 	}
-	.filter-btn:hover,
-	.open .filter-btn {
+	.square {
+		width: var(--control-h);
+		padding: 0;
+		color: var(--accent-text);
+	}
+	.btn-float.on {
 		border-color: var(--accent);
 		color: var(--accent-text);
 	}
-	.badge {
+	.count {
 		display: grid;
 		place-items: center;
 		min-width: 1.25rem;
@@ -431,6 +467,16 @@
 		color: #fff;
 		font-size: 0.72rem;
 		font-weight: 700;
+	}
+	.locate-error {
+		max-width: min(20rem, calc(100vw - 1.5rem));
+		margin: 0;
+		padding: 0.5rem 0.75rem;
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		box-shadow: var(--shadow-lg);
+		color: var(--danger);
+		font-size: 0.85rem;
 	}
 	.filter-panel {
 		width: min(25rem, calc(100vw - 1.5rem));
@@ -448,28 +494,31 @@
 	.panel-head {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
+		min-height: var(--control-h-sm);
 	}
-	.panel-head h3 {
+	.panel-head h2 {
 		margin: 0;
 		font-size: 1rem;
 	}
-	.panel-row {
+	.group {
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
 	}
-	/* the shared label has a fixed width as a flex basis, which would be a height here */
-	.panel-row .filter-label {
-		flex: none;
+	.label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--muted);
 	}
 
 	@media (max-width: 640px) {
 		/* one bottom overlay at a time on phones: the station card wins */
-		.has-card .filter-ctl {
+		.has-card .controls {
 			display: none;
 		}
 		/* clear the attribution, which wraps to two lines until the map is first moved */
-		.filter-ctl {
+		.controls {
 			right: 0.5rem;
 			bottom: 4.5rem;
 		}

@@ -23,10 +23,10 @@
 		};
 	});
 
+	// "Um vefinn" lives in the footer: the header keeps to what visitors come for
 	const links = [
 		{ href: '/kort', label: () => m.nav_map() },
-		{ href: '/verdthroun', label: () => m.nav_trends() },
-		{ href: '/um', label: () => m.nav_about() }
+		{ href: '/verdthroun', label: () => m.nav_trends() }
 	];
 
 	const isCurrent = (href: string) =>
@@ -43,14 +43,11 @@
 	<div class="bar">
 		<a class="brand" href="/" aria-current={page.url.pathname === '/' ? 'page' : undefined}>
 			<span class="mark" aria-hidden="true">
-				<svg viewBox="0 0 24 24" width="18" height="18"
+				<svg viewBox="0 0 24 24" width="17" height="17"
 					><path fill="currentColor" d="M13.2 2 4.6 13.4h6.1L9.8 22l8.6-11.4h-6.1L13.2 2Z" /></svg
 				>
 			</span>
-			<span class="brand-text">
-				<h1 class="logo">{m.site_title()}</h1>
-				<span class="tagline">{m.site_tagline()}</span>
-			</span>
+			<span class="name">{m.site_title()}</span>
 		</a>
 
 		<nav class="nav">
@@ -67,18 +64,11 @@
 			class="lang"
 			data-testid="lang-toggle"
 			href="/lang?to={other()}&redirect={encodeURIComponent(page.url.pathname + page.url.search)}"
+			hreflang={other()}
+			lang={other()}
+			title={m.lang_switch()}
+			aria-label={m.lang_switch()}>{m.lang_switch_short()}</a
 		>
-			<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
-				><path
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.8"
-					stroke-linecap="round"
-					d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-9-9h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z"
-				/></svg
-			>
-			{m.lang_switch()}
-		</a>
 	</div>
 </header>
 
@@ -90,18 +80,17 @@
 	<div class="foot">
 		<p class="foot-links">
 			<a href="/um">{m.footer_about()}</a>
-			<span aria-hidden="true">·</span>
 			<a href="/um#samband">{m.footer_contact()}</a>
+			<a href="/um#heimildir">{m.footer_sources()}</a>
 		</p>
-		<p>{m.footer_independent()}</p>
-		{#if data.lastPriceFetch}
-			<p data-testid="last-price-fetch">
-				{m.footer_last_fetch({
-					date: formatDate(data.lastPriceFetch),
-					time: formatTime(data.lastPriceFetch)
-				})}
-			</p>
-		{/if}
+		<p>
+			{m.footer_independent()}{#if data.lastPriceFetch}{' '}<span data-testid="last-price-fetch"
+					>{m.footer_last_fetch({
+						date: formatDate(data.lastPriceFetch),
+						time: formatTime(data.lastPriceFetch)
+					})}</span
+				>{/if}
+		</p>
 		<p class="credits">
 			{m.footer_stations_data()}
 			<a href="https://openchargemap.org" rel="noopener external">Open Charge Map</a>
@@ -109,9 +98,7 @@
 				>CC BY 4.0</a
 			>), Virta, e1,
 			<a href="https://supercharge.info" rel="noopener external">supercharge.info</a>
-			· {m.footer_availability_data()} TomTom · {m.footer_cars_data()}
-			{m.footer_cars_source()}
-			· {m.footer_map_data()}
+			· {m.footer_availability_data()} TomTom · {m.footer_map_data()}
 			<a href="https://www.openstreetmap.org/copyright" rel="noopener external">© OpenStreetMap</a>
 		</p>
 	</div>
@@ -122,25 +109,26 @@
 		position: sticky;
 		top: 0;
 		z-index: 50;
-		background: rgb(255 255 255 / 92%);
+		background: rgb(255 255 255 / 94%);
 		backdrop-filter: saturate(180%) blur(10px);
 		border-bottom: 1px solid var(--border);
 	}
 	.bar {
-		max-width: 72rem;
+		max-width: var(--page-max);
 		height: var(--header-h);
 		margin: 0 auto;
 		padding: 0 1rem;
 		display: flex;
 		align-items: center;
-		gap: 1.5rem;
+		gap: 0.5rem;
 	}
 
 	.brand {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.5rem;
 		min-width: 0;
+		margin-right: auto;
 		color: inherit;
 		text-decoration: none;
 	}
@@ -148,91 +136,73 @@
 		flex: none;
 		display: grid;
 		place-items: center;
-		width: 2.1rem;
-		height: 2.1rem;
-		border-radius: 10px;
+		width: 1.9rem;
+		height: 1.9rem;
+		border-radius: 9px;
 		background: linear-gradient(145deg, #22a355, var(--accent));
 		color: #fff;
-		box-shadow: 0 2px 6px rgb(21 128 61 / 30%);
 	}
-	.brand-text {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-		line-height: 1.15;
-	}
-	.logo {
-		margin: 0;
-		font-size: 1.1rem;
+	.name {
+		font-size: 1.05rem;
 		font-weight: 750;
 		letter-spacing: -0.02em;
-	}
-	.tagline {
-		font-size: 0.75rem;
-		color: var(--muted);
 		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
 	.nav {
 		display: flex;
 		gap: 0.25rem;
-		padding: 0.25rem;
-		border-radius: 999px;
-		background: var(--surface-2);
 	}
-	.nav a {
-		padding: 0.4rem 0.95rem;
-		border-radius: 999px;
+	.nav a,
+	.lang {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--control-h-sm);
+		padding: 0 0.6rem;
+		border-radius: var(--radius-sm);
 		color: var(--muted);
 		font-size: 0.9rem;
 		font-weight: 600;
 		text-decoration: none;
 		white-space: nowrap;
-		transition:
-			background-color 0.15s,
-			color 0.15s;
 	}
-	.nav a:hover {
-		color: var(--text);
-	}
-	.nav a.active {
-		background: var(--surface);
-		color: var(--text);
-		box-shadow: var(--shadow-sm);
-	}
-
-	.lang {
-		margin-left: auto;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-		padding: 0.35rem 0.7rem;
-		border-radius: 999px;
-		color: var(--muted);
-		font-size: 0.85rem;
-		font-weight: 600;
-		text-decoration: none;
-	}
+	.nav a:hover,
 	.lang:hover {
 		background: var(--surface-2);
 		color: var(--text);
+	}
+	.nav a.active {
+		color: var(--accent-text);
+		background: var(--accent-soft);
+	}
+	.lang {
+		margin-left: 0.25rem;
+		border: 1px solid var(--border);
+		min-width: 2.5rem;
+		justify-content: center;
+		font-size: 0.8rem;
+		letter-spacing: 0.04em;
+	}
+
+	main {
+		max-width: var(--page-max);
+		margin: 0 auto;
+		padding: 1.25rem 1rem 3rem;
 	}
 
 	.site-footer {
 		border-top: 1px solid var(--border);
 		background: var(--surface);
 		color: var(--muted);
-		font-size: 0.82rem;
+		font-size: 0.8rem;
 	}
 	.foot {
-		max-width: 72rem;
+		max-width: var(--page-max);
 		margin: 0 auto;
 		padding: 1.25rem 1rem 2rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
+		gap: 0.35rem;
 	}
 	.foot p {
 		margin: 0;
@@ -243,43 +213,26 @@
 	}
 	.foot-links {
 		display: flex;
-		gap: 0.5rem;
+		flex-wrap: wrap;
+		gap: 0.25rem 1rem;
+		margin-bottom: 0.25rem !important;
+		font-size: 0.875rem;
 		font-weight: 600;
 	}
 	.foot-links a {
 		color: var(--text);
+		text-decoration: none;
 	}
-
-	main {
-		max-width: 72rem;
-		margin: 0 auto;
-		padding: 1.25rem 1rem 3rem;
+	.foot-links a:hover {
+		text-decoration: underline;
 	}
-
-	@media (max-width: 860px) {
-		.tagline {
-			display: none;
-		}
-	}
-
-	/* phone: brand + language on top, full-width nav underneath */
-	@media (max-width: 640px) {
-		.bar {
-			flex-wrap: wrap;
-			align-content: center;
-			gap: 0.5rem 0.75rem;
-		}
-		.nav {
-			order: 3;
-			flex: 1 0 100%;
+	/* small phones: the wordmark gives way before the nav does */
+	@media (max-width: 359px) {
+		.name {
+			font-size: 0.95rem;
 		}
 		.nav a {
-			flex: 1;
-			text-align: center;
-			padding: 0.4rem 0.5rem;
-		}
-		main {
-			padding-top: 1rem;
+			padding: 0 0.45rem;
 		}
 	}
 </style>

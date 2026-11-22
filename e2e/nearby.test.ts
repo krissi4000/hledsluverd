@@ -18,45 +18,50 @@ test('"Nálægt mér" asks for the location on click and shows nearby cards', as
 	await ctx.close();
 });
 
-test('nearby cards: at most 20, each with a distance, unknown cost without a battery', async ({
-	page
-}) => {
+test('nearby cards: at most 20, each with a distance, led by the kWh price', async ({ page }) => {
 	await page.goto(`/?nalaegt=${RVK}`);
 	const cards = page.locator('[data-testid="nearby-card"]');
 	const n = await cards.count();
 	expect(n).toBeGreaterThan(0);
 	expect(n).toBeLessThanOrEqual(20);
 	await expect(cards.locator('[data-testid="distance"]')).toHaveCount(n);
-	// no car and no battery size: the full charge is "unknown", never a guess
+	// the headline is the known kWh price; no full-charge estimate on the cards' faces,
+	// and without a car or battery size none anywhere: never a guess
+	await expect(cards.locator('[data-testid="price"]').first()).toContainText(/^\d+(,\d)? kr\/kWh$/);
 	await expect(page.locator('[data-testid="full-charge-cost"]')).toHaveCount(0);
-	await expect(page.locator('[data-testid="battery-form"]')).toBeVisible();
+	await expect(page.locator('[data-testid="battery-form"]')).toHaveCount(0);
 });
 
-test('a battery size prices the full charge; the card opens its explanation', async ({ page }) => {
-	await page.goto(`/?nalaegt=${RVK}`);
-	await page.locator('[data-testid="battery-input"]').fill('60');
-	await page.locator('[data-testid="battery-form"] button').click();
+test('a card opens its full-charge estimate, asking for a battery size first', async ({ page }) => {
+	// the toggle needs the page hydrated
+	await page.goto(`/?nalaegt=${RVK}`, { waitUntil: 'networkidle' });
+	const card = page
+		.locator('[data-testid="nearby-card"]', { has: page.locator('[data-testid="price"]') })
+		.first();
+	// every card's main action is the way there
+	await expect(card.locator('[data-testid="directions"]')).toHaveAttribute(
+		'href',
+		/google\.com\/maps\/dir\//
+	);
+
+	// pressing the card itself (not a link) opens it; with no battery size it asks for one
+	await card.locator('.facts').click();
+	const form = card.locator('[data-testid="battery-form"]');
+	await expect(form).toBeVisible();
+	await form.locator('[data-testid="battery-input"]').fill('60');
+	await form.locator('button').click();
 	await expect(page).toHaveURL(/rafhlada=60/);
 	// the other filters survive the battery form
 	await expect(page).toHaveURL(/nalaegt=/);
 
-	const card = page
-		.locator('[data-testid="nearby-card"]', {
-			has: page.locator('[data-testid="full-charge-cost"]')
-		})
-		.first();
+	// the same card stays open (the order doesn't depend on the battery) with the estimate
 	await expect(card.locator('[data-testid="full-charge-cost"]')).toContainText(/≈ [\d.]+ kr/);
-
-	// the info button explains the average power
-	await card.locator('[data-testid="avg-info"]').click();
-	await expect(card.locator('.info-text')).toBeVisible();
-
-	// the explanation is hidden until the card itself (not a link) is pressed
+	await expect(card.locator('[data-testid="full-charge-time"]')).toContainText('≈');
 	const explainer = card.locator('[data-testid="charge-explainer"]');
-	await expect(explainer).toHaveCount(0);
-	await card.locator('.facts').click();
 	await expect(explainer).toBeVisible();
 	await expect(card.locator('[data-testid="breakdown"]')).toContainText('60 kWh');
+	// with no car chosen it says what it assumed about the car
+	await expect(explainer).toContainText('Enginn bíll er valinn');
 	// a static picture with a text alternative, no slider to operate
 	await expect(explainer.locator('svg[role="img"]')).toHaveAttribute(
 		'aria-label',
